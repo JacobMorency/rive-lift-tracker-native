@@ -11,6 +11,11 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="complete-profile"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="workouts" options={{ headerShown: false }} />
         </Stack>
       </AuthGuard>
     </AuthProvider>

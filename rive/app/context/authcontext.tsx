@@ -53,7 +53,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       setUser(session?.user || null);
-      setUserData(null); // Skip user data for now
+
+      if (session?.user) {
+        console.log("👤 Fetching user data...");
+        await fetchUserData(session.user.id);
+      } else {
+        setUserData(null);
+      }
+
       setLoading(false);
       console.log("🔐 Auth init complete");
     };
@@ -68,7 +75,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           session ? "session exists" : "no session"
         );
         setUser(session?.user || null);
-        setUserData(null);
+
+        if (session?.user) {
+          fetchUserData(session.user.id).catch(console.error);
+        } else {
+          setUserData(null);
+        }
       }
     );
 
@@ -79,8 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserData = async (userId: string): Promise<void> => {
     try {
-      console.log("👤 Step 1: Fetching user data for:", userId);
-      console.log("👤 Step 2: Making Supabase query to users table...");
+      console.log("👤 Fetching user data for:", userId);
 
       const { data, error } = await supabase
         .from("users")
@@ -88,38 +99,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq("id", userId)
         .single();
 
-      console.log("👤 Step 3: Supabase query completed");
-
       if (error) {
         console.error("❌ Error fetching user data:", error.message);
-        console.log("👤 Error code:", error.code);
-        // If user doesn't exist in users table, create a basic record
+        // If user doesn't exist in users table, set empty data
         if (error.code === "PGRST116") {
-          console.log(
-            "👤 Step 4: User not found in users table, creating basic record..."
-          );
+          console.log("👤 User not found in users table, setting empty data");
           setUserData({
             first_name: "",
             last_name: "",
             email: "",
           });
-          console.log("👤 Step 5: Basic user data set");
         }
       } else {
-        console.log("👤 Step 4: User data fetched successfully:", data);
+        console.log("✅ User data fetched:", data);
         setUserData(data);
-        console.log("👤 Step 5: User data state updated");
       }
     } catch (error) {
       console.error("❌ fetchUserData failed:", error);
-      console.log("👤 Error: Setting empty user data...");
       // Set empty user data to prevent infinite loading
       setUserData({
         first_name: "",
         last_name: "",
         email: "",
       });
-      console.log("👤 Error: Empty user data set");
     }
   };
 

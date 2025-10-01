@@ -25,12 +25,31 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
       return;
     }
 
-    // Authenticated → redirect away from login
-    if (currentRoute === "login") {
-      router.replace("/");
+    // Authenticated but no user data yet → wait
+    if (!userData) {
       return;
     }
-  }, [user, loading, router, segments]);
+
+    // Check if profile is incomplete
+    const isProfileIncomplete = !userData.first_name || !userData.last_name;
+
+    if (isProfileIncomplete) {
+      if (currentRoute !== "complete-profile") {
+        router.replace("/complete-profile");
+      }
+      return;
+    }
+
+    // Profile complete → redirect to workouts
+    if (
+      currentRoute === "login" ||
+      currentRoute === "complete-profile" ||
+      currentRoute === "index"
+    ) {
+      router.replace("/workouts");
+      return;
+    }
+  }, [user, userData, loading, router, segments]);
 
   // Show loading spinner while checking authentication
   if (loading) {
