@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import { useRouter, usePathname } from "expo-router";
-import { View, Text, ActivityIndicator } from "react-native";
+import { useRouter, useSegments } from "expo-router";
 import { useAuth } from "../context/authcontext";
+import { View, ActivityIndicator } from "react-native";
 
 type AuthGuardProps = {
   children: React.ReactNode;
@@ -10,46 +10,36 @@ type AuthGuardProps = {
 const AuthGuard = ({ children }: AuthGuardProps) => {
   const { user, userData, loading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
+  const segments = useSegments();
 
   useEffect(() => {
     if (loading) return;
 
-    // Allow unauthenticated access to the login route
+    const currentRoute = segments[0];
+
+    // Not authenticated → go to login
     if (!user) {
-      if (pathname === "/login") return;
-      router.replace("/login");
+      if (currentRoute !== "login") {
+        router.replace("/login");
+      }
       return;
     }
 
-    // If userData hasn't loaded yet, optimistically route to complete-profile to avoid spinner loops
-    if (!userData) {
-      if (pathname !== "/complete-profile") router.replace("/complete-profile");
+    // Authenticated → redirect away from login
+    if (currentRoute === "login") {
+      router.replace("/");
       return;
     }
-
-    // Authenticated but profile incomplete → go to complete-profile (avoid redirect loop)
-    const isProfileIncomplete = !userData.first_name || !userData.last_name;
-    if (isProfileIncomplete && pathname !== "/complete-profile") {
-      router.replace("/complete-profile");
-      return;
-    }
-  }, [user, userData, loading, router, pathname]);
+  }, [user, loading, router, segments]);
 
   // Show loading spinner while checking authentication
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <ActivityIndicator size="large" />
       </View>
     );
   }
-
-  // Render children on the login route even when unauthenticated
-  if (!user && pathname === "/login") return <>{children}</>;
-
-  // Don't render children if user is not authenticated elsewhere
-  if (!user) return null;
 
   return <>{children}</>;
 };

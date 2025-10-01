@@ -1,27 +1,24 @@
 import "react-native-get-random-values";
 import { createClient } from "@supabase/supabase-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// MMKV not required; using AsyncStorage
 
-// Create a simple storage adapter using AsyncStorage for Supabase auth persistence
-const authStorage = {
-  getItem: (key: string) => AsyncStorage.getItem(key),
-  setItem: (key: string, value: string) => AsyncStorage.setItem(key, value),
-  removeItem: (key: string) => AsyncStorage.removeItem(key),
-};
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-const Constants = require("expo-constants").default;
-const supabaseUrl =
-  process.env.EXPO_PUBLIC_SUPABASE_URL ||
-  (Constants?.expoConfig?.extra?.supabaseUrl as string);
+console.log("🔧 Supabase config:", {
+  url: supabaseUrl ? "✅ Set" : "❌ Missing",
+  key: supabaseAnonKey ? "✅ Set" : "❌ Missing",
+});
 
-const supabaseAnonKey =
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
-  (Constants?.expoConfig?.extra?.supabaseAnonKey as string);
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    "Missing Supabase environment variables. Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in your .env file."
+  );
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: authStorage,
+    storage: AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
