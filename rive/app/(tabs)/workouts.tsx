@@ -7,10 +7,15 @@ import { supabase } from "../lib/supabaseClient";
 import WorkoutCard from "../components/workoutcard";
 import AddWorkoutModal from "../components/addworkoutmodal";
 import WorkoutTemplatesModal from "../components/workouttemplatesmodal";
+import WorkoutDetailsModal from "../components/workoutdetailsmodal";
 
 export default function WorkoutsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isTemplatesModalOpen, setIsTemplatesModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
+    null
+  );
   const { user, userData } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -26,6 +31,16 @@ export default function WorkoutsPage() {
 
   const handleWorkoutTemplates = () => {
     setIsTemplatesModalOpen(true);
+  };
+
+  const handleViewWorkoutDetails = (workoutId: string) => {
+    setSelectedWorkoutId(workoutId);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedWorkoutId(null);
   };
 
   const handleLogout = async () => {
@@ -102,6 +117,13 @@ export default function WorkoutsPage() {
           setIsTemplatesModalOpen(false);
           setIsAddModalOpen(true);
         }}
+        onViewWorkoutDetails={handleViewWorkoutDetails}
+      />
+
+      <WorkoutDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
+        workoutId={selectedWorkoutId}
       />
     </View>
   );

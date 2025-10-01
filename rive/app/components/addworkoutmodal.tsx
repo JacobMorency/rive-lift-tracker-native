@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
+import ExerciseSelector from "./exerciseselector";
 
 type AddWorkoutModalProps = {
   isOpen: boolean;
@@ -82,6 +83,39 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
     setCurrentStep("create-workout");
     setCreatedWorkoutId("");
     onClose();
+  };
+
+  const handleExerciseSelect = async (selectedExercises: any[]) => {
+    if (!createdWorkoutId) return;
+
+    try {
+      // Add selected exercises to the workout
+      const exercisesToAdd = selectedExercises.map((exercise, index) => ({
+        workout_id: createdWorkoutId,
+        exercise_id: exercise.id,
+        order_index: index,
+      }));
+
+      const { error } = await supabase
+        .from("workout_exercises")
+        .insert(exercisesToAdd);
+
+      if (error) {
+        console.error("Error adding exercises:", error.message);
+        Alert.alert("Error", "Failed to add exercises");
+        return;
+      }
+
+      console.log("✅ Exercises added to workout");
+      Alert.alert(
+        "Success",
+        `Workout template saved with ${selectedExercises.length} exercises!`
+      );
+      handleClose();
+    } catch (error) {
+      console.error("Error adding exercises:", error);
+      Alert.alert("Error", "Failed to add exercises");
+    }
   };
 
   const handleExercisesComplete = () => {
@@ -170,36 +204,13 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
             </View>
           </View>
         ) : (
-          <View className="flex-1">
-            {/* Header */}
-            <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
-              <Text className="text-lg font-semibold text-gray-900">
-                Add Exercises
-              </Text>
-              <TouchableOpacity onPress={handleClose}>
-                <Text className="text-blue-500 text-lg">✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Placeholder for exercise selection */}
-            <View className="flex-1 justify-center items-center p-4">
-              <Text className="text-lg font-semibold text-gray-900 mb-2">
-                Exercise Selection
-              </Text>
-              <Text className="text-gray-600 text-center mb-6">
-                Exercise selection functionality will be implemented next. For
-                now, you can complete the workout creation.
-              </Text>
-              <TouchableOpacity
-                className="w-full py-3 rounded-lg bg-blue-500"
-                onPress={handleExercisesComplete}
-              >
-                <Text className="text-white text-center font-medium">
-                  Complete Workout
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <ExerciseSelector
+            onExerciseSelect={handleExerciseSelect}
+            onClose={handleClose}
+            title="Add Exercises to Workout"
+            confirmText="Add to Workout"
+            showCloseButton={true}
+          />
         )}
       </KeyboardAvoidingView>
     </Modal>

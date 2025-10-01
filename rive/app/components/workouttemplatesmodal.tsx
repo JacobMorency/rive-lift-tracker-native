@@ -15,6 +15,7 @@ type WorkoutTemplatesModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onAddNewWorkout?: () => void;
+  onViewWorkoutDetails?: (workoutId: string) => void;
 };
 
 type WorkoutTemplate = {
@@ -37,6 +38,7 @@ const WorkoutTemplatesModal = ({
   isOpen,
   onClose,
   onAddNewWorkout,
+  onViewWorkoutDetails,
 }: WorkoutTemplatesModalProps) => {
   const [workoutTemplates, setWorkoutTemplates] = useState<WorkoutTemplate[]>(
     []
@@ -291,37 +293,48 @@ const WorkoutTemplatesModal = ({
                   key={workout.id}
                   className="bg-white border border-gray-200 rounded-lg p-4"
                 >
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-1">
-                      <Text className="text-lg font-medium text-gray-900">
-                        {workout.name}
-                      </Text>
-                      {workout.description && (
-                        <Text className="text-sm text-gray-600 mt-1">
-                          {workout.description}
+                  <TouchableOpacity
+                    onPress={() => onViewWorkoutDetails?.(workout.id)}
+                    className="flex-1"
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-1">
+                        <Text className="text-lg font-medium text-gray-900">
+                          {workout.name}
                         </Text>
-                      )}
-                      <Text className="text-xs text-gray-500 mt-1">
-                        {workout.exercise_count} exercises
-                      </Text>
+                        {workout.description && (
+                          <Text className="text-sm text-gray-600 mt-1">
+                            {workout.description}
+                          </Text>
+                        )}
+                        <Text className="text-xs text-gray-500 mt-1">
+                          {workout.exercise_count} exercises
+                        </Text>
+                      </View>
+                      <View className="flex-row space-x-2">
+                        <TouchableOpacity
+                          className="px-3 py-1 bg-green-100 rounded"
+                          onPress={() => onViewWorkoutDetails?.(workout.id)}
+                        >
+                          <Text className="text-green-600 text-sm">View</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          className="px-3 py-1 bg-blue-100 rounded"
+                          onPress={() => handleEditWorkout(workout)}
+                        >
+                          <Text className="text-blue-600 text-sm">Edit</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          className="px-3 py-1 bg-red-100 rounded"
+                          onPress={() =>
+                            handleDeleteWorkout(workout.id, workout.name)
+                          }
+                        >
+                          <Text className="text-red-600 text-sm">Delete</Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
-                    <View className="flex-row space-x-2">
-                      <TouchableOpacity
-                        className="px-3 py-1 bg-blue-100 rounded"
-                        onPress={() => handleEditWorkout(workout)}
-                      >
-                        <Text className="text-blue-600 text-sm">Edit</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        className="px-3 py-1 bg-red-100 rounded"
-                        onPress={() =>
-                          handleDeleteWorkout(workout.id, workout.name)
-                        }
-                      >
-                        <Text className="text-red-600 text-sm">Delete</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
+                  </TouchableOpacity>
                 </View>
               ))}
             </View>
