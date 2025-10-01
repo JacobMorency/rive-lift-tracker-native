@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../context/authcontext";
-import { supabase } from "../lib/supabaseClient";
 import WorkoutCard from "../components/workoutcard";
 import AddWorkoutModal from "../components/addworkoutmodal";
 import WorkoutTemplatesModal from "../components/workouttemplatesmodal";
@@ -41,15 +40,6 @@ export default function WorkoutsPage() {
   const handleCloseDetailsModal = () => {
     setIsDetailsModalOpen(false);
     setSelectedWorkoutId(null);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      Alert.alert("Error", "Failed to logout");
-      console.error("Logout error:", error);
-    }
   };
 
   return (
@@ -91,16 +81,6 @@ export default function WorkoutsPage() {
             icon="▶️"
             onPress={handleQuickStart}
           />
-        </View>
-
-        {/* Logout button at bottom */}
-        <View className="mt-8">
-          <TouchableOpacity
-            className="w-full py-3 rounded-lg bg-red-500"
-            onPress={handleLogout}
-          >
-            <Text className="text-white text-center font-medium">Logout</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
 

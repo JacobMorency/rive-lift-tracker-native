@@ -7,6 +7,7 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
