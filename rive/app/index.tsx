@@ -1,49 +1,31 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { Redirect } from "expo-router";
 import { useAuth } from "./context/authcontext";
-import { supabase } from "./lib/supabaseClient";
 
-export default function HomePage() {
-  const { user } = useAuth();
+export default function Index() {
+  const { user, userData, loading } = useAuth();
 
-  console.log("🏠 HomePage: User logged in:", user?.email);
+  // Show loading while checking auth
+  if (loading) {
+    return null;
+  }
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      Alert.alert("Error", "Failed to logout");
-      console.error("Logout error:", error);
-    }
-  };
+  // Not authenticated → go to login
+  if (!user) {
+    return <Redirect href="/login" />;
+  }
 
-  return (
-    <View className="flex-1 justify-center items-center p-4 bg-white">
-      <View className="w-full max-w-md space-y-6">
-        <View className="items-center">
-          <View className="bg-blue-500 rounded-full h-20 w-20 flex items-center justify-center mb-4">
-            <Text className="text-4xl">💪</Text>
-          </View>
-          <Text className="text-2xl font-bold text-gray-900">Welcome!</Text>
-          <Text className="text-lg text-gray-600 mt-2">
-            {user?.email || "User"}
-          </Text>
-        </View>
+  // Authenticated but no user data yet → wait
+  if (!userData) {
+    return null;
+  }
 
-        <View className="space-y-4">
-          <Text className="text-center text-gray-600">
-            This is a temporary home page. The full app features will be
-            migrated here soon!
-          </Text>
+  // Check if profile is incomplete
+  const isProfileIncomplete = !userData.first_name || !userData.last_name;
 
-          <TouchableOpacity
-            className="w-full py-3 rounded-lg bg-red-500"
-            onPress={handleLogout}
-          >
-            <Text className="text-white text-center font-medium">Logout</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  );
+  if (isProfileIncomplete) {
+    return <Redirect href="/complete-profile" />;
+  }
+
+  // Profile complete → redirect to workouts tab
+  return <Redirect href="/(tabs)/workouts" />;
 }

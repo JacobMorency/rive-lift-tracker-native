@@ -49,8 +49,8 @@ export default function CompleteProfilePage() {
       // Refresh user data
       await refreshUserData();
 
-      // Navigate to workouts page
-      router.replace("/workouts");
+      // Navigate to tabs
+      router.replace("/(tabs)/workouts");
     } catch (error: any) {
       console.error("❌ Profile creation failed:", error);
       Alert.alert("Error", "Failed to create profile. Please try again.");

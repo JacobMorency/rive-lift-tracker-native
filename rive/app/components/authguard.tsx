@@ -12,44 +12,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const router = useRouter();
   const segments = useSegments();
 
-  useEffect(() => {
-    if (loading) return;
-
-    const currentRoute = segments[0];
-
-    // Not authenticated → go to login
-    if (!user) {
-      if (currentRoute !== "login") {
-        router.replace("/login");
-      }
-      return;
-    }
-
-    // Authenticated but no user data yet → wait
-    if (!userData) {
-      return;
-    }
-
-    // Check if profile is incomplete
-    const isProfileIncomplete = !userData.first_name || !userData.last_name;
-
-    if (isProfileIncomplete) {
-      if (currentRoute !== "complete-profile") {
-        router.replace("/complete-profile");
-      }
-      return;
-    }
-
-    // Profile complete → redirect to workouts
-    if (
-      currentRoute === "login" ||
-      currentRoute === "complete-profile" ||
-      currentRoute === "index"
-    ) {
-      router.replace("/workouts");
-      return;
-    }
-  }, [user, userData, loading, router, segments]);
+  // Auth guard now just provides auth state - routing is handled by index.tsx
 
   // Show loading spinner while checking authentication
   if (loading) {

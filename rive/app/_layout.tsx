@@ -15,7 +15,7 @@ export default function RootLayout() {
             name="complete-profile"
             options={{ headerShown: false }}
           />
-          <Stack.Screen name="workouts" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
       </AuthGuard>
     </AuthProvider>
