@@ -48,7 +48,9 @@
       "router": {},
       "eas": {
         "projectId": "3a82933b-7e54-4a10-8fee-76a53f96dfb2"
-      }
+      },
+      "supabaseUrl": "${SUPABASE_URL}",
+      "supabaseAnonKey": "${SUPABASE_ANON_KEY}"
     },
     "owner": "egypts"
   }
