@@ -91,45 +91,48 @@ const SessionTabs = ({ sessions, onSessionSelect }: SessionTabsProps) => {
     <View className="mt-3">
       {/* Tab Selector */}
       <View className="flex-row justify-center mb-4">
-        <View className="flex-row bg-gray-200 rounded-lg p-1">
+        <View className="flex-row bg-base-300 rounded-lg p-1">
           <TouchableOpacity
             className={`px-4 py-2 rounded-md ${
-              selectedTab === "week" ? "bg-blue-500" : "bg-transparent"
+              selectedTab === "week" ? "bg-primary" : "bg-transparent"
             }`}
             onPress={() => setSelectedTab("week")}
           >
             <Text
-              className={`text-sm font-medium ${
-                selectedTab === "week" ? "text-white" : "text-gray-700"
-              }`}
+              className="text-sm font-medium"
+              style={{
+                color: selectedTab === "week" ? "#ffffff" : "#fefbee"
+              }}
             >
               This Week
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             className={`px-4 py-2 rounded-md ${
-              selectedTab === "month" ? "bg-blue-500" : "bg-transparent"
+              selectedTab === "month" ? "bg-primary" : "bg-transparent"
             }`}
             onPress={() => setSelectedTab("month")}
           >
             <Text
-              className={`text-sm font-medium ${
-                selectedTab === "month" ? "text-white" : "text-gray-700"
-              }`}
+              className="text-sm font-medium"
+              style={{
+                color: selectedTab === "month" ? "#ffffff" : "#fefbee"
+              }}
             >
               This Month
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             className={`px-4 py-2 rounded-md ${
-              selectedTab === "all" ? "bg-blue-500" : "bg-transparent"
+              selectedTab === "all" ? "bg-primary" : "bg-transparent"
             }`}
             onPress={() => setSelectedTab("all")}
           >
             <Text
-              className={`text-sm font-medium ${
-                selectedTab === "all" ? "text-white" : "text-gray-700"
-              }`}
+              className="text-sm font-medium"
+              style={{
+                color: selectedTab === "all" ? "#ffffff" : "#fefbee"
+              }}
             >
               All Time
             </Text>
@@ -145,35 +148,46 @@ const SessionTabs = ({ sessions, onSessionSelect }: SessionTabsProps) => {
               {selectedSessions.map((session) => (
                 <TouchableOpacity
                   key={session.id}
-                  className="bg-gray-100 rounded-lg p-4"
+                  className="bg-base-300 rounded-lg p-4"
                   onPress={() => handleSessionClick(session.id)}
                 >
                   <View className="flex-row items-center justify-between">
                     <View className="flex-1">
-                      <Text className="text-lg font-medium text-gray-900">
+                      <Text 
+                        className="text-lg font-medium"
+                        style={{ color: "#fefbee" }}
+                      >
                         {session.name}
                       </Text>
-                      <Text className="text-sm text-gray-600 mt-1">
+                      <Text 
+                        className="text-sm mt-1"
+                        style={{ color: "#9ca3af" }}
+                      >
                         {new Date(session.started_at).toLocaleDateString()}
                       </Text>
                     </View>
                     <View className="flex-row items-center space-x-2">
                       <View
-                        className={`px-2 py-1 rounded-full ${
-                          session.completed ? "bg-green-100" : "bg-yellow-100"
-                        }`}
+                        className="px-2 py-1 rounded-full"
+                        style={{
+                          backgroundColor: session.completed ? "#22c55e" : "#facc15"
+                        }}
                       >
                         <Text
-                          className={`text-xs font-medium ${
-                            session.completed
-                              ? "text-green-800"
-                              : "text-yellow-800"
-                          }`}
+                          className="text-xs font-medium"
+                          style={{
+                            color: session.completed ? "#002d40" : "#002d40"
+                          }}
                         >
                           {session.completed ? "Completed" : "In Progress"}
                         </Text>
                       </View>
-                      <Text className="text-gray-400">›</Text>
+                      <Text 
+                        className="text-xs"
+                        style={{ color: "#9ca3af" }}
+                      >
+                        ›
+                      </Text>
                     </View>
                   </View>
                 </TouchableOpacity>

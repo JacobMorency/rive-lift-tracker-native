@@ -18,50 +18,55 @@ export default function ProfilePage() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-base-100">
       {/* Header */}
       <View
-        className="bg-white px-4 border-b border-gray-200"
+        className="bg-base-200 px-4 border-b border-base-300"
         style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
       >
-        <Text className="text-2xl font-bold text-gray-900">Profile</Text>
+        <Text className="text-2xl font-bold text-base-content">Profile</Text>
+        {userData && (
+          <Text className="text-muted mt-1">
+            Manage your account and settings
+          </Text>
+        )}
       </View>
 
       {/* Content */}
       <ScrollView className="flex-1 px-4 py-6">
         <View className="space-y-6">
           {/* User Info Card */}
-          <View className="bg-white rounded-lg p-6 border border-gray-200">
+          <View className="bg-base-300 rounded-lg p-6">
             <View className="items-center mb-4">
-              <View className="bg-blue-500 rounded-full h-20 w-20 flex items-center justify-center mb-4">
+              <View className="bg-primary rounded-full h-20 w-20 flex items-center justify-center mb-4">
                 <Text className="text-4xl">👤</Text>
               </View>
               {userData && (
-                <Text className="text-xl font-semibold text-gray-900">
+                <Text className="text-xl font-semibold text-base-content">
                   {userData.first_name} {userData.last_name}
                 </Text>
               )}
-              {user && <Text className="text-gray-600 mt-1">{user.email}</Text>}
+              {user && <Text className="text-muted mt-1">{user.email}</Text>}
             </View>
           </View>
 
           {/* Stats Card */}
-          <View className="bg-white rounded-lg p-6 border border-gray-200">
-            <Text className="text-lg font-semibold text-gray-900 mb-4">
+          <View className="bg-base-300 rounded-lg p-6">
+            <Text className="text-lg font-semibold text-base-content mb-4">
               📊 Your Stats
             </Text>
             <View className="space-y-3">
               <View className="flex-row justify-between">
-                <Text className="text-gray-600">Total Workouts</Text>
-                <Text className="font-medium text-gray-900">0</Text>
+                <Text className="text-muted">Total Workouts</Text>
+                <Text className="font-medium text-base-content">0</Text>
               </View>
               <View className="flex-row justify-between">
-                <Text className="text-gray-600">Total Sessions</Text>
-                <Text className="font-medium text-gray-900">0</Text>
+                <Text className="text-muted">Total Sessions</Text>
+                <Text className="font-medium text-base-content">0</Text>
               </View>
               <View className="flex-row justify-between">
-                <Text className="text-gray-600">Member Since</Text>
-                <Text className="font-medium text-gray-900">
+                <Text className="text-muted">Member Since</Text>
+                <Text className="font-medium text-base-content">
                   {user?.created_at
                     ? new Date(user.created_at).toLocaleDateString()
                     : "N/A"}
@@ -71,32 +76,34 @@ export default function ProfilePage() {
           </View>
 
           {/* Settings Card */}
-          <View className="bg-white rounded-lg p-6 border border-gray-200">
-            <Text className="text-lg font-semibold text-gray-900 mb-4">
+          <View className="bg-base-300 rounded-lg p-6">
+            <Text className="text-lg font-semibold text-base-content mb-4">
               ⚙️ Settings
             </Text>
             <View className="space-y-3">
-              <TouchableOpacity className="py-3 border-b border-gray-100">
-                <Text className="text-gray-900">Edit Profile</Text>
+              <TouchableOpacity className="py-3 border-b border-base-200">
+                <Text className="text-base-content">Edit Profile</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="py-3 border-b border-gray-100">
-                <Text className="text-gray-900">Notifications</Text>
+              <TouchableOpacity className="py-3 border-b border-base-200">
+                <Text className="text-base-content">Notifications</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="py-3 border-b border-gray-100">
-                <Text className="text-gray-900">Privacy</Text>
+              <TouchableOpacity className="py-3 border-b border-base-200">
+                <Text className="text-base-content">Privacy</Text>
               </TouchableOpacity>
               <TouchableOpacity className="py-3">
-                <Text className="text-gray-900">Help & Support</Text>
+                <Text className="text-base-content">Help & Support</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Logout Button */}
           <TouchableOpacity
-            className="w-full py-3 rounded-lg bg-red-500"
+            className="w-full py-3 rounded-lg bg-error"
             onPress={handleLogout}
           >
-            <Text className="text-white text-center font-medium">Logout</Text>
+            <Text className="text-error-content text-center font-medium">
+              Logout
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

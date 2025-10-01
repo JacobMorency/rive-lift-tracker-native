@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import { Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/authcontext";
 
 export default function TabLayout() {
@@ -10,15 +11,15 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: "white",
-          borderTopColor: "#e5e7eb",
+          backgroundColor: "#1a1a1a", // base-100
+          borderTopColor: "#333333", // base-300
           borderTopWidth: 1,
           paddingBottom: 8,
           paddingTop: 8,
           height: 80,
         },
-        tabBarActiveTintColor: "#3b82f6",
-        tabBarInactiveTintColor: "#6b7280",
+        tabBarActiveTintColor: "#ff4b8c", // primary
+        tabBarInactiveTintColor: "#9ca3af", // muted
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "500",
@@ -30,7 +31,7 @@ export default function TabLayout() {
         options={{
           title: "Workouts",
           tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>🏋️</Text>
+            <Ionicons name="barbell-outline" size={size} color={color} />
           ),
         }}
       />
@@ -39,7 +40,7 @@ export default function TabLayout() {
         options={{
           title: "Sessions",
           tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>📊</Text>
+            <Ionicons name="stats-chart-outline" size={size} color={color} />
           ),
         }}
       />
@@ -48,7 +49,7 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>👤</Text>
+            <Ionicons name="person-outline" size={size} color={color} />
           ),
         }}
       />

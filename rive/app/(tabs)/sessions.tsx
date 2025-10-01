@@ -155,41 +155,37 @@ export default function SessionsPage() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-gray-50">
+      <View className="flex-1 bg-base-100">
         {/* Header */}
         <View
-          className="bg-white px-4 border-b border-gray-200"
+          className="bg-base-200 px-4 border-b border-base-300"
           style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
         >
-          <Text className="text-2xl font-bold text-gray-900">Sessions</Text>
+          <Text className="text-2xl font-bold text-base-content">Sessions</Text>
           {userData && (
-            <Text className="text-gray-600 mt-1">
-              Track your workout sessions
-            </Text>
+            <Text className="text-muted mt-1">Track your workout sessions</Text>
           )}
         </View>
 
         {/* Loading */}
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" />
-          <Text className="text-gray-600 mt-2">Loading sessions...</Text>
+          <ActivityIndicator size="large" color="#ff4b8c" />
+          <Text className="text-muted mt-2">Loading sessions...</Text>
         </View>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-base-100">
       {/* Header */}
       <View
-        className="bg-white px-4 border-b border-gray-200"
+        className="bg-base-200 px-4 border-b border-base-300"
         style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
       >
-        <Text className="text-2xl font-bold text-gray-900">Sessions</Text>
+        <Text className="text-2xl font-bold text-base-content">Sessions</Text>
         {userData && (
-          <Text className="text-gray-600 mt-1">
-            Track your workout sessions
-          </Text>
+          <Text className="text-muted mt-1">Track your workout sessions</Text>
         )}
       </View>
 
@@ -198,10 +194,10 @@ export default function SessionsPage() {
         {/* New Session Button */}
         <View className="px-4 py-4">
           <TouchableOpacity
-            className="w-full py-3 rounded-lg bg-blue-500"
+            className="w-full py-3 rounded-lg bg-primary"
             onPress={handleNewSession}
           >
-            <Text className="text-white text-center font-medium">
+            <Text className="text-primary-content text-center font-medium">
               ➕ New Session
             </Text>
           </TouchableOpacity>
