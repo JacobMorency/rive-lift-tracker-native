@@ -1,10 +1,12 @@
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 
 export default function ProfilePage() {
   const { user, userData } = useAuth();
+  const insets = useSafeAreaInsets();
 
   const handleLogout = async () => {
     try {
@@ -18,7 +20,10 @@ export default function ProfilePage() {
   return (
     <View className="flex-1 bg-gray-50">
       {/* Header */}
-      <View className="bg-white px-4 py-6 border-b border-gray-200">
+      <View
+        className="bg-white px-4 border-b border-gray-200"
+        style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
+      >
         <Text className="text-2xl font-bold text-gray-900">Profile</Text>
       </View>
 
