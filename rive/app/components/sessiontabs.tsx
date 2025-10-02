@@ -153,53 +153,57 @@ const SessionTabs = ({ sessions, onSessionSelect }: SessionTabsProps) => {
       {!loading && (
         <View className="px-4">
           {selectedSessions.length > 0 ? (
-            <View className="space-y-2">
-              {selectedSessions.map((session) => (
-                <TouchableOpacity
-                  key={session.id}
-                  className="rounded-lg p-4"
-                  style={{ backgroundColor: "#333333" }}
-                  onPress={() => handleSessionClick(session.id)}
-                >
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-1">
-                      <Text
-                        className="text-lg font-medium"
-                        style={{ color: "#fefbee" }}
-                      >
-                        {session.name}
-                      </Text>
-                      <Text
-                        className="text-sm mt-1"
-                        style={{ color: "#9ca3af" }}
-                      >
-                        {new Date(session.started_at).toLocaleDateString()}
-                      </Text>
-                    </View>
-                    <View className="flex-row items-center space-x-2">
-                      <View
-                        className="px-2 py-1 rounded-full"
-                        style={{
-                          backgroundColor: session.completed
-                            ? "#22c55e"
-                            : "#facc15",
-                        }}
-                      >
+            <View>
+              {selectedSessions.map((session, index) => (
+                <View key={session.id}>
+                  <TouchableOpacity
+                    className="rounded-lg p-4"
+                    style={{ backgroundColor: "#333333" }}
+                    onPress={() => handleSessionClick(session.id)}
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-1">
                         <Text
-                          className="text-xs font-medium"
-                          style={{
-                            color: session.completed ? "#002d40" : "#002d40",
-                          }}
+                          className="text-lg font-medium"
+                          style={{ color: "#fefbee" }}
                         >
-                          {session.completed ? "Completed" : "In Progress"}
+                          {session.name}
+                        </Text>
+                        <Text
+                          className="text-sm mt-1"
+                          style={{ color: "#9ca3af" }}
+                        >
+                          {new Date(session.started_at).toLocaleDateString()}
                         </Text>
                       </View>
-                      <Text className="text-xs" style={{ color: "#9ca3af" }}>
-                        ›
-                      </Text>
+                      <View className="flex-row items-center space-x-2">
+                        <View
+                          className="px-2 py-1 rounded-full"
+                          style={{
+                            backgroundColor: session.completed
+                              ? "#22c55e"
+                              : "#facc15",
+                          }}
+                        >
+                          <Text
+                            className="text-xs font-medium"
+                            style={{
+                              color: session.completed ? "#002d40" : "#002d40",
+                            }}
+                          >
+                            {session.completed ? "Completed" : "In Progress"}
+                          </Text>
+                        </View>
+                        <Text className="text-xs" style={{ color: "#9ca3af" }}>
+                          ›
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
+                  {index < selectedSessions.length - 1 && (
+                    <View className="mb-3" />
+                  )}
+                </View>
               ))}
             </View>
           ) : (

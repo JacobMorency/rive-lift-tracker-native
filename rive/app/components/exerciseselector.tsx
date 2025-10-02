@@ -129,31 +129,33 @@ const ExerciseSelector = ({
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-base-100">
       {/* Header */}
-      <View className="p-4 border-b border-gray-200">
+      <View className="p-4 border-b border-base-300">
         <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-lg font-semibold text-gray-900">{title}</Text>
+          <Text className="text-lg font-semibold text-base-content">
+            {title}
+          </Text>
           <View className="flex-row items-center space-x-2">
             {showCloseButton && onClose && (
               <TouchableOpacity
-                className="px-3 py-1 bg-gray-200 rounded"
+                className="px-3 py-1 bg-neutral rounded"
                 onPress={onClose}
               >
-                <Text className="text-gray-700 text-sm">Cancel</Text>
+                <Text className="text-neutral-content text-sm">Cancel</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity
-              className="px-3 py-1 bg-blue-500 rounded"
+              className="px-3 py-1 bg-primary rounded"
               onPress={handleConfirm}
             >
-              <Text className="text-white text-sm">
+              <Text className="text-primary-content text-sm">
                 {confirmText} ({selectedExercises.length})
               </Text>
             </TouchableOpacity>
           </View>
         </View>
-        <Text className="text-sm text-gray-600">
+        <Text className="text-sm text-muted">
           {selectedExercises.length} exercise
           {selectedExercises.length !== 1 ? "s" : ""} selected
         </Text>
@@ -164,8 +166,9 @@ const ExerciseSelector = ({
         {/* Search */}
         <View className="mb-4">
           <TextInput
-            className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
+            className="border border-base-200 rounded-lg px-3 py-2 text-base-content bg-base-200"
             placeholder="Search exercises..."
+            placeholderTextColor="#9ca3af"
             value={searchValue}
             onChangeText={setSearchValue}
           />
@@ -177,13 +180,15 @@ const ExerciseSelector = ({
             <View className="flex-row space-x-2">
               <TouchableOpacity
                 className={`px-4 py-2 rounded-full ${
-                  selectedFilter === "" ? "bg-blue-500" : "bg-gray-200"
+                  selectedFilter === "" ? "bg-primary" : "bg-base-300"
                 }`}
                 onPress={() => setSelectedFilter("")}
               >
                 <Text
                   className={`text-sm ${
-                    selectedFilter === "" ? "text-white" : "text-gray-700"
+                    selectedFilter === ""
+                      ? "text-primary-content"
+                      : "text-base-content"
                   }`}
                 >
                   All
@@ -193,13 +198,15 @@ const ExerciseSelector = ({
                 <TouchableOpacity
                   key={filter}
                   className={`px-4 py-2 rounded-full ${
-                    selectedFilter === filter ? "bg-blue-500" : "bg-gray-200"
+                    selectedFilter === filter ? "bg-primary" : "bg-base-300"
                   }`}
                   onPress={() => setSelectedFilter(filter)}
                 >
                   <Text
                     className={`text-sm ${
-                      selectedFilter === filter ? "text-white" : "text-gray-700"
+                      selectedFilter === filter
+                        ? "text-primary-content"
+                        : "text-base-content"
                     }`}
                   >
                     {filter}
@@ -212,51 +219,53 @@ const ExerciseSelector = ({
 
         {/* Exercise List */}
         <View>
-          <Text className="text-sm font-semibold text-gray-900 mb-3">
+          <Text className="text-sm font-semibold text-base-content mb-3">
             {selectedFilter || "All"} Exercises ({filteredExercises.length})
           </Text>
 
           {loading ? (
             <View className="flex-1 justify-center items-center py-8">
-              <ActivityIndicator size="large" />
-              <Text className="text-gray-600 mt-2">Loading exercises...</Text>
+              <ActivityIndicator size="large" color="#ff4b8c" />
+              <Text className="text-muted mt-2">Loading exercises...</Text>
             </View>
           ) : filteredExercises.length === 0 ? (
             <View className="flex-1 justify-center items-center py-8">
-              <Text className="text-gray-600">No exercises found</Text>
+              <Text className="text-muted">No exercises found</Text>
             </View>
           ) : (
-            <View className="space-y-2">
-              {filteredExercises.map((exercise) => {
+            <View>
+              {filteredExercises.map((exercise, index) => {
                 const isSelected = selectedExercises.some(
                   (ex) => ex.id === exercise.id
                 );
 
                 return (
-                  <View
-                    key={exercise.id}
-                    className="flex-row items-center space-x-2"
-                  >
-                    <TouchableOpacity
-                      className={`w-8 h-8 rounded-full items-center justify-center ${
-                        isSelected ? "bg-green-500" : "bg-gray-200"
-                      }`}
-                      onPress={() => handleExerciseToggle(exercise)}
-                    >
-                      <Text
-                        className={`text-sm ${isSelected ? "text-white" : "text-gray-600"}`}
+                  <View key={exercise.id}>
+                    <View className="flex-row items-center space-x-2">
+                      <TouchableOpacity
+                        className={`w-8 h-8 rounded-full items-center justify-center ${
+                          isSelected ? "bg-success" : "bg-base-300"
+                        }`}
+                        onPress={() => handleExerciseToggle(exercise)}
                       >
-                        {isSelected ? "✓" : "+"}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      className="flex-1 py-4 px-3 bg-gray-100 rounded-lg"
-                      onPress={() => handleExerciseToggle(exercise)}
-                    >
-                      <Text className="text-gray-900">
-                        {formatExerciseName(exercise.name)}
-                      </Text>
-                    </TouchableOpacity>
+                        <Text
+                          className={`text-sm ${isSelected ? "text-success-content" : "text-base-content"}`}
+                        >
+                          {isSelected ? "✓" : "+"}
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        className="flex-1 py-4 px-3 bg-base-300 rounded-lg"
+                        onPress={() => handleExerciseToggle(exercise)}
+                      >
+                        <Text className="text-base-content">
+                          {formatExerciseName(exercise.name)}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                    {index < filteredExercises.length - 1 && (
+                      <View className="mb-3" />
+                    )}
                   </View>
                 );
               })}

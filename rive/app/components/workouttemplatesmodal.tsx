@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   TextInput,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 
@@ -245,26 +246,27 @@ const WorkoutTemplatesModal = ({
 
   return (
     <Modal visible={isOpen} animationType="slide" presentationStyle="pageSheet">
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-base-100">
         {/* Header */}
-        <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
-          <Text className="text-lg font-semibold text-gray-900">
+        <View className="flex-row items-center justify-between p-4 border-b border-base-300">
+          <Text className="text-lg font-semibold text-base-content">
             Workout Templates ({workoutTemplates.length})
           </Text>
           <TouchableOpacity onPress={onClose}>
-            <Text className="text-blue-500 text-lg">✕</Text>
+            <Text className="text-primary text-lg">✕</Text>
           </TouchableOpacity>
         </View>
 
         {/* Add New Workout Button */}
         {onAddNewWorkout && (
-          <View className="p-4 border-b border-gray-200">
+          <View className="p-4 border-b border-base-300">
             <TouchableOpacity
-              className="w-full py-3 rounded-lg bg-blue-500"
+              className="w-full py-3 rounded-lg bg-primary flex-row items-center justify-center"
               onPress={onAddNewWorkout}
             >
-              <Text className="text-white text-center font-medium">
-                ➕ Add New Workout
+              <Ionicons name="add-circle-outline" size={20} color="#ffffff" />
+              <Text className="text-primary-content text-center font-medium ml-2">
+                Add New Workout
               </Text>
             </TouchableOpacity>
           </View>
@@ -274,68 +276,72 @@ const WorkoutTemplatesModal = ({
         <ScrollView className="flex-1">
           {loading ? (
             <View className="flex-1 justify-center items-center py-8">
-              <ActivityIndicator size="large" />
-              <Text className="text-gray-600 mt-2">Loading workouts...</Text>
+              <ActivityIndicator size="large" color="#ff4b8c" />
+              <Text className="text-muted mt-2">Loading workouts...</Text>
             </View>
           ) : workoutTemplates.length === 0 ? (
             <View className="flex-1 justify-center items-center py-8 px-4">
               <Text className="text-6xl mb-4">🏋️</Text>
-              <Text className="text-lg font-semibold text-gray-900 mb-2">
+              <Text className="text-lg font-semibold text-base-content mb-2">
                 No Workout Templates
               </Text>
-              <Text className="text-gray-600 text-center">
+              <Text className="text-muted text-center">
                 Create your first workout template to get started
               </Text>
             </View>
           ) : (
-            <View className="p-4 space-y-2">
-              {workoutTemplates.map((workout) => (
-                <View
-                  key={workout.id}
-                  className="bg-white border border-gray-200 rounded-lg p-4"
-                >
-                  <TouchableOpacity
-                    onPress={() => onViewWorkoutDetails?.(workout.id)}
-                    className="flex-1"
-                  >
-                    <View className="flex-row items-center justify-between">
-                      <View className="flex-1">
-                        <Text className="text-lg font-medium text-gray-900">
-                          {workout.name}
-                        </Text>
-                        {workout.description && (
-                          <Text className="text-sm text-gray-600 mt-1">
-                            {workout.description}
+            <View className="p-4">
+              {workoutTemplates.map((workout, index) => (
+                <View key={workout.id}>
+                  <View className="bg-base-300 rounded-lg p-4">
+                    <TouchableOpacity
+                      onPress={() => onViewWorkoutDetails?.(workout.id)}
+                      className="flex-1"
+                    >
+                      <View className="flex-row items-center justify-between">
+                        <View className="flex-1">
+                          <Text className="text-lg font-medium text-base-content">
+                            {workout.name}
                           </Text>
-                        )}
-                        <Text className="text-xs text-gray-500 mt-1">
-                          {workout.exercise_count} exercises
-                        </Text>
+                          {workout.description && (
+                            <Text className="text-sm text-muted mt-1">
+                              {workout.description}
+                            </Text>
+                          )}
+                          <Text className="text-xs text-muted mt-1">
+                            {workout.exercise_count} exercises
+                          </Text>
+                        </View>
+                        <View className="flex-row space-x-2">
+                          <TouchableOpacity
+                            className="w-8 h-8 bg-info rounded-full items-center justify-center"
+                            onPress={() => handleEditWorkout(workout)}
+                          >
+                            <Ionicons
+                              name="pencil-outline"
+                              size={16}
+                              color="#002d40"
+                            />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            className="w-8 h-8 bg-error rounded-full items-center justify-center"
+                            onPress={() =>
+                              handleDeleteWorkout(workout.id, workout.name)
+                            }
+                          >
+                            <Ionicons
+                              name="trash-outline"
+                              size={16}
+                              color="#ffffff"
+                            />
+                          </TouchableOpacity>
+                        </View>
                       </View>
-                      <View className="flex-row space-x-2">
-                        <TouchableOpacity
-                          className="px-3 py-1 bg-green-100 rounded"
-                          onPress={() => onViewWorkoutDetails?.(workout.id)}
-                        >
-                          <Text className="text-green-600 text-sm">View</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          className="px-3 py-1 bg-blue-100 rounded"
-                          onPress={() => handleEditWorkout(workout)}
-                        >
-                          <Text className="text-blue-600 text-sm">Edit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          className="px-3 py-1 bg-red-100 rounded"
-                          onPress={() =>
-                            handleDeleteWorkout(workout.id, workout.name)
-                          }
-                        >
-                          <Text className="text-red-600 text-sm">Delete</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </TouchableOpacity>
+                    </TouchableOpacity>
+                  </View>
+                  {index < workoutTemplates.length - 1 && (
+                    <View className="mb-3" />
+                  )}
                 </View>
               ))}
             </View>
@@ -345,33 +351,35 @@ const WorkoutTemplatesModal = ({
         {/* Edit Modal */}
         {editingWorkout && (
           <View className="absolute inset-0 bg-black bg-opacity-50 justify-center items-center">
-            <View className="bg-white rounded-lg p-6 m-4 w-full max-w-sm">
-              <Text className="text-lg font-semibold text-gray-900 mb-4">
+            <View className="bg-base-300 rounded-lg p-6 m-4 w-full max-w-sm">
+              <Text className="text-lg font-semibold text-base-content mb-4">
                 Edit Workout Template
               </Text>
 
               <View className="space-y-4">
                 <View>
-                  <Text className="text-sm font-medium text-gray-700 mb-1">
+                  <Text className="text-sm font-medium text-base-content mb-1">
                     Workout Name
                   </Text>
                   <TextInput
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
+                    className="border border-base-200 rounded-lg px-3 py-2 text-base-content bg-base-200"
                     value={editName}
                     onChangeText={setEditName}
                     placeholder="Enter workout name"
+                    placeholderTextColor="#9ca3af"
                   />
                 </View>
 
                 <View>
-                  <Text className="text-sm font-medium text-gray-700 mb-1">
+                  <Text className="text-sm font-medium text-base-content mb-1">
                     Description (Optional)
                   </Text>
                   <TextInput
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900 h-20"
+                    className="border border-base-200 rounded-lg px-3 py-2 text-base-content bg-base-200 h-20"
                     value={editDescription}
                     onChangeText={setEditDescription}
                     placeholder="Enter workout description"
+                    placeholderTextColor="#9ca3af"
                     multiline
                   />
                 </View>
@@ -379,19 +387,23 @@ const WorkoutTemplatesModal = ({
 
               <View className="flex-row space-x-3 mt-6">
                 <TouchableOpacity
-                  className="flex-1 py-2 rounded-lg bg-gray-500"
+                  className="flex-1 py-2 rounded-lg bg-neutral"
                   onPress={handleCancelEdit}
                 >
-                  <Text className="text-white text-center">Cancel</Text>
+                  <Text className="text-neutral-content text-center">
+                    Cancel
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   className={`flex-1 py-2 rounded-lg ${
-                    !editName.trim() ? "bg-gray-400" : "bg-blue-500"
+                    !editName.trim() ? "bg-neutral" : "bg-primary"
                   }`}
                   onPress={handleSaveEdit}
                   disabled={!editName.trim()}
                 >
-                  <Text className="text-white text-center">Save Changes</Text>
+                  <Text className="text-primary-content text-center">
+                    Save Changes
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>

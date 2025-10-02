@@ -129,17 +129,17 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
     <Modal visible={isOpen} animationType="slide" presentationStyle="pageSheet">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1 bg-white"
+        className="flex-1 bg-base-100"
       >
         {currentStep === "create-workout" ? (
           <View className="flex-1">
             {/* Header */}
-            <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
-              <Text className="text-lg font-semibold text-gray-900">
+            <View className="flex-row items-center justify-between p-4 border-b border-base-300">
+              <Text className="text-lg font-semibold text-base-content">
                 Add New Workout
               </Text>
               <TouchableOpacity onPress={handleClose}>
-                <Text className="text-blue-500 text-lg">✕</Text>
+                <Text className="text-primary text-lg">✕</Text>
               </TouchableOpacity>
             </View>
 
@@ -147,12 +147,13 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
             <ScrollView className="flex-1 p-4">
               <View className="space-y-4">
                 <View>
-                  <Text className="text-sm font-medium text-gray-700 mb-1">
+                  <Text className="text-sm font-medium text-base-content mb-1">
                     Workout Name *
                   </Text>
                   <TextInput
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
+                    className="border border-base-200 rounded-lg px-3 py-2 text-base-content bg-base-200"
                     placeholder="Enter workout name"
+                    placeholderTextColor="#9ca3af"
                     value={workoutName}
                     onChangeText={setWorkoutName}
                     maxLength={50}
@@ -160,12 +161,13 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
                 </View>
 
                 <View>
-                  <Text className="text-sm font-medium text-gray-700 mb-1">
+                  <Text className="text-sm font-medium text-base-content mb-1">
                     Description (Optional)
                   </Text>
                   <TextInput
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900 h-20"
+                    className="border border-base-200 rounded-lg px-3 py-2 text-base-content bg-base-200 h-20"
                     placeholder="Enter workout description"
+                    placeholderTextColor="#9ca3af"
                     value={description}
                     onChangeText={setDescription}
                     multiline
@@ -176,27 +178,25 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
             </ScrollView>
 
             {/* Buttons */}
-            <View className="p-4 border-t border-gray-200">
+            <View className="p-4 border-t border-base-300">
               <View className="flex-row space-x-3">
                 <TouchableOpacity
-                  className="flex-1 py-3 rounded-lg bg-gray-500"
+                  className="flex-1 py-3 rounded-lg bg-neutral"
                   onPress={handleClose}
                   disabled={loading}
                 >
-                  <Text className="text-white text-center font-medium">
+                  <Text className="text-neutral-content text-center font-medium">
                     Cancel
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   className={`flex-1 py-3 rounded-lg ${
-                    loading || !workoutName.trim()
-                      ? "bg-gray-400"
-                      : "bg-blue-500"
+                    loading || !workoutName.trim() ? "bg-neutral" : "bg-primary"
                   }`}
                   onPress={handleSubmit}
                   disabled={loading || !workoutName.trim()}
                 >
-                  <Text className="text-white text-center font-medium">
+                  <Text className="text-primary-content text-center font-medium">
                     {loading ? "Creating..." : "Create"}
                   </Text>
                 </TouchableOpacity>

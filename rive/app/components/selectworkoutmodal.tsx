@@ -101,14 +101,14 @@ const SelectWorkoutModal = ({
 
   return (
     <Modal visible={isOpen} animationType="slide" presentationStyle="pageSheet">
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-base-100">
         {/* Header */}
-        <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
-          <Text className="text-lg font-semibold text-gray-900">
+        <View className="flex-row items-center justify-between p-4 border-b border-base-300">
+          <Text className="text-lg font-semibold text-base-content">
             Select Workout Template ({workoutTemplates.length})
           </Text>
           <TouchableOpacity onPress={onClose}>
-            <Text className="text-blue-500 text-lg">✕</Text>
+            <Text className="text-primary text-lg">✕</Text>
           </TouchableOpacity>
         </View>
 
@@ -116,46 +116,50 @@ const SelectWorkoutModal = ({
         <ScrollView className="flex-1 p-4">
           {loading ? (
             <View className="flex-1 justify-center items-center py-8">
-              <ActivityIndicator size="large" />
-              <Text className="text-gray-600 mt-2">Loading workouts...</Text>
+              <ActivityIndicator size="large" color="#ff4b8c" />
+              <Text className="text-muted mt-2">Loading workouts...</Text>
             </View>
           ) : workoutTemplates.length === 0 ? (
             <View className="flex-1 justify-center items-center py-8">
               <Text className="text-6xl mb-4">🏋️</Text>
-              <Text className="text-lg font-semibold text-gray-900 mb-2">
+              <Text className="text-lg font-semibold text-base-content mb-2">
                 No Workout Templates
               </Text>
-              <Text className="text-gray-600 text-center">
+              <Text className="text-muted text-center">
                 Create a workout template first to start a session
               </Text>
             </View>
           ) : (
-            <View className="space-y-2">
-              {workoutTemplates.map((workout) => (
-                <TouchableOpacity
-                  key={workout.id}
-                  className="bg-gray-100 rounded-lg p-4"
-                  onPress={() => handleWorkoutSelect(workout.id)}
-                >
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-1">
-                      <Text className="text-lg font-medium text-gray-900">
-                        {workout.name}
-                      </Text>
-                      {workout.description && (
-                        <Text className="text-sm text-gray-600 mt-1">
-                          {workout.description}
+            <View>
+              {workoutTemplates.map((workout, index) => (
+                <View key={workout.id}>
+                  <TouchableOpacity
+                    className="bg-base-300 rounded-lg p-4"
+                    onPress={() => handleWorkoutSelect(workout.id)}
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-1">
+                        <Text className="text-lg font-medium text-base-content">
+                          {workout.name}
                         </Text>
-                      )}
+                        {workout.description && (
+                          <Text className="text-sm text-muted mt-1">
+                            {workout.description}
+                          </Text>
+                        )}
+                      </View>
+                      <View className="flex-row items-center space-x-2">
+                        <Text className="text-muted text-sm">
+                          {workout.exercise_count} exercises
+                        </Text>
+                        <Text className="text-muted">›</Text>
+                      </View>
                     </View>
-                    <View className="flex-row items-center space-x-2">
-                      <Text className="text-gray-500 text-sm">
-                        {workout.exercise_count} exercises
-                      </Text>
-                      <Text className="text-gray-400">›</Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
+                  {index < workoutTemplates.length - 1 && (
+                    <View className="mb-3" />
+                  )}
+                </View>
               ))}
             </View>
           )}

@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../context/authcontext";
@@ -457,19 +458,19 @@ export default function SessionDetailPage() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-gray-50">
+      <View className="flex-1 bg-base-100">
         {/* Header */}
         <View
-          className="bg-white px-4 border-b border-gray-200"
+          className="bg-base-200 px-4 border-b border-base-300"
           style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
         >
-          <Text className="text-2xl font-bold text-gray-900">Session</Text>
+          <Text className="text-2xl font-bold text-base-content">Session</Text>
         </View>
 
         {/* Loading */}
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" />
-          <Text className="text-gray-600 mt-2">Loading session...</Text>
+          <ActivityIndicator size="large" color="#ff4b8c" />
+          <Text className="text-muted mt-2">Loading session...</Text>
         </View>
       </View>
     );
@@ -477,20 +478,20 @@ export default function SessionDetailPage() {
 
   if (!sessionData) {
     return (
-      <View className="flex-1 bg-gray-50">
+      <View className="flex-1 bg-base-100">
         {/* Header */}
         <View
-          className="bg-white px-4 border-b border-gray-200"
+          className="bg-base-200 px-4 border-b border-base-300"
           style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
         >
-          <Text className="text-2xl font-bold text-gray-900">
+          <Text className="text-2xl font-bold text-base-content">
             Session Not Found
           </Text>
         </View>
 
         {/* Content */}
         <View className="flex-1 justify-center items-center px-4">
-          <Text className="text-gray-600 text-center">
+          <Text className="text-muted text-center">
             Session not found or you don't have access to it.
           </Text>
         </View>
@@ -515,34 +516,34 @@ export default function SessionDetailPage() {
 
   // Show exercise list
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-base-100">
       {/* Header */}
       <View
-        className="bg-white px-4 border-b border-gray-200"
+        className="bg-base-200 px-4 border-b border-base-300"
         style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
       >
         <View className="flex-row items-center justify-between">
           <View className="flex-1">
-            <Text className="text-2xl font-bold text-gray-900">
+            <Text className="text-2xl font-bold text-base-content">
               {sessionData.workout_name}
             </Text>
-            <Text className="text-gray-600 mt-1">
+            <Text className="text-muted mt-1">
               Started {new Date(sessionData.started_at).toLocaleDateString()}
             </Text>
           </View>
           <View className="flex-row space-x-2">
             <TouchableOpacity
-              className="px-3 py-1 bg-green-500 rounded"
+              className="w-8 h-8 bg-success rounded-full items-center justify-center"
               onPress={handleCompleteSession}
               disabled={exerciseProgress.every((ex) => !ex.completed)}
             >
-              <Text className="text-white text-sm">✓</Text>
+              <Ionicons name="checkmark" size={16} color="#002d40" />
             </TouchableOpacity>
             <TouchableOpacity
-              className="px-3 py-1 bg-red-500 rounded"
+              className="w-8 h-8 bg-error rounded-full items-center justify-center"
               onPress={handleCancelSession}
             >
-              <Text className="text-white text-sm">🗑️</Text>
+              <Ionicons name="trash-outline" size={16} color="#ffffff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -556,61 +557,67 @@ export default function SessionDetailPage() {
             className="flex-row items-center"
             onPress={handleBack}
           >
-            <Text className="text-blue-500 text-lg mr-2">←</Text>
-            <Text className="text-blue-500">Back to Sessions</Text>
+            <Text className="text-primary text-lg mr-2">←</Text>
+            <Text className="text-primary">Back to Sessions</Text>
           </TouchableOpacity>
         </View>
 
         <View className="mb-4">
-          <Text className="text-lg font-semibold text-gray-900 mb-2">
+          <Text className="text-lg font-semibold text-base-content mb-2">
             Exercises ({sessionData.exercises.length})
           </Text>
-          <Text className="text-gray-600 text-sm">
+          <Text className="text-muted text-sm">
             Tap an exercise to start tracking your sets
           </Text>
         </View>
 
         {sessionData.exercises.length === 0 ? (
           <View className="flex-1 justify-center items-center py-8">
-            <Text className="text-6xl mb-4">🏋️</Text>
-            <Text className="text-lg font-semibold text-gray-900 mb-2">
+            <View className="w-16 h-16 bg-base-300 rounded-full items-center justify-center mb-4">
+              <Ionicons name="barbell-outline" size={32} color="#ff4b8c" />
+            </View>
+            <Text className="text-lg font-semibold text-base-content mb-2">
               No Exercises
             </Text>
-            <Text className="text-gray-600 text-center">
+            <Text className="text-muted text-center">
               This workout template has no exercises
             </Text>
           </View>
         ) : (
-          <View className="space-y-2">
+          <View>
             {sessionData.exercises.map((exercise, index) => {
               const progress = exerciseProgress[index];
               const isCompleted = progress?.completed;
               const setCount = progress?.sets.length || 0;
 
               return (
-                <TouchableOpacity
-                  key={exercise.id}
-                  className="bg-white rounded-lg p-4 border border-gray-200"
-                  onPress={() => handleExerciseClick(index)}
-                >
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-1">
-                      <Text className="text-lg font-medium text-gray-900">
-                        {formatExerciseName(exercise.name)}
-                      </Text>
+                <View key={exercise.id}>
+                  <TouchableOpacity
+                    className="bg-base-300 rounded-lg p-4"
+                    onPress={() => handleExerciseClick(index)}
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-1">
+                        <Text className="text-lg font-medium text-base-content">
+                          {formatExerciseName(exercise.name)}
+                        </Text>
+                      </View>
+                      <View className="flex-row items-center space-x-2">
+                        {isCompleted && (
+                          <View className="px-2 py-1 bg-success rounded-full">
+                            <Text className="text-success-content text-xs font-medium">
+                              {setCount} sets
+                            </Text>
+                          </View>
+                        )}
+                        <Text className="text-muted">›</Text>
+                      </View>
                     </View>
-                    <View className="flex-row items-center space-x-2">
-                      {isCompleted && (
-                        <View className="px-2 py-1 bg-green-100 rounded-full">
-                          <Text className="text-green-800 text-xs font-medium">
-                            {setCount} sets
-                          </Text>
-                        </View>
-                      )}
-                      <Text className="text-gray-400">›</Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
+                  {index < sessionData.exercises.length - 1 && (
+                    <View className="mb-3" />
+                  )}
+                </View>
               );
             })}
           </View>

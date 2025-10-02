@@ -59,7 +59,7 @@ export default function WorkoutsPage() {
 
       {/* Content */}
       <ScrollView className="flex-1 px-4 py-6">
-        <View className="space-y-4">
+        <View>
           <WorkoutCard
             title="Add New Workout"
             description="Start tracking your progress"
@@ -68,12 +68,16 @@ export default function WorkoutsPage() {
             variant="primary"
           />
 
+          <View className="mb-5" />
+
           <WorkoutCard
             title="Workout Templates"
             description="View and manage your saved workouts"
             icon="🏋️"
             onPress={handleWorkoutTemplates}
           />
+
+          <View className="mb-5" />
 
           <WorkoutCard
             title="Quick Start Session"

@@ -7,6 +7,7 @@ import {
   TextInput,
   Alert,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Exercise = {
@@ -93,42 +94,43 @@ const ExerciseTracker = ({
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-base-100">
       {/* Header */}
       <View
-        className="flex-row items-center justify-between p-4 border-b border-gray-200"
+        className="flex-row items-center justify-between p-4 border-b border-base-300"
         style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
       >
         <TouchableOpacity onPress={onBack}>
-          <Text className="text-blue-500 text-lg">←</Text>
+          <Text className="text-primary text-lg">←</Text>
         </TouchableOpacity>
         <View className="flex-1 items-center">
-          <Text className="text-lg font-semibold text-gray-900">
+          <Text className="text-lg font-semibold text-base-content">
             {formatExerciseName(exercise.name)}
           </Text>
-          <Text className="text-sm text-gray-600">{exercise.category}</Text>
+          <Text className="text-sm text-muted">{exercise.category}</Text>
         </View>
         <TouchableOpacity
-          className="px-3 py-1 bg-blue-500 rounded"
+          className="px-3 py-1 bg-primary rounded flex-row items-center"
           onPress={handleComplete}
           disabled={sets.length === 0}
         >
-          <Text className="text-white text-sm">✓ Done</Text>
+          <Ionicons name="checkmark" size={16} color="#ffffff" />
+          <Text className="text-primary-content text-sm ml-1">Done</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView className="flex-1 p-4">
         {/* Current Set Input */}
-        <View className="bg-gray-100 rounded-lg p-4 mb-4">
-          <Text className="text-sm font-medium text-gray-900 mb-3">
+        <View className="bg-base-200 rounded-lg p-4 mb-4">
+          <Text className="text-sm font-medium text-base-content mb-3">
             Set {currentSet.set_number}
           </Text>
 
           <View className="flex-row space-x-3">
             {/* Reps */}
             <View className="flex-1">
-              <Text className="text-xs text-gray-600 mb-1">Reps</Text>
-              <View className="bg-white rounded-lg flex-row items-center">
+              <Text className="text-xs text-muted mb-1">Reps</Text>
+              <View className="bg-base-300 rounded-lg flex-row items-center">
                 <TouchableOpacity
                   className="px-3 py-2"
                   onPress={() => {
@@ -138,10 +140,10 @@ const ExerciseTracker = ({
                     }
                   }}
                 >
-                  <Text className="text-gray-600">-</Text>
+                  <Text className="text-base-content">-</Text>
                 </TouchableOpacity>
                 <TextInput
-                  className="flex-1 text-center py-2"
+                  className="flex-1 text-center py-2 text-base-content"
                   value={
                     currentSet.reps !== null ? currentSet.reps.toString() : ""
                   }
@@ -156,6 +158,7 @@ const ExerciseTracker = ({
                     }
                   }}
                   placeholder="0"
+                  placeholderTextColor="#6b7280"
                   keyboardType="numeric"
                 />
                 <TouchableOpacity
@@ -167,15 +170,15 @@ const ExerciseTracker = ({
                     })
                   }
                 >
-                  <Text className="text-gray-600">+</Text>
+                  <Text className="text-base-content">+</Text>
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Weight */}
             <View className="flex-1">
-              <Text className="text-xs text-gray-600 mb-1">Weight (lbs)</Text>
-              <View className="bg-white rounded-lg flex-row items-center">
+              <Text className="text-xs text-muted mb-1">Weight (lbs)</Text>
+              <View className="bg-base-300 rounded-lg flex-row items-center">
                 <TouchableOpacity
                   className="px-3 py-2"
                   onPress={() => {
@@ -185,10 +188,10 @@ const ExerciseTracker = ({
                     }
                   }}
                 >
-                  <Text className="text-gray-600">-</Text>
+                  <Text className="text-base-content">-</Text>
                 </TouchableOpacity>
                 <TextInput
-                  className="flex-1 text-center py-2"
+                  className="flex-1 text-center py-2 text-base-content"
                   value={
                     currentSet.weight !== null
                       ? currentSet.weight.toString()
@@ -206,6 +209,7 @@ const ExerciseTracker = ({
                     }
                   }}
                   placeholder="0"
+                  placeholderTextColor="#6b7280"
                   keyboardType="decimal-pad"
                 />
                 <TouchableOpacity
@@ -217,15 +221,15 @@ const ExerciseTracker = ({
                     })
                   }
                 >
-                  <Text className="text-gray-600">+</Text>
+                  <Text className="text-base-content">+</Text>
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Partial Reps */}
             <View className="flex-1">
-              <Text className="text-xs text-gray-600 mb-1">Partials</Text>
-              <View className="bg-white rounded-lg flex-row items-center">
+              <Text className="text-xs text-muted mb-1">Partials</Text>
+              <View className="bg-base-300 rounded-lg flex-row items-center">
                 <TouchableOpacity
                   className="px-3 py-2"
                   onPress={() => {
@@ -235,10 +239,10 @@ const ExerciseTracker = ({
                     }
                   }}
                 >
-                  <Text className="text-gray-600">-</Text>
+                  <Text className="text-base-content">-</Text>
                 </TouchableOpacity>
                 <TextInput
-                  className="flex-1 text-center py-2"
+                  className="flex-1 text-center py-2 text-base-content"
                   value={
                     currentSet.partialReps !== null
                       ? currentSet.partialReps.toString()
@@ -255,6 +259,7 @@ const ExerciseTracker = ({
                     }
                   }}
                   placeholder="0"
+                  placeholderTextColor="#6b7280"
                   keyboardType="numeric"
                 />
                 <TouchableOpacity
@@ -266,23 +271,25 @@ const ExerciseTracker = ({
                     })
                   }
                 >
-                  <Text className="text-gray-600">+</Text>
+                  <Text className="text-base-content">+</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </View>
 
           {/* Weight Increment Tabs */}
-          <View className="flex-row bg-white rounded-lg p-1 mt-3">
+          <View className="flex-row bg-base-300 rounded-lg p-1 mt-3">
             <TouchableOpacity
               className={`flex-1 py-2 rounded ${
-                weightIncrement === 2.5 ? "bg-blue-500" : "bg-transparent"
+                weightIncrement === 2.5 ? "bg-primary" : "bg-transparent"
               }`}
               onPress={() => setWeightIncrement(2.5)}
             >
               <Text
                 className={`text-center text-sm ${
-                  weightIncrement === 2.5 ? "text-white" : "text-gray-700"
+                  weightIncrement === 2.5
+                    ? "text-primary-content"
+                    : "text-base-content"
                 }`}
               >
                 2.5lbs
@@ -290,13 +297,15 @@ const ExerciseTracker = ({
             </TouchableOpacity>
             <TouchableOpacity
               className={`flex-1 py-2 rounded ${
-                weightIncrement === 5 ? "bg-blue-500" : "bg-transparent"
+                weightIncrement === 5 ? "bg-primary" : "bg-transparent"
               }`}
               onPress={() => setWeightIncrement(5)}
             >
               <Text
                 className={`text-center text-sm ${
-                  weightIncrement === 5 ? "text-white" : "text-gray-700"
+                  weightIncrement === 5
+                    ? "text-primary-content"
+                    : "text-base-content"
                 }`}
               >
                 5lbs
@@ -304,13 +313,15 @@ const ExerciseTracker = ({
             </TouchableOpacity>
             <TouchableOpacity
               className={`flex-1 py-2 rounded ${
-                weightIncrement === 10 ? "bg-blue-500" : "bg-transparent"
+                weightIncrement === 10 ? "bg-primary" : "bg-transparent"
               }`}
               onPress={() => setWeightIncrement(10)}
             >
               <Text
                 className={`text-center text-sm ${
-                  weightIncrement === 10 ? "text-white" : "text-gray-700"
+                  weightIncrement === 10
+                    ? "text-primary-content"
+                    : "text-base-content"
                 }`}
               >
                 10lbs
@@ -321,24 +332,40 @@ const ExerciseTracker = ({
           {/* Action Buttons */}
           <View className="flex-row space-x-2 mt-3">
             <TouchableOpacity
-              className={`flex-1 py-2 rounded-lg ${
+              className={`flex-1 py-2 rounded-lg flex-row items-center justify-center ${
                 currentSet.reps === null || currentSet.weight === null
-                  ? "bg-gray-400"
-                  : "bg-blue-500"
+                  ? "bg-base-300"
+                  : "bg-primary"
               }`}
               onPress={handleAddSet}
               disabled={currentSet.reps === null || currentSet.weight === null}
             >
-              <Text className="text-white text-center font-medium">
-                + Add Set
+              <Ionicons
+                name="add"
+                size={16}
+                color={
+                  currentSet.reps === null || currentSet.weight === null
+                    ? "#6b7280"
+                    : "#ffffff"
+                }
+              />
+              <Text
+                className={`text-center font-medium ml-1 ${
+                  currentSet.reps === null || currentSet.weight === null
+                    ? "text-muted"
+                    : "text-primary-content"
+                }`}
+              >
+                Add Set
               </Text>
             </TouchableOpacity>
             {sets.length > 0 && (
               <TouchableOpacity
-                className="px-4 py-2 border border-blue-500 rounded-lg"
+                className="px-4 py-2 border border-primary rounded-lg flex-row items-center"
                 onPress={handleCopyLastSet}
               >
-                <Text className="text-blue-500 text-center">Copy Last</Text>
+                <Ionicons name="copy-outline" size={16} color="#ff4b8c" />
+                <Text className="text-primary text-center ml-1">Copy Last</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -346,38 +373,38 @@ const ExerciseTracker = ({
 
         {/* Completed Sets */}
         {sets.length > 0 && (
-          <View className="bg-gray-100 rounded-lg p-4">
-            <Text className="text-sm font-medium text-gray-900 mb-2">
+          <View className="bg-base-200 rounded-lg p-4">
+            <Text className="text-sm font-medium text-base-content mb-2">
               Completed Sets ({sets.length})
             </Text>
-            <View className="space-y-2">
+            <View>
               {sets.map((set, index) => (
-                <View
-                  key={index}
-                  className="bg-white rounded-lg p-3 flex-row items-center justify-between"
-                >
-                  <View className="flex-row items-center space-x-3">
-                    <Text className="text-sm font-medium text-gray-900">
-                      Set {set.set_number}
-                    </Text>
-                    <Text className="text-sm text-gray-600">
-                      {set.reps} reps
-                    </Text>
-                    <Text className="text-sm text-gray-600">
-                      {set.weight} lbs
-                    </Text>
-                    {set.partialReps && set.partialReps > 0 && (
-                      <Text className="text-sm text-gray-500">
-                        +{set.partialReps} partials
+                <View key={index}>
+                  <View className="bg-base-300 rounded-lg p-3 flex-row items-center justify-between">
+                    <View className="flex-row items-center space-x-3">
+                      <Text className="text-sm font-medium text-base-content">
+                        Set {set.set_number}
                       </Text>
-                    )}
+                      <Text className="text-sm text-muted">
+                        {set.reps} reps
+                      </Text>
+                      <Text className="text-sm text-muted">
+                        {set.weight} lbs
+                      </Text>
+                      {set.partialReps && set.partialReps > 0 && (
+                        <Text className="text-sm text-muted">
+                          +{set.partialReps} partials
+                        </Text>
+                      )}
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => removeSet(index)}
+                      className="p-1"
+                    >
+                      <Ionicons name="close-circle" size={20} color="#ef4444" />
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => removeSet(index)}
-                    className="p-1"
-                  >
-                    <Text className="text-red-500 text-lg">×</Text>
-                  </TouchableOpacity>
+                  {index < sets.length - 1 && <View className="mb-3" />}
                 </View>
               ))}
             </View>

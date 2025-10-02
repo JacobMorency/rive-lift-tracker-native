@@ -6,6 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/authcontext";
@@ -194,11 +195,12 @@ export default function SessionsPage() {
         {/* New Session Button */}
         <View className="px-4 py-4">
           <TouchableOpacity
-            className="w-full py-3 rounded-lg bg-primary"
+            className="w-full py-3 rounded-lg bg-primary flex-row items-center justify-center"
             onPress={handleNewSession}
           >
-            <Text className="text-primary-content text-center font-medium">
-              ➕ New Session
+            <Ionicons name="add-circle-outline" size={20} color="#ffffff" />
+            <Text className="text-primary-content text-center font-medium ml-2">
+              New Session
             </Text>
           </TouchableOpacity>
         </View>

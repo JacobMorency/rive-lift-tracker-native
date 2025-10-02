@@ -218,17 +218,17 @@ const WorkoutDetailsModal = ({
       animationType="slide"
       presentationStyle="fullScreen"
     >
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-base-100">
         {/* Header */}
-        <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
-          <Text className="text-lg font-semibold text-gray-900">
+        <View className="flex-row items-center justify-between p-4 border-b border-base-300">
+          <Text className="text-lg font-semibold text-base-content">
             {loading ? "Loading..." : workoutDetails?.name || "Workout Details"}
           </Text>
           <TouchableOpacity
             className="w-8 h-8 items-center justify-center"
             onPress={onClose}
           >
-            <Text className="text-gray-600 text-xl">×</Text>
+            <Text className="text-muted text-xl">×</Text>
           </TouchableOpacity>
         </View>
 
@@ -236,8 +236,8 @@ const WorkoutDetailsModal = ({
         <ScrollView className="flex-1 p-4">
           {loading ? (
             <View className="flex-1 justify-center items-center py-8">
-              <ActivityIndicator size="large" />
-              <Text className="text-gray-600 mt-2">
+              <ActivityIndicator size="large" color="#ff4b8c" />
+              <Text className="text-muted mt-2">
                 Loading workout details...
               </Text>
             </View>
@@ -245,24 +245,26 @@ const WorkoutDetailsModal = ({
             <View className="space-y-4">
               {/* Exercises */}
               <View>
-                <Text className="text-lg font-semibold text-gray-900 mb-3">
+                <Text className="text-lg font-semibold text-base-content mb-3">
                   Exercises ({workoutDetails.exercises.length})
                 </Text>
                 {workoutDetails.exercises.length === 0 ? (
-                  <Text className="text-gray-600">
+                  <Text className="text-muted">
                     No exercises added to this workout.
                   </Text>
                 ) : (
-                  <View className="space-y-2">
-                    {workoutDetails.exercises.map((exercise) => (
-                      <View
-                        key={exercise.id}
-                        className="flex-row items-center py-4 px-3 bg-gray-100 rounded-lg"
-                      >
-                        <Text className="text-blue-500 mr-3">🏋️</Text>
-                        <Text className="flex-1 text-gray-900 font-medium">
-                          {formatExerciseName(exercise.name)}
-                        </Text>
+                  <View>
+                    {workoutDetails.exercises.map((exercise, index) => (
+                      <View key={exercise.id}>
+                        <View className="flex-row items-center py-4 px-3 bg-base-300 rounded-lg">
+                          <Text className="text-primary mr-3">🏋️</Text>
+                          <Text className="flex-1 text-base-content font-medium">
+                            {formatExerciseName(exercise.name)}
+                          </Text>
+                        </View>
+                        {index < workoutDetails.exercises.length - 1 && (
+                          <View className="mb-3" />
+                        )}
                       </View>
                     ))}
                   </View>
@@ -271,7 +273,7 @@ const WorkoutDetailsModal = ({
             </View>
           ) : (
             <View className="flex-1 justify-center items-center py-8">
-              <Text className="text-gray-600">
+              <Text className="text-muted">
                 Failed to load workout details.
               </Text>
             </View>
@@ -280,12 +282,14 @@ const WorkoutDetailsModal = ({
 
         {/* Footer Actions */}
         {!loading && workoutDetails && (
-          <View className="p-4 border-t border-gray-200">
+          <View className="p-4 border-t border-base-300">
             <TouchableOpacity
-              className="bg-blue-500 py-3 px-4 rounded-lg items-center"
+              className="bg-primary py-3 px-4 rounded-lg items-center"
               onPress={handleAddExercises}
             >
-              <Text className="text-white font-medium">+ Add Exercises</Text>
+              <Text className="text-primary-content font-medium">
+                + Add Exercises
+              </Text>
             </TouchableOpacity>
           </View>
         )}
