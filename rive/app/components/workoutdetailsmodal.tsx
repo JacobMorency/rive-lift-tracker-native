@@ -6,8 +6,14 @@ import {
   ScrollView,
   ActivityIndicator,
   Modal,
+  Alert,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabaseClient";
+import {
+  addExerciseToTemplate,
+  removeExerciseFromTemplate,
+} from "../lib/templateUtils";
 import ExerciseSelector from "./exerciseselector";
 
 type Exercise = {
@@ -147,7 +153,7 @@ const WorkoutDetailsModal = ({
     }
   };
 
-  const handleAddExercises = () => {
+  const handleAddExercise = () => {
     setShowExerciseSelector(true);
   };
 
@@ -155,20 +161,14 @@ const WorkoutDetailsModal = ({
     if (!workoutId) return;
 
     try {
-      // Add selected exercises to the workout
-      const exercisesToAdd = selectedExercises.map((exercise, index) => ({
-        workout_id: workoutId,
-        exercise_id: exercise.id,
-        order_index: (workoutDetails?.exercises.length || 0) + index,
-      }));
-
-      const { error } = await supabase
-        .from("workout_exercises")
-        .insert(exercisesToAdd);
-
-      if (error) {
-        console.error("Error adding exercises:", error.message);
-        return;
+      // Use the new utility function to add exercises
+      for (const exercise of selectedExercises) {
+        await addExerciseToTemplate(
+          workoutId,
+          exercise.id,
+          (workoutDetails?.exercises.length || 0) +
+            selectedExercises.indexOf(exercise)
+        );
       }
 
       // Refresh workout details
@@ -176,7 +176,40 @@ const WorkoutDetailsModal = ({
       setShowExerciseSelector(false);
     } catch (error) {
       console.error("Error adding exercises:", error);
+      Alert.alert("Error", "Failed to add exercises to template");
     }
+  };
+
+  const handleRemoveExercise = async (
+    exerciseId: number,
+    exerciseName: string
+  ) => {
+    if (!workoutId) return;
+
+    Alert.alert(
+      "Remove Exercise",
+      `Are you sure you want to remove "${formatExerciseName(exerciseName)}" from this template?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await removeExerciseFromTemplate(workoutId, exerciseId);
+              // Refresh workout details
+              await fetchWorkoutDetails();
+            } catch (error) {
+              console.error("Error removing exercise:", error);
+              Alert.alert("Error", "Failed to remove exercise from template");
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleCloseExerciseSelector = () => {
@@ -222,7 +255,9 @@ const WorkoutDetailsModal = ({
         {/* Header */}
         <View className="flex-row items-center justify-between p-4 border-b border-base-300">
           <Text className="text-lg font-semibold text-base-content">
-            {loading ? "Loading..." : workoutDetails?.name || "Workout Details"}
+            {loading
+              ? "Loading..."
+              : `${workoutDetails?.name || "Workout"} - Manage Exercises`}
           </Text>
           <TouchableOpacity
             className="w-8 h-8 items-center justify-center"
@@ -245,22 +280,71 @@ const WorkoutDetailsModal = ({
             <View className="space-y-4">
               {/* Exercises */}
               <View>
-                <Text className="text-lg font-semibold text-base-content mb-3">
-                  Exercises ({workoutDetails.exercises.length})
-                </Text>
-                {workoutDetails.exercises.length === 0 ? (
-                  <Text className="text-muted">
-                    No exercises added to this workout.
+                <View className="flex-row items-center justify-between mb-3">
+                  <Text className="text-lg font-semibold text-base-content">
+                    Exercises ({workoutDetails.exercises.length})
                   </Text>
+                  <TouchableOpacity
+                    className="flex-row items-center px-3 py-1 bg-primary rounded-lg"
+                    onPress={handleAddExercise}
+                  >
+                    <Ionicons name="add" size={16} color="#ffffff" />
+                    <Text className="text-primary-content text-sm ml-1">
+                      Add
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                {workoutDetails.exercises.length === 0 ? (
+                  <View className="bg-base-200 rounded-lg p-6 items-center">
+                    <Ionicons
+                      name="barbell-outline"
+                      size={32}
+                      color="#9ca3af"
+                    />
+                    <Text className="text-muted mt-2 text-center">
+                      No exercises added to this workout.
+                    </Text>
+                    <Text className="text-muted text-sm text-center mt-1">
+                      Tap "Add" to add exercises to this template.
+                    </Text>
+                  </View>
                 ) : (
                   <View>
                     {workoutDetails.exercises.map((exercise, index) => (
                       <View key={exercise.id}>
-                        <View className="flex-row items-center py-4 px-3 bg-base-300 rounded-lg">
-                          <Text className="text-primary mr-3">🏋️</Text>
-                          <Text className="flex-1 text-base-content font-medium">
+                        <View
+                          className="flex-row items-center py-4 px-3 bg-base-300 rounded-lg"
+                          style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                              width: 0,
+                              height: 1,
+                            },
+                            shadowOpacity: 0.15,
+                            shadowRadius: 2,
+                            elevation: 3,
+                          }}
+                        >
+                          <Ionicons
+                            name="barbell-outline"
+                            size={20}
+                            color="#ff4b8c"
+                          />
+                          <Text className="flex-1 text-base-content font-medium ml-3">
                             {formatExerciseName(exercise.name)}
                           </Text>
+                          <TouchableOpacity
+                            className="w-8 h-8 bg-error rounded-full items-center justify-center"
+                            onPress={() =>
+                              handleRemoveExercise(exercise.id, exercise.name)
+                            }
+                          >
+                            <Ionicons
+                              name="trash-outline"
+                              size={16}
+                              color="#ffffff"
+                            />
+                          </TouchableOpacity>
                         </View>
                         {index < workoutDetails.exercises.length - 1 && (
                           <View className="mb-3" />
@@ -285,7 +369,7 @@ const WorkoutDetailsModal = ({
           <View className="p-4 border-t border-base-300">
             <TouchableOpacity
               className="bg-primary py-3 px-4 rounded-lg items-center"
-              onPress={handleAddExercises}
+              onPress={handleAddExercise}
             >
               <Text className="text-primary-content font-medium">
                 + Add Exercises

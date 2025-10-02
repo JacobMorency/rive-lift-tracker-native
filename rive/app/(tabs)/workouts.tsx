@@ -33,8 +33,10 @@ export default function WorkoutsPage() {
   };
 
   const handleViewWorkoutDetails = (workoutId: string) => {
+    console.log("📋 Opening workout details for ID:", workoutId);
     setSelectedWorkoutId(workoutId);
     setIsDetailsModalOpen(true);
+    console.log("📋 Modal state updated - isDetailsModalOpen:", true);
   };
 
   const handleCloseDetailsModal = () => {

@@ -7,7 +7,6 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
-  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/authcontext";
@@ -46,11 +45,6 @@ const WorkoutTemplatesModal = ({
     []
   );
   const [loading, setLoading] = useState(true);
-  const [editingWorkout, setEditingWorkout] = useState<WorkoutTemplate | null>(
-    null
-  );
-  const [editName, setEditName] = useState("");
-  const [editDescription, setEditDescription] = useState("");
   const { user } = useAuth();
 
   useEffect(() => {
@@ -106,46 +100,11 @@ const WorkoutTemplatesModal = ({
   };
 
   const handleEditWorkout = (workout: WorkoutTemplate) => {
-    setEditingWorkout(workout);
-    setEditName(workout.name);
-    setEditDescription(workout.description || "");
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editingWorkout || !editName.trim()) return;
-
-    try {
-      const { error } = await supabase
-        .from("workouts")
-        .update({
-          name: editName.trim(),
-          description: editDescription.trim() || null,
-        })
-        .eq("id", editingWorkout.id);
-
-      if (error) {
-        console.error("Error updating workout:", error.message);
-        Alert.alert("Error", "Failed to update workout");
-        return;
-      }
-
-      console.log("✅ Workout updated");
-
-      // Refresh the workout templates list
-      await fetchWorkoutTemplates();
-      setEditingWorkout(null);
-      setEditName("");
-      setEditDescription("");
-    } catch (error) {
-      console.error("Error updating workout:", error);
-      Alert.alert("Error", "Failed to update workout");
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingWorkout(null);
-    setEditName("");
-    setEditDescription("");
+    console.log("🔧 Edit workout clicked:", workout.name, workout.id);
+    console.log("🔧 onViewWorkoutDetails function:", onViewWorkoutDetails);
+    // Close this modal first, then open workout details modal
+    onClose();
+    onViewWorkoutDetails?.(workout.id);
   };
 
   const handleDeleteWorkout = async (
@@ -317,7 +276,10 @@ const WorkoutTemplatesModal = ({
                     }}
                   >
                     <TouchableOpacity
-                      onPress={() => onViewWorkoutDetails?.(workout.id)}
+                      onPress={() => {
+                        onClose();
+                        onViewWorkoutDetails?.(workout.id);
+                      }}
                       className="flex-1"
                     >
                       <View className="flex-row items-center justify-between">
@@ -340,7 +302,7 @@ const WorkoutTemplatesModal = ({
                             onPress={() => handleEditWorkout(workout)}
                           >
                             <Ionicons
-                              name="pencil-outline"
+                              name="settings-outline"
                               size={16}
                               color="#002d40"
                             />
@@ -369,68 +331,6 @@ const WorkoutTemplatesModal = ({
             </View>
           )}
         </ScrollView>
-
-        {/* Edit Modal */}
-        {editingWorkout && (
-          <View className="absolute inset-0 bg-black bg-opacity-50 justify-center items-center">
-            <View className="bg-base-300 rounded-lg p-6 m-4 w-full max-w-sm">
-              <Text className="text-lg font-semibold text-base-content mb-4">
-                Edit Workout Template
-              </Text>
-
-              <View className="space-y-4">
-                <View>
-                  <Text className="text-sm font-medium text-base-content mb-1">
-                    Workout Name
-                  </Text>
-                  <TextInput
-                    className="border border-base-200 rounded-lg px-3 py-2 text-base-content bg-base-200"
-                    value={editName}
-                    onChangeText={setEditName}
-                    placeholder="Enter workout name"
-                    placeholderTextColor="#9ca3af"
-                  />
-                </View>
-
-                <View>
-                  <Text className="text-sm font-medium text-base-content mb-1">
-                    Description (Optional)
-                  </Text>
-                  <TextInput
-                    className="border border-base-200 rounded-lg px-3 py-2 text-base-content bg-base-200 h-20"
-                    value={editDescription}
-                    onChangeText={setEditDescription}
-                    placeholder="Enter workout description"
-                    placeholderTextColor="#9ca3af"
-                    multiline
-                  />
-                </View>
-              </View>
-
-              <View className="flex-row space-x-3 mt-6">
-                <TouchableOpacity
-                  className="flex-1 py-2 rounded-lg bg-neutral"
-                  onPress={handleCancelEdit}
-                >
-                  <Text className="text-neutral-content text-center">
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className={`flex-1 py-2 rounded-lg ${
-                    !editName.trim() ? "bg-neutral" : "bg-primary"
-                  }`}
-                  onPress={handleSaveEdit}
-                  disabled={!editName.trim()}
-                >
-                  <Text className="text-primary-content text-center">
-                    Save Changes
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        )}
       </View>
     </Modal>
   );

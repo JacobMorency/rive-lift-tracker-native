@@ -18,6 +18,8 @@ type Exercise = {
   id: number;
   name: string;
   category: string;
+  wasInOriginalTemplate?: boolean; // New field to track if exercise was in original session
+  addedToTemplateAfter?: string; // When it was added to template
 };
 
 type SessionData = {
@@ -103,11 +105,11 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Third query: Fetch workout exercises
+      // Third query: Fetch workout exercises (current template)
       const { data: workoutExercisesData, error: workoutExercisesError } =
         await supabase
           .from("workout_exercises")
-          .select("exercise_id, order_index")
+          .select("exercise_id, order_index, created_at")
           .eq("workout_id", sessionData.workout_id)
           .order("order_index", { ascending: true });
 
@@ -131,10 +133,30 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Get unique exercise IDs
+      // Fourth query: Fetch exercises that were in the original session
+      const { data: originalSessionExercises, error: originalExercisesError } =
+        await supabase
+          .from("session_exercises")
+          .select("exercise_id")
+          .eq("session_id", sessionData.id);
+
+      if (originalExercisesError) {
+        console.error(
+          "Error fetching original session exercises:",
+          originalExercisesError.message
+        );
+        return;
+      }
+
+      // Create a set of original exercise IDs for quick lookup
+      const originalExerciseIds = new Set(
+        originalSessionExercises?.map((se) => se.exercise_id) || []
+      );
+
+      // Get unique exercise IDs from current template
       const exerciseIds = workoutExercisesData.map((we) => we.exercise_id);
 
-      // Fourth query: Fetch exercise details
+      // Fifth query: Fetch exercise details
       const { data: exercisesData, error: exercisesError } = await supabase
         .from("exercise_library")
         .select("id, name, category")
@@ -151,15 +173,19 @@ export default function SessionDetailPage() {
         exerciseMap.set(exercise.id, exercise);
       });
 
-      // Transform the exercises data
+      // Transform the exercises data with hybrid approach
       const exercises = workoutExercisesData
-        .map((we: RawWorkoutExercise) => {
+        .map((we: RawWorkoutExercise & { created_at: string }) => {
           const exercise = exerciseMap.get(we.exercise_id);
+          const wasInOriginal = originalExerciseIds.has(we.exercise_id);
+
           return exercise
             ? {
                 id: exercise.id,
                 name: exercise.name,
                 category: exercise.category,
+                wasInOriginalTemplate: wasInOriginal,
+                addedToTemplateAfter: wasInOriginal ? undefined : we.created_at,
               }
             : null;
         })
@@ -589,18 +615,48 @@ export default function SessionDetailPage() {
               const progress = exerciseProgress[index];
               const isCompleted = progress?.completed;
               const setCount = progress?.sets.length || 0;
+              const isNewExercise = !exercise.wasInOriginalTemplate;
 
               return (
                 <View key={exercise.id}>
                   <TouchableOpacity
-                    className="bg-base-300 rounded-lg p-4"
+                    className={`rounded-lg p-4 ${
+                      isNewExercise
+                        ? "bg-base-200 border-2 border-dashed border-primary"
+                        : "bg-base-300"
+                    }`}
                     onPress={() => handleExerciseClick(index)}
                   >
                     <View className="flex-row items-center justify-between">
                       <View className="flex-1">
-                        <Text className="text-lg font-medium text-base-content">
-                          {formatExerciseName(exercise.name)}
+                        <View className="flex-row items-center">
+                          <Text className="text-lg font-medium text-base-content">
+                            {formatExerciseName(exercise.name)}
+                          </Text>
+                          {isNewExercise && (
+                            <View className="flex-row items-center ml-2">
+                              <Ionicons
+                                name="add-circle"
+                                size={16}
+                                color="#ff4b8c"
+                              />
+                              <Text className="text-xs text-primary ml-1">
+                                Added Later
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text className="text-sm text-muted">
+                          {exercise.category}
                         </Text>
+                        {isNewExercise && exercise.addedToTemplateAfter && (
+                          <Text className="text-xs text-muted mt-1">
+                            Added to template on{" "}
+                            {new Date(
+                              exercise.addedToTemplateAfter
+                            ).toLocaleDateString()}
+                          </Text>
+                        )}
                       </View>
                       <View className="flex-row items-center space-x-2">
                         {isCompleted && (
