@@ -46,7 +46,19 @@ export default function ProfilePage() {
       <ScrollView className="flex-1 px-4 py-6">
         <View className="space-y-6">
           {/* User Info Card */}
-          <View className="bg-base-300 rounded-lg p-6">
+          <View
+            className="bg-base-300 rounded-lg p-6"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+          >
             <View className="items-center mb-4">
               <View className="bg-primary rounded-full h-20 w-20 flex items-center justify-center mb-4">
                 <Text className="text-4xl">👤</Text>
@@ -61,7 +73,19 @@ export default function ProfilePage() {
           </View>
 
           {/* Stats Card */}
-          <View className="bg-base-300 rounded-lg p-6">
+          <View
+            className="bg-base-300 rounded-lg p-6"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+          >
             <Text className="text-lg font-semibold text-base-content mb-4">
               📊 Your Stats
             </Text>
@@ -86,7 +110,19 @@ export default function ProfilePage() {
           </View>
 
           {/* Settings Card */}
-          <View className="bg-base-300 rounded-lg p-6">
+          <View
+            className="bg-base-300 rounded-lg p-6"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+          >
             <Text className="text-lg font-semibold text-base-content mb-4">
               ⚙️ Settings
             </Text>
@@ -109,6 +145,16 @@ export default function ProfilePage() {
           {/* Logout Button */}
           <TouchableOpacity
             className="w-full py-3 rounded-lg bg-error"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
             onPress={handleLogout}
           >
             <Text className="text-error-content text-center font-medium">

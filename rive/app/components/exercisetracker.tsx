@@ -121,7 +121,19 @@ const ExerciseTracker = ({
 
       <ScrollView className="flex-1 p-4">
         {/* Current Set Input */}
-        <View className="bg-base-200 rounded-lg p-4 mb-4">
+        <View
+          className="bg-base-200 rounded-lg p-4 mb-4"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
+          }}
+        >
           <Text className="text-sm font-medium text-base-content mb-3">
             Set {currentSet.set_number}
           </Text>
@@ -373,14 +385,38 @@ const ExerciseTracker = ({
 
         {/* Completed Sets */}
         {sets.length > 0 && (
-          <View className="bg-base-200 rounded-lg p-4">
+          <View
+            className="bg-base-200 rounded-lg p-4"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+          >
             <Text className="text-sm font-medium text-base-content mb-2">
               Completed Sets ({sets.length})
             </Text>
             <View>
               {sets.map((set, index) => (
                 <View key={index}>
-                  <View className="bg-base-300 rounded-lg p-3 flex-row items-center justify-between">
+                  <View
+                    className="bg-base-300 rounded-lg p-3 flex-row items-center justify-between"
+                    style={{
+                      shadowColor: "#000",
+                      shadowOffset: {
+                        width: 0,
+                        height: 1,
+                      },
+                      shadowOpacity: 0.15,
+                      shadowRadius: 2,
+                      elevation: 3,
+                    }}
+                  >
                     <View className="flex-row items-center space-x-3">
                       <Text className="text-sm font-medium text-base-content">
                         Set {set.set_number}

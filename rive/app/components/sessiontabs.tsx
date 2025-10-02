@@ -158,7 +158,17 @@ const SessionTabs = ({ sessions, onSessionSelect }: SessionTabsProps) => {
                 <View key={session.id}>
                   <TouchableOpacity
                     className="rounded-lg p-4"
-                    style={{ backgroundColor: "#333333" }}
+                    style={{
+                      backgroundColor: "#333333",
+                      shadowColor: "#000",
+                      shadowOffset: {
+                        width: 0,
+                        height: 2,
+                      },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 3.84,
+                      elevation: 5,
+                    }}
                     onPress={() => handleSessionClick(session.id)}
                   >
                     <View className="flex-row items-center justify-between">

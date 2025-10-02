@@ -262,6 +262,16 @@ const WorkoutTemplatesModal = ({
           <View className="p-4 border-b border-base-300">
             <TouchableOpacity
               className="w-full py-3 rounded-lg bg-primary flex-row items-center justify-center"
+              style={{
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+              }}
               onPress={onAddNewWorkout}
             >
               <Ionicons name="add-circle-outline" size={20} color="#ffffff" />
@@ -293,7 +303,19 @@ const WorkoutTemplatesModal = ({
             <View className="p-4">
               {workoutTemplates.map((workout, index) => (
                 <View key={workout.id}>
-                  <View className="bg-base-300 rounded-lg p-4">
+                  <View
+                    className="bg-base-300 rounded-lg p-4"
+                    style={{
+                      shadowColor: "#000",
+                      shadowOffset: {
+                        width: 0,
+                        height: 2,
+                      },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 3.84,
+                      elevation: 5,
+                    }}
+                  >
                     <TouchableOpacity
                       onPress={() => onViewWorkoutDetails?.(workout.id)}
                       className="flex-1"

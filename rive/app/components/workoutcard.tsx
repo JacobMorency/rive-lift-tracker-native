@@ -40,11 +40,19 @@ const WorkoutCard = ({
 
   return (
     <TouchableOpacity
-      className="p-4 rounded-lg shadow-sm"
+      className="p-4 rounded-lg"
       style={{
         backgroundColor: isPrimary ? "#ff4b8c" : "#333333",
         borderWidth: isPrimary ? 0 : 1,
         borderColor: isPrimary ? "transparent" : "#333333",
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
       }}
       onPress={onPress}
       activeOpacity={0.7}
