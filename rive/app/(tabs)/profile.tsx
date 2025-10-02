@@ -1,16 +1,26 @@
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 
 export default function ProfilePage() {
   const { user, userData } = useAuth();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        Alert.alert("Error", "Failed to logout");
+        console.error("Logout error:", error);
+        return;
+      }
+
+      // Navigate to login page after successful logout
+      router.replace("/login");
     } catch (error) {
       Alert.alert("Error", "Failed to logout");
       console.error("Logout error:", error);

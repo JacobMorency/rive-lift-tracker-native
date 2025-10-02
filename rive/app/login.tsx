@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { supabase } from "./lib/supabaseClient";
 
@@ -75,24 +76,27 @@ export default function LoginPage() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 justify-center items-center p-4 bg-white"
+      className="flex-1 justify-center items-center p-4 bg-base-100"
     >
       <View className="w-full max-w-md p-6 space-y-4">
-        <Text className="text-2xl font-bold text-center text-gray-900">
+        <Text className="text-2xl font-bold text-center text-base-content">
           {isRegisterMode ? "Create account" : "Sign in"}
         </Text>
 
         <View className="flex justify-center">
-          <View className="bg-blue-500 rounded-full h-20 w-20 flex items-center justify-center">
-            <Text className="text-4xl">💪</Text>
+          <View className="bg-primary rounded-full h-20 w-20 flex items-center justify-center">
+            <Ionicons name="barbell" size={32} color="#ffffff" />
           </View>
         </View>
 
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-1">Email</Text>
+          <Text className="text-sm font-medium text-base-content mb-1">
+            Email
+          </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
+            className="border border-base-300 rounded-lg px-3 py-2 text-base-content bg-base-200"
             placeholder="Email"
+            placeholderTextColor="#9ca3af"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -102,12 +106,13 @@ export default function LoginPage() {
         </View>
 
         <View>
-          <Text className="text-sm font-medium text-gray-700 mb-1">
+          <Text className="text-sm font-medium text-base-content mb-1">
             Password
           </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg px-3 py-2 text-gray-900"
+            className="border border-base-300 rounded-lg px-3 py-2 text-base-content bg-base-200"
             placeholder="Password"
+            placeholderTextColor="#9ca3af"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -118,16 +123,18 @@ export default function LoginPage() {
 
         {!isRegisterMode && (
           <TouchableOpacity onPress={handleForgotPassword} className="self-end">
-            <Text className="text-blue-500 text-sm">Forgot Password?</Text>
+            <Text className="text-primary text-sm">Forgot Password?</Text>
           </TouchableOpacity>
         )}
 
         <TouchableOpacity
-          className={`w-full py-3 rounded-lg ${loading ? "bg-gray-400" : "bg-blue-500"}`}
+          className={`w-full py-3 rounded-lg ${loading ? "bg-base-300" : "bg-primary"}`}
           onPress={handleSubmit}
           disabled={loading}
         >
-          <Text className="text-white text-center font-medium">
+          <Text
+            className={`text-center font-medium ${loading ? "text-muted" : "text-primary-content"}`}
+          >
             {loading
               ? "Loading..."
               : isRegisterMode
@@ -137,21 +144,21 @@ export default function LoginPage() {
         </TouchableOpacity>
 
         <View className="flex-row items-center my-4">
-          <View className="flex-1 h-px bg-gray-300" />
-          <Text className="mx-4 text-gray-500">OR</Text>
-          <View className="flex-1 h-px bg-gray-300" />
+          <View className="flex-1 h-px bg-base-300" />
+          <Text className="mx-4 text-muted">OR</Text>
+          <View className="flex-1 h-px bg-base-300" />
         </View>
 
         <TouchableOpacity
-          className="w-full py-3 rounded-lg border border-gray-300"
+          className="w-full py-3 rounded-lg border border-base-300"
           onPress={() => setIsRegisterMode(!isRegisterMode)}
         >
-          <Text className="text-gray-700 text-center font-medium">
+          <Text className="text-base-content text-center font-medium">
             {isRegisterMode ? "Have an account? Sign in" : "Create an account"}
           </Text>
         </TouchableOpacity>
 
-        <Text className="text-center text-sm text-gray-500">
+        <Text className="text-center text-sm text-muted">
           Google and Apple sign-in are coming soon!
         </Text>
       </View>
