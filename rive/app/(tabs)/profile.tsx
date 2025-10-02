@@ -1,5 +1,13 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/authcontext";
@@ -9,6 +17,58 @@ export default function ProfilePage() {
   const { user, userData } = useAuth();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+
+  const [userStats, setUserStats] = useState({
+    totalWorkouts: 0,
+    totalSessions: 0,
+    thisMonthSessions: 0,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  const fetchUserStats = async () => {
+    if (!user?.id) return;
+
+    try {
+      setStatsLoading(true);
+
+      // Get total workouts
+      const { count: totalWorkouts } = await supabase
+        .from("workouts")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      // Get total sessions
+      const { count: totalSessions } = await supabase
+        .from("workout_sessions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
+
+      // Get this month's sessions
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const { count: thisMonthSessions } = await supabase
+        .from("workout_sessions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .gte("started_at", startOfMonth.toISOString());
+
+      setUserStats({
+        totalWorkouts: totalWorkouts || 0,
+        totalSessions: totalSessions || 0,
+        thisMonthSessions: thisMonthSessions || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserStats();
+  }, [user?.id]);
 
   const handleLogout = async () => {
     try {
@@ -44,7 +104,7 @@ export default function ProfilePage() {
 
       {/* Content */}
       <ScrollView className="flex-1 px-4 py-6">
-        <View className="space-y-6">
+        <View>
           {/* User Info Card */}
           <View
             className="bg-base-300 rounded-lg p-6"
@@ -61,7 +121,7 @@ export default function ProfilePage() {
           >
             <View className="items-center mb-4">
               <View className="bg-primary rounded-full h-20 w-20 flex items-center justify-center mb-4">
-                <Text className="text-4xl">👤</Text>
+                <Ionicons name="person" size={32} color="#ffffff" />
               </View>
               {userData && (
                 <Text className="text-xl font-semibold text-base-content">
@@ -71,6 +131,8 @@ export default function ProfilePage() {
               {user && <Text className="text-muted mt-1">{user.email}</Text>}
             </View>
           </View>
+
+          <View className="mb-6" />
 
           {/* Stats Card */}
           <View
@@ -86,17 +148,42 @@ export default function ProfilePage() {
               elevation: 5,
             }}
           >
-            <Text className="text-lg font-semibold text-base-content mb-4">
-              📊 Your Stats
-            </Text>
+            <View className="flex-row items-center mb-4">
+              <Ionicons name="stats-chart" size={20} color="#ff4b8c" />
+              <Text className="text-lg font-semibold text-base-content ml-2">
+                Your Stats
+              </Text>
+            </View>
             <View className="space-y-3">
               <View className="flex-row justify-between">
                 <Text className="text-muted">Total Workouts</Text>
-                <Text className="font-medium text-base-content">0</Text>
+                {statsLoading ? (
+                  <ActivityIndicator size="small" color="#ff4b8c" />
+                ) : (
+                  <Text className="font-medium text-base-content">
+                    {userStats.totalWorkouts}
+                  </Text>
+                )}
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-muted">Total Sessions</Text>
-                <Text className="font-medium text-base-content">0</Text>
+                {statsLoading ? (
+                  <ActivityIndicator size="small" color="#ff4b8c" />
+                ) : (
+                  <Text className="font-medium text-base-content">
+                    {userStats.totalSessions}
+                  </Text>
+                )}
+              </View>
+              <View className="flex-row justify-between">
+                <Text className="text-muted">This Month</Text>
+                {statsLoading ? (
+                  <ActivityIndicator size="small" color="#ff4b8c" />
+                ) : (
+                  <Text className="font-medium text-base-content">
+                    {userStats.thisMonthSessions}
+                  </Text>
+                )}
               </View>
               <View className="flex-row justify-between">
                 <Text className="text-muted">Member Since</Text>
@@ -108,6 +195,8 @@ export default function ProfilePage() {
               </View>
             </View>
           </View>
+
+          <View className="mb-6" />
 
           {/* Settings Card */}
           <View
@@ -123,9 +212,12 @@ export default function ProfilePage() {
               elevation: 5,
             }}
           >
-            <Text className="text-lg font-semibold text-base-content mb-4">
-              ⚙️ Settings
-            </Text>
+            <View className="flex-row items-center mb-4">
+              <Ionicons name="settings" size={20} color="#ff4b8c" />
+              <Text className="text-lg font-semibold text-base-content ml-2">
+                Settings
+              </Text>
+            </View>
             <View className="space-y-3">
               <TouchableOpacity className="py-3 border-b border-base-200">
                 <Text className="text-base-content">Edit Profile</Text>
@@ -141,6 +233,8 @@ export default function ProfilePage() {
               </TouchableOpacity>
             </View>
           </View>
+
+          <View className="mb-6" />
 
           {/* Logout Button */}
           <TouchableOpacity
