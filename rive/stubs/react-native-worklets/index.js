@@ -1,0 +1,2 @@
+// noop stub
+module.exports = {};
