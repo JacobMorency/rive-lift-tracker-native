@@ -46,6 +46,8 @@ const ExerciseTracker = ({
   });
   const [weightIncrement, setWeightIncrement] = useState<number>(5);
   const [showAllSets, setShowAllSets] = useState<boolean>(false);
+  const [editingSetIndex, setEditingSetIndex] = useState<number | null>(null);
+  const [editingSet, setEditingSet] = useState<ExerciseSet | null>(null);
   const insets = useSafeAreaInsets();
 
   // No refs needed - users will use buttons instead of keyboard navigation
@@ -95,6 +97,26 @@ const ExerciseTracker = ({
   const removeSet = (index: number) => {
     const newSets = sets.filter((_, i) => i !== index);
     setSets(newSets);
+  };
+
+  const startEditingSet = (set: ExerciseSet, originalIndex: number) => {
+    setEditingSetIndex(originalIndex);
+    setEditingSet({ ...set });
+  };
+
+  const saveEditedSet = () => {
+    if (editingSetIndex !== null && editingSet) {
+      const newSets = [...sets];
+      newSets[editingSetIndex] = { ...editingSet };
+      setSets(newSets);
+      setEditingSetIndex(null);
+      setEditingSet(null);
+    }
+  };
+
+  const cancelEditingSet = () => {
+    setEditingSetIndex(null);
+    setEditingSet(null);
   };
 
   const formatExerciseName = (name: string) => {
@@ -591,10 +613,12 @@ const ExerciseTracker = ({
               {getDisplaySets().map((set, index) => {
                 // Find the original index for proper removal
                 const originalIndex = sets.findIndex((s) => s === set);
+                const isEditing = editingSetIndex === originalIndex;
+
                 return (
                   <View
                     key={index}
-                    className="bg-base-300 rounded-xl p-4 flex-row items-center justify-between"
+                    className="bg-base-300 rounded-xl p-4"
                     style={{
                       shadowColor: "#000",
                       shadowOffset: {
@@ -606,45 +630,337 @@ const ExerciseTracker = ({
                       elevation: 3,
                     }}
                   >
-                    <View className="flex-row items-center gap-4">
-                      <View className="bg-success w-8 h-8 rounded-full items-center justify-center">
-                        <Text className="text-white text-sm font-bold">
-                          {set.set_number}
-                        </Text>
-                      </View>
-                      <View className="flex-row items-center gap-4">
-                        <View className="items-center">
-                          <Text className="text-xs text-muted">Reps</Text>
-                          <Text className="text-base font-bold text-base-content">
-                            {set.reps}
-                          </Text>
-                        </View>
-                        <View className="items-center">
-                          <Text className="text-xs text-muted">Weight</Text>
-                          <Text className="text-base font-bold text-base-content">
-                            {set.weight} lbs
-                          </Text>
-                        </View>
-                        {set.partialReps && set.partialReps > 0 && (
-                          <View className="items-center">
-                            <Text className="text-xs text-muted">Partials</Text>
-                            <Text className="text-base font-bold text-warning">
-                              +{set.partialReps}
+                    {isEditing ? (
+                      // Edit Mode
+                      <View className="gap-4">
+                        <View className="flex-row items-center justify-between">
+                          <View className="flex-row items-center gap-2">
+                            <View className="bg-warning w-8 h-8 rounded-full items-center justify-center">
+                              <Text className="text-white text-sm font-bold">
+                                {editingSet?.set_number}
+                              </Text>
+                            </View>
+                            <Text className="text-sm font-semibold text-base-content">
+                              Editing Set
                             </Text>
                           </View>
-                        )}
+                          <View className="flex-row items-center gap-2">
+                            <TouchableOpacity
+                              onPress={saveEditedSet}
+                              className="w-8 h-8 items-center justify-center rounded-full bg-success"
+                            >
+                              <Ionicons
+                                name="checkmark"
+                                size={16}
+                                color="#ffffff"
+                              />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              onPress={cancelEditingSet}
+                              className="w-8 h-8 items-center justify-center rounded-full bg-base-300"
+                            >
+                              <Ionicons
+                                name="close"
+                                size={16}
+                                color="#6b7280"
+                              />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+
+                        <View className="gap-3">
+                          {/* Edit Reps */}
+                          <View>
+                            <Text className="text-xs text-muted mb-1">
+                              Reps
+                            </Text>
+                            <View className="flex-row items-center bg-base-200 rounded-lg">
+                              <TouchableOpacity
+                                className="px-3 py-2"
+                                onPress={() => {
+                                  if (editingSet) {
+                                    const newValue = (editingSet.reps || 0) - 1;
+                                    if (newValue >= 0) {
+                                      setEditingSet({
+                                        ...editingSet,
+                                        reps: newValue,
+                                      });
+                                    }
+                                  }
+                                }}
+                              >
+                                <Ionicons
+                                  name="remove"
+                                  size={16}
+                                  color="#6b7280"
+                                />
+                              </TouchableOpacity>
+                              <TextInput
+                                className="flex-1 text-center py-2 text-base font-bold text-base-content"
+                                value={editingSet?.reps?.toString() || ""}
+                                onChangeText={(value) => {
+                                  if (editingSet) {
+                                    if (value === "" || value === "-") {
+                                      setEditingSet({
+                                        ...editingSet,
+                                        reps: null,
+                                      });
+                                    } else {
+                                      const parsed = parseInt(value);
+                                      if (!isNaN(parsed)) {
+                                        setEditingSet({
+                                          ...editingSet,
+                                          reps: parsed,
+                                        });
+                                      }
+                                    }
+                                  }
+                                }}
+                                placeholder="0"
+                                placeholderTextColor="#9ca3af"
+                                keyboardType="numeric"
+                                returnKeyType="done"
+                                blurOnSubmit={true}
+                              />
+                              <TouchableOpacity
+                                className="px-3 py-2"
+                                onPress={() => {
+                                  if (editingSet) {
+                                    setEditingSet({
+                                      ...editingSet,
+                                      reps: (editingSet.reps || 0) + 1,
+                                    });
+                                  }
+                                }}
+                              >
+                                <Ionicons
+                                  name="add"
+                                  size={16}
+                                  color="#6b7280"
+                                />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+
+                          {/* Edit Weight */}
+                          <View>
+                            <Text className="text-xs text-muted mb-1">
+                              Weight (lbs)
+                            </Text>
+                            <View className="flex-row items-center bg-base-200 rounded-lg">
+                              <TouchableOpacity
+                                className="px-3 py-2"
+                                onPress={() => {
+                                  if (editingSet) {
+                                    const newValue =
+                                      (editingSet.weight || 0) -
+                                      weightIncrement;
+                                    if (newValue >= 0) {
+                                      setEditingSet({
+                                        ...editingSet,
+                                        weight: newValue,
+                                      });
+                                    }
+                                  }
+                                }}
+                              >
+                                <Ionicons
+                                  name="remove"
+                                  size={16}
+                                  color="#6b7280"
+                                />
+                              </TouchableOpacity>
+                              <TextInput
+                                className="flex-1 text-center py-2 text-base font-bold text-base-content"
+                                value={editingSet?.weight?.toString() || ""}
+                                onChangeText={(value) => {
+                                  if (editingSet) {
+                                    if (
+                                      value === "" ||
+                                      value === "-" ||
+                                      value === "."
+                                    ) {
+                                      setEditingSet({
+                                        ...editingSet,
+                                        weight: null,
+                                      });
+                                    } else {
+                                      const parsed = parseFloat(value);
+                                      if (!isNaN(parsed)) {
+                                        const rounded =
+                                          Math.floor(parsed * 10) / 10;
+                                        setEditingSet({
+                                          ...editingSet,
+                                          weight: rounded,
+                                        });
+                                      }
+                                    }
+                                  }
+                                }}
+                                placeholder="0"
+                                placeholderTextColor="#9ca3af"
+                                keyboardType="decimal-pad"
+                                returnKeyType="done"
+                                blurOnSubmit={true}
+                              />
+                              <TouchableOpacity
+                                className="px-3 py-2"
+                                onPress={() => {
+                                  if (editingSet) {
+                                    setEditingSet({
+                                      ...editingSet,
+                                      weight:
+                                        (editingSet.weight || 0) +
+                                        weightIncrement,
+                                    });
+                                  }
+                                }}
+                              >
+                                <Ionicons
+                                  name="add"
+                                  size={16}
+                                  color="#6b7280"
+                                />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+
+                          {/* Edit Partials */}
+                          <View>
+                            <Text className="text-xs text-muted mb-1">
+                              Partials
+                            </Text>
+                            <View className="flex-row items-center bg-base-200 rounded-lg">
+                              <TouchableOpacity
+                                className="px-3 py-2"
+                                onPress={() => {
+                                  if (editingSet) {
+                                    const newValue =
+                                      (editingSet.partialReps || 0) - 1;
+                                    if (newValue >= 0) {
+                                      setEditingSet({
+                                        ...editingSet,
+                                        partialReps: newValue,
+                                      });
+                                    }
+                                  }
+                                }}
+                              >
+                                <Ionicons
+                                  name="remove"
+                                  size={16}
+                                  color="#6b7280"
+                                />
+                              </TouchableOpacity>
+                              <TextInput
+                                className="flex-1 text-center py-2 text-base font-bold text-base-content"
+                                value={
+                                  editingSet?.partialReps?.toString() || ""
+                                }
+                                onChangeText={(value) => {
+                                  if (editingSet) {
+                                    if (value === "" || value === "-") {
+                                      setEditingSet({
+                                        ...editingSet,
+                                        partialReps: null,
+                                      });
+                                    } else {
+                                      const parsed = parseInt(value);
+                                      if (!isNaN(parsed)) {
+                                        setEditingSet({
+                                          ...editingSet,
+                                          partialReps: parsed,
+                                        });
+                                      }
+                                    }
+                                  }
+                                }}
+                                placeholder="0"
+                                placeholderTextColor="#9ca3af"
+                                keyboardType="numeric"
+                                returnKeyType="done"
+                                blurOnSubmit={true}
+                              />
+                              <TouchableOpacity
+                                className="px-3 py-2"
+                                onPress={() => {
+                                  if (editingSet) {
+                                    setEditingSet({
+                                      ...editingSet,
+                                      partialReps:
+                                        (editingSet.partialReps || 0) + 1,
+                                    });
+                                  }
+                                }}
+                              >
+                                <Ionicons
+                                  name="add"
+                                  size={16}
+                                  color="#6b7280"
+                                />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        </View>
                       </View>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => removeSet(originalIndex)}
-                      className="p-2"
-                    >
-                      <Ionicons
-                        name="trash-outline"
-                        size={18}
-                        color="#ef4444"
-                      />
-                    </TouchableOpacity>
+                    ) : (
+                      // Display Mode
+                      <View className="flex-row items-center justify-between">
+                        <View className="flex-row items-center gap-4">
+                          <View className="bg-success w-8 h-8 rounded-full items-center justify-center">
+                            <Text className="text-white text-sm font-bold">
+                              {set.set_number}
+                            </Text>
+                          </View>
+                          <View className="flex-row items-center gap-4">
+                            <View className="items-center">
+                              <Text className="text-xs text-muted">Reps</Text>
+                              <Text className="text-base font-bold text-base-content">
+                                {set.reps}
+                              </Text>
+                            </View>
+                            <View className="items-center">
+                              <Text className="text-xs text-muted">Weight</Text>
+                              <Text className="text-base font-bold text-base-content">
+                                {set.weight} lbs
+                              </Text>
+                            </View>
+                            {set.partialReps && set.partialReps > 0 && (
+                              <View className="items-center">
+                                <Text className="text-xs text-muted">
+                                  Partials
+                                </Text>
+                                <Text className="text-base font-bold text-warning">
+                                  +{set.partialReps}
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+                        </View>
+                        <View className="flex-row items-center gap-2">
+                          <TouchableOpacity
+                            onPress={() => startEditingSet(set, originalIndex)}
+                            className="p-2"
+                          >
+                            <Ionicons
+                              name="create-outline"
+                              size={18}
+                              color="#6b7280"
+                            />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => removeSet(originalIndex)}
+                            className="p-2"
+                          >
+                            <Ionicons
+                              name="trash-outline"
+                              size={18}
+                              color="#ef4444"
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    )}
                   </View>
                 );
               })}
