@@ -83,7 +83,7 @@ export default function LoginPage() {
           {isRegisterMode ? "Create account" : "Sign in"}
         </Text>
 
-        <View className="flex justify-center">
+        <View className="flex justify-center items-center my-2">
           <View className="bg-primary rounded-full h-20 w-20 flex items-center justify-center">
             <Ionicons name="barbell" size={32} color="#ffffff" />
           </View>
@@ -122,7 +122,10 @@ export default function LoginPage() {
         </View>
 
         {!isRegisterMode && (
-          <TouchableOpacity onPress={handleForgotPassword} className="self-end">
+          <TouchableOpacity
+            onPress={handleForgotPassword}
+            className="self-end mb-2"
+          >
             <Text className="text-primary text-sm">Forgot Password?</Text>
           </TouchableOpacity>
         )}
