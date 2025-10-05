@@ -45,10 +45,17 @@ const ExerciseTracker = ({
     set_number: sets.length + 1,
   });
   const [weightIncrement, setWeightIncrement] = useState<number>(5);
+  const [showAllSets, setShowAllSets] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
 
+  // No refs needed - users will use buttons instead of keyboard navigation
+
   const handleAddSet = () => {
-    if (currentSet.reps === null || currentSet.weight === null) {
+    if (
+      currentSet.reps === null ||
+      currentSet.weight === null ||
+      currentSet.reps === 0
+    ) {
       Alert.alert("Incomplete Set", "Please enter reps and weight");
       return;
     }
@@ -63,6 +70,8 @@ const ExerciseTracker = ({
       partialReps: null,
       set_number: sets.length + 2,
     });
+
+    // No auto-focus - users can use buttons
   };
 
   const handleComplete = () => {
@@ -78,6 +87,8 @@ const ExerciseTracker = ({
         partialReps: lastSet.partialReps,
         set_number: sets.length + 1,
       });
+
+      // No auto-focus - users can use buttons
     }
   };
 
@@ -93,58 +104,95 @@ const ExerciseTracker = ({
       .join(" ");
   };
 
+  // Get sets to display (last 3 or all if showAllSets is true, in reverse order)
+  const getDisplaySets = () => {
+    const allSets = [...sets].reverse(); // Reverse to show latest first
+    if (sets.length <= 3 || showAllSets) {
+      return allSets;
+    }
+    return allSets.slice(0, 3); // First 3 of reversed array (latest 3)
+  };
+
   return (
     <View className="flex-1 bg-base-100">
       {/* Header */}
       <View
-        className="flex-row items-center justify-between p-4 border-b border-base-300"
-        style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
+        className="flex-row items-center justify-between px-4 pb-4 border-b border-base-300"
+        style={{ paddingTop: insets.top + 16 }}
       >
-        <TouchableOpacity onPress={onBack}>
-          <Text className="text-primary text-lg">←</Text>
+        <TouchableOpacity
+          onPress={onBack}
+          className="w-8 h-8 items-center justify-center"
+        >
+          <Ionicons name="close" size={24} color="#6b7280" />
         </TouchableOpacity>
+
         <View className="flex-1 items-center">
           <Text className="text-lg font-semibold text-base-content">
             {formatExerciseName(exercise.name)}
           </Text>
           <Text className="text-sm text-muted">{exercise.category}</Text>
         </View>
+
         <TouchableOpacity
-          className="px-3 py-1 bg-primary rounded flex-row items-center"
+          className={`w-8 h-8 items-center justify-center rounded-full ${
+            sets.length === 0 ? "bg-base-300" : "bg-primary"
+          }`}
           onPress={handleComplete}
           disabled={sets.length === 0}
         >
-          <Ionicons name="checkmark" size={16} color="#ffffff" />
-          <Text className="text-primary-content text-sm ml-1">Done</Text>
+          <Ionicons
+            name="checkmark"
+            size={20}
+            color={sets.length === 0 ? "#9ca3af" : "#ffffff"}
+          />
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 p-4">
+      <ScrollView
+        className="flex-1 p-4"
+        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+      >
         {/* Current Set Input */}
         <View
-          className="bg-base-200 rounded-lg p-4 mb-4"
+          className="bg-base-200 rounded-xl p-6 mb-6"
           style={{
             shadowColor: "#000",
             shadowOffset: {
               width: 0,
-              height: 2,
+              height: 4,
             },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-            elevation: 5,
+            shadowOpacity: 0.15,
+            shadowRadius: 8,
+            elevation: 8,
           }}
         >
-          <Text className="text-sm font-medium text-base-content mb-3">
-            Set {currentSet.set_number}
-          </Text>
+          <View className="mb-6">
+            <Text className="text-lg font-bold text-base-content">
+              Set {currentSet.set_number}
+            </Text>
+            <Text className="text-sm text-muted">
+              Enter your reps and weight
+            </Text>
+          </View>
 
-          <View className="flex-row gap-3">
+          <View className="gap-4">
             {/* Reps */}
             <View className="flex-1">
-              <Text className="text-xs text-muted mb-1">Reps</Text>
-              <View className="bg-base-300 rounded-lg flex-row items-center">
+              <View className="mb-2">
+                <Text className="text-sm font-semibold text-base-content">
+                  Reps
+                </Text>
+              </View>
+              <View
+                className={`rounded-xl flex-row items-center ${
+                  currentSet.reps !== null && currentSet.reps > 0
+                    ? "bg-primary/10 border-2 border-primary"
+                    : "bg-base-300 border-2 border-transparent"
+                }`}
+              >
                 <TouchableOpacity
-                  className="px-3 py-2"
+                  className="px-4 py-3"
                   onPress={() => {
                     const newValue = (currentSet.reps || 0) - 1;
                     if (newValue >= 0) {
@@ -152,10 +200,18 @@ const ExerciseTracker = ({
                     }
                   }}
                 >
-                  <Text className="text-base-content">-</Text>
+                  <Ionicons
+                    name="remove"
+                    size={20}
+                    color={
+                      currentSet.reps !== null && currentSet.reps > 0
+                        ? "#ff4b8c"
+                        : "#6b7280"
+                    }
+                  />
                 </TouchableOpacity>
                 <TextInput
-                  className="flex-1 text-center py-2 text-base-content"
+                  className="flex-1 text-center py-3 text-lg font-bold text-base-content"
                   value={
                     currentSet.reps !== null ? currentSet.reps.toString() : ""
                   }
@@ -170,11 +226,13 @@ const ExerciseTracker = ({
                     }
                   }}
                   placeholder="0"
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor="#9ca3af"
                   keyboardType="numeric"
+                  returnKeyType="done"
+                  blurOnSubmit={true}
                 />
                 <TouchableOpacity
-                  className="px-3 py-2"
+                  className="px-4 py-3"
                   onPress={() =>
                     setCurrentSet({
                       ...currentSet,
@@ -182,17 +240,35 @@ const ExerciseTracker = ({
                     })
                   }
                 >
-                  <Text className="text-base-content">+</Text>
+                  <Ionicons
+                    name="add"
+                    size={20}
+                    color={
+                      currentSet.reps !== null && currentSet.reps > 0
+                        ? "#ff4b8c"
+                        : "#6b7280"
+                    }
+                  />
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Weight */}
             <View className="flex-1">
-              <Text className="text-xs text-muted mb-1">Weight (lbs)</Text>
-              <View className="bg-base-300 rounded-lg flex-row items-center">
+              <View className="mb-2">
+                <Text className="text-sm font-semibold text-base-content">
+                  Weight (lbs)
+                </Text>
+              </View>
+              <View
+                className={`rounded-xl flex-row items-center ${
+                  currentSet.weight !== null
+                    ? "bg-primary/10 border-2 border-primary"
+                    : "bg-base-300 border-2 border-transparent"
+                }`}
+              >
                 <TouchableOpacity
-                  className="px-3 py-2"
+                  className="px-4 py-3"
                   onPress={() => {
                     const newValue = (currentSet.weight || 0) - weightIncrement;
                     if (newValue >= 0) {
@@ -200,10 +276,14 @@ const ExerciseTracker = ({
                     }
                   }}
                 >
-                  <Text className="text-base-content">-</Text>
+                  <Ionicons
+                    name="remove"
+                    size={20}
+                    color={currentSet.weight !== null ? "#ff4b8c" : "#6b7280"}
+                  />
                 </TouchableOpacity>
                 <TextInput
-                  className="flex-1 text-center py-2 text-base-content"
+                  className="flex-1 text-center py-3 text-lg font-bold text-base-content"
                   value={
                     currentSet.weight !== null
                       ? currentSet.weight.toString()
@@ -221,11 +301,13 @@ const ExerciseTracker = ({
                     }
                   }}
                   placeholder="0"
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor="#9ca3af"
                   keyboardType="decimal-pad"
+                  returnKeyType="done"
+                  blurOnSubmit={true}
                 />
                 <TouchableOpacity
-                  className="px-3 py-2"
+                  className="px-4 py-3"
                   onPress={() =>
                     setCurrentSet({
                       ...currentSet,
@@ -233,17 +315,31 @@ const ExerciseTracker = ({
                     })
                   }
                 >
-                  <Text className="text-base-content">+</Text>
+                  <Ionicons
+                    name="add"
+                    size={20}
+                    color={currentSet.weight !== null ? "#ff4b8c" : "#6b7280"}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Partial Reps */}
             <View className="flex-1">
-              <Text className="text-xs text-muted mb-1">Partials</Text>
-              <View className="bg-base-300 rounded-lg flex-row items-center">
+              <View className="mb-2">
+                <Text className="text-sm font-semibold text-base-content">
+                  Partials
+                </Text>
+              </View>
+              <View
+                className={`rounded-xl flex-row items-center ${
+                  currentSet.partialReps !== null && currentSet.partialReps > 0
+                    ? "bg-primary/10 border-2 border-primary"
+                    : "bg-base-300 border-2 border-transparent"
+                }`}
+              >
                 <TouchableOpacity
-                  className="px-3 py-2"
+                  className="px-4 py-3"
                   onPress={() => {
                     const newValue = (currentSet.partialReps || 0) - 1;
                     if (newValue >= 0) {
@@ -251,10 +347,19 @@ const ExerciseTracker = ({
                     }
                   }}
                 >
-                  <Text className="text-base-content">-</Text>
+                  <Ionicons
+                    name="remove"
+                    size={20}
+                    color={
+                      currentSet.partialReps !== null &&
+                      currentSet.partialReps > 0
+                        ? "#ff4b8c"
+                        : "#6b7280"
+                    }
+                  />
                 </TouchableOpacity>
                 <TextInput
-                  className="flex-1 text-center py-2 text-base-content"
+                  className="flex-1 text-center py-3 text-lg font-bold text-base-content"
                   value={
                     currentSet.partialReps !== null
                       ? currentSet.partialReps.toString()
@@ -271,11 +376,13 @@ const ExerciseTracker = ({
                     }
                   }}
                   placeholder="0"
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor="#9ca3af"
                   keyboardType="numeric"
+                  returnKeyType="done"
+                  blurOnSubmit={true}
                 />
                 <TouchableOpacity
-                  className="px-3 py-2"
+                  className="px-4 py-3"
                   onPress={() =>
                     setCurrentSet({
                       ...currentSet,
@@ -283,87 +390,128 @@ const ExerciseTracker = ({
                     })
                   }
                 >
-                  <Text className="text-base-content">+</Text>
+                  <Ionicons
+                    name="add"
+                    size={20}
+                    color={
+                      currentSet.partialReps !== null &&
+                      currentSet.partialReps > 0
+                        ? "#ff4b8c"
+                        : "#6b7280"
+                    }
+                  />
                 </TouchableOpacity>
               </View>
             </View>
           </View>
 
           {/* Weight Increment Tabs */}
-          <View className="flex-row bg-base-300 rounded-lg p-1 mt-3">
-            <TouchableOpacity
-              className={`flex-1 py-2 rounded ${
-                weightIncrement === 2.5 ? "bg-primary" : "bg-transparent"
-              }`}
-              onPress={() => setWeightIncrement(2.5)}
-            >
-              <Text
-                className={`text-center text-sm ${
-                  weightIncrement === 2.5
-                    ? "text-primary-content"
-                    : "text-base-content"
+          <View className="mt-6">
+            <Text className="text-sm font-semibold text-base-content mb-3">
+              Weight Increment
+            </Text>
+            <View className="flex-row bg-base-300 rounded-xl p-1">
+              <TouchableOpacity
+                className={`flex-1 py-3 rounded-lg ${
+                  weightIncrement === 2.5 ? "bg-primary" : "bg-transparent"
                 }`}
+                onPress={() => setWeightIncrement(2.5)}
               >
-                2.5lbs
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className={`flex-1 py-2 rounded ${
-                weightIncrement === 5 ? "bg-primary" : "bg-transparent"
-              }`}
-              onPress={() => setWeightIncrement(5)}
-            >
-              <Text
-                className={`text-center text-sm ${
-                  weightIncrement === 5
-                    ? "text-primary-content"
-                    : "text-base-content"
+                <Text
+                  className={`text-center text-sm font-medium ${
+                    weightIncrement === 2.5
+                      ? "text-primary-content"
+                      : "text-base-content"
+                  }`}
+                >
+                  2.5 lbs
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className={`flex-1 py-3 rounded-lg ${
+                  weightIncrement === 5 ? "bg-primary" : "bg-transparent"
                 }`}
+                onPress={() => setWeightIncrement(5)}
               >
-                5lbs
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className={`flex-1 py-2 rounded ${
-                weightIncrement === 10 ? "bg-primary" : "bg-transparent"
-              }`}
-              onPress={() => setWeightIncrement(10)}
-            >
-              <Text
-                className={`text-center text-sm ${
-                  weightIncrement === 10
-                    ? "text-primary-content"
-                    : "text-base-content"
+                <Text
+                  className={`text-center text-sm font-medium ${
+                    weightIncrement === 5
+                      ? "text-primary-content"
+                      : "text-base-content"
+                  }`}
+                >
+                  5 lbs
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className={`flex-1 py-3 rounded-lg ${
+                  weightIncrement === 10 ? "bg-primary" : "bg-transparent"
                 }`}
+                onPress={() => setWeightIncrement(10)}
               >
-                10lbs
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  className={`text-center text-sm font-medium ${
+                    weightIncrement === 10
+                      ? "text-primary-content"
+                      : "text-base-content"
+                  }`}
+                >
+                  10 lbs
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Action Buttons */}
-          <View className="flex-row gap-2 mt-3">
+          <View className="flex-row gap-3 mt-6">
             <TouchableOpacity
-              className={`flex-1 py-2 rounded-lg flex-row items-center justify-center ${
-                currentSet.reps === null || currentSet.weight === null
+              className={`flex-1 py-4 rounded-xl flex-row items-center justify-center ${
+                currentSet.reps === null ||
+                currentSet.weight === null ||
+                currentSet.reps === 0
                   ? "bg-base-300"
                   : "bg-primary"
               }`}
               onPress={handleAddSet}
-              disabled={currentSet.reps === null || currentSet.weight === null}
+              disabled={
+                currentSet.reps === null ||
+                currentSet.weight === null ||
+                currentSet.reps === 0
+              }
+              style={{
+                shadowColor:
+                  currentSet.reps !== null &&
+                  currentSet.weight !== null &&
+                  currentSet.reps > 0
+                    ? "#ff4b8c"
+                    : "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity:
+                  currentSet.reps !== null &&
+                  currentSet.weight !== null &&
+                  currentSet.reps > 0
+                    ? 0.3
+                    : 0.1,
+                shadowRadius: 4,
+                elevation: 4,
+              }}
             >
               <Ionicons
-                name="add"
-                size={16}
+                name="add-circle"
+                size={20}
                 color={
-                  currentSet.reps === null || currentSet.weight === null
+                  currentSet.reps === null ||
+                  currentSet.weight === null ||
+                  currentSet.reps === 0
                     ? "#6b7280"
                     : "#ffffff"
                 }
               />
               <Text
-                className={`text-center font-medium ml-1 ${
-                  currentSet.reps === null || currentSet.weight === null
+                className={`text-center font-bold ml-2 ${
+                  currentSet.reps === null ||
+                  currentSet.weight === null ||
+                  currentSet.reps === 0
                     ? "text-muted"
                     : "text-primary-content"
                 }`}
@@ -373,11 +521,20 @@ const ExerciseTracker = ({
             </TouchableOpacity>
             {sets.length > 0 && (
               <TouchableOpacity
-                className="px-4 py-2 border border-primary rounded-lg flex-row items-center"
+                className="px-6 py-4 border-2 border-primary rounded-xl flex-row items-center bg-primary/5"
                 onPress={handleCopyLastSet}
+                style={{
+                  shadowColor: "#ff4b8c",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}
               >
-                <Ionicons name="copy-outline" size={16} color="#ff4b8c" />
-                <Text className="text-primary text-center ml-1">Copy Last</Text>
+                <Ionicons name="copy-outline" size={20} color="#ff4b8c" />
+                <Text className="text-primary text-center ml-2 font-semibold">
+                  Copy Last
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -386,63 +543,111 @@ const ExerciseTracker = ({
         {/* Completed Sets */}
         {sets.length > 0 && (
           <View
-            className="bg-base-200 rounded-lg p-4"
+            className="bg-base-200 rounded-xl p-6"
             style={{
               shadowColor: "#000",
               shadowOffset: {
                 width: 0,
-                height: 2,
+                height: 4,
               },
-              shadowOpacity: 0.25,
-              shadowRadius: 3.84,
-              elevation: 5,
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              elevation: 8,
             }}
           >
-            <Text className="text-sm font-medium text-base-content mb-2">
-              Completed Sets ({sets.length})
-            </Text>
-            <View>
-              {sets.map((set, index) => (
-                <View key={index}>
+            <View className="flex-row items-center justify-between mb-4">
+              <View className="flex-row items-center">
+                <Ionicons name="checkmark-circle" size={20} color="#10b981" />
+                <Text className="text-lg font-bold text-base-content ml-2">
+                  Completed Sets
+                </Text>
+              </View>
+              <View className="flex-row items-center gap-2">
+                <View className="bg-success/10 px-3 py-1 rounded-full">
+                  <Text className="text-success text-sm font-bold">
+                    {sets.length}
+                  </Text>
+                </View>
+                {sets.length > 3 && (
+                  <TouchableOpacity
+                    onPress={() => setShowAllSets(!showAllSets)}
+                    className="bg-base-300 px-3 py-1 rounded-full"
+                  >
+                    <View className="flex-row items-center gap-1">
+                      <Text className="text-base-content text-sm font-medium">
+                        {showAllSets ? "Show Less" : "Show All"}
+                      </Text>
+                      <Ionicons
+                        name={showAllSets ? "chevron-up" : "chevron-down"}
+                        size={14}
+                        color="#6b7280"
+                      />
+                    </View>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+            <View className="gap-3">
+              {getDisplaySets().map((set, index) => {
+                // Find the original index for proper removal
+                const originalIndex = sets.findIndex((s) => s === set);
+                return (
                   <View
-                    className="bg-base-300 rounded-lg p-3 flex-row items-center justify-between"
+                    key={index}
+                    className="bg-base-300 rounded-xl p-4 flex-row items-center justify-between"
                     style={{
                       shadowColor: "#000",
                       shadowOffset: {
                         width: 0,
-                        height: 1,
+                        height: 2,
                       },
-                      shadowOpacity: 0.15,
-                      shadowRadius: 2,
+                      shadowOpacity: 0.1,
+                      shadowRadius: 4,
                       elevation: 3,
                     }}
                   >
-                    <View className="flex-row items-center gap-3">
-                      <Text className="text-sm font-medium text-base-content">
-                        Set {set.set_number}
-                      </Text>
-                      <Text className="text-sm text-muted">
-                        {set.reps} reps
-                      </Text>
-                      <Text className="text-sm text-muted">
-                        {set.weight} lbs
-                      </Text>
-                      {set.partialReps && set.partialReps > 0 && (
-                        <Text className="text-sm text-muted">
-                          +{set.partialReps} partials
+                    <View className="flex-row items-center gap-4">
+                      <View className="bg-success w-8 h-8 rounded-full items-center justify-center">
+                        <Text className="text-white text-sm font-bold">
+                          {set.set_number}
                         </Text>
-                      )}
+                      </View>
+                      <View className="flex-row items-center gap-4">
+                        <View className="items-center">
+                          <Text className="text-xs text-muted">Reps</Text>
+                          <Text className="text-base font-bold text-base-content">
+                            {set.reps}
+                          </Text>
+                        </View>
+                        <View className="items-center">
+                          <Text className="text-xs text-muted">Weight</Text>
+                          <Text className="text-base font-bold text-base-content">
+                            {set.weight} lbs
+                          </Text>
+                        </View>
+                        {set.partialReps && set.partialReps > 0 && (
+                          <View className="items-center">
+                            <Text className="text-xs text-muted">Partials</Text>
+                            <Text className="text-base font-bold text-warning">
+                              +{set.partialReps}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                     </View>
                     <TouchableOpacity
-                      onPress={() => removeSet(index)}
-                      className="p-1"
+                      onPress={() => removeSet(originalIndex)}
+                      className="p-2"
                     >
-                      <Ionicons name="close-circle" size={20} color="#ef4444" />
+                      <Ionicons
+                        name="trash-outline"
+                        size={18}
+                        color="#ef4444"
+                      />
                     </TouchableOpacity>
                   </View>
-                  {index < sets.length - 1 && <View className="mb-3" />}
-                </View>
-              ))}
+                );
+              })}
             </View>
           </View>
         )}
