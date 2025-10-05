@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabaseClient";
 
 type Exercise = {
@@ -23,6 +24,7 @@ type ExerciseSelectorProps = {
   title?: string;
   confirmText?: string;
   showCloseButton?: boolean;
+  workoutName?: string;
 };
 
 type ExerciseOption = {
@@ -39,6 +41,7 @@ const ExerciseSelector = ({
   title = "Select Exercises",
   confirmText = "Done",
   showCloseButton = false,
+  workoutName = "",
 }: ExerciseSelectorProps) => {
   const [exerciseOptions, setExerciseOptions] = useState<ExerciseOption[]>([]);
   const [searchValue, setSearchValue] = useState<string>("");
@@ -131,34 +134,31 @@ const ExerciseSelector = ({
   return (
     <View className="flex-1 bg-base-100">
       {/* Header */}
-      <View className="p-4 border-b border-base-300">
-        <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-lg font-semibold text-base-content">
-            {title}
-          </Text>
-          <View className="flex-row items-center space-x-2">
-            {showCloseButton && onClose && (
-              <TouchableOpacity
-                className="px-3 py-1 bg-neutral rounded"
-                onPress={onClose}
-              >
-                <Text className="text-neutral-content text-sm">Cancel</Text>
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity
-              className="px-3 py-1 bg-primary rounded"
-              onPress={handleConfirm}
-            >
-              <Text className="text-primary-content text-sm">
-                {confirmText} ({selectedExercises.length})
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <Text className="text-sm text-muted">
-          {selectedExercises.length} exercise
-          {selectedExercises.length !== 1 ? "s" : ""} selected
+      <View className="flex-row items-center justify-between p-4 border-b border-base-300">
+        <TouchableOpacity
+          onPress={onClose}
+          className="w-8 h-8 items-center justify-center"
+        >
+          <Ionicons name="close" size={24} color="#6b7280" />
+        </TouchableOpacity>
+
+        <Text className="text-lg font-semibold text-base-content">
+          {workoutName ? `Add Exercises to "${workoutName}"` : title}
         </Text>
+
+        <TouchableOpacity
+          onPress={handleConfirm}
+          disabled={selectedExercises.length === 0}
+          className={`w-8 h-8 items-center justify-center rounded-full ${
+            selectedExercises.length === 0 ? "bg-base-300" : "bg-primary"
+          }`}
+        >
+          <Ionicons
+            name="checkmark"
+            size={20}
+            color={selectedExercises.length === 0 ? "#9ca3af" : "#ffffff"}
+          />
+        </TouchableOpacity>
       </View>
 
       {/* Content */}
@@ -177,7 +177,7 @@ const ExerciseSelector = ({
         {/* Filters */}
         <View className="mb-4">
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View className="flex-row space-x-2">
+            <View className="flex-row gap-2">
               <TouchableOpacity
                 className={`px-4 py-2 rounded-full ${
                   selectedFilter === "" ? "bg-primary" : "bg-base-300"
@@ -241,7 +241,7 @@ const ExerciseSelector = ({
 
                 return (
                   <View key={exercise.id}>
-                    <View className="flex-row items-center space-x-2">
+                    <View className="flex-row items-center gap-2">
                       <TouchableOpacity
                         className={`w-8 h-8 rounded-full items-center justify-center ${
                           isSelected ? "bg-success" : "bg-base-300"
