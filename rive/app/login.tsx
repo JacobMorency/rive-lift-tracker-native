@@ -17,11 +17,30 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [emailEmpty, setEmailEmpty] = useState(false);
+  const [passwordEmpty, setPasswordEmpty] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+    setEmailEmpty(false);
+    setPasswordEmpty(false);
+    setErrorMessage("");
+
+    let hasError = false;
+
+    if (!email) {
+      setEmailEmpty(true);
+      hasError = true;
+    }
+
+    if (!password) {
+      setPasswordEmpty(true);
+      hasError = true;
+    }
+
+    // Stop form submission if fields are empty
+    if (hasError) {
       return;
     }
 
@@ -32,6 +51,9 @@ export default function LoginPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: `${process.env.EXPO_PUBLIC_APP_URL || "https://your-app.com"}/login`,
+          },
         });
         if (error) throw error;
         Alert.alert("Success", "Check your email to confirm your account.");
@@ -59,7 +81,7 @@ export default function LoginPage() {
       const message = isRegisterMode
         ? "Sign up failed. Please try again."
         : "Login failed. Invalid email or password.";
-      Alert.alert("Error", message);
+      setErrorMessage(message);
       console.error("Auth error:", error);
     } finally {
       setLoading(false);
@@ -89,20 +111,35 @@ export default function LoginPage() {
           </View>
         </View>
 
+        {errorMessage && (
+          <Text className="text-center text-error italic text-sm">
+            {errorMessage}
+          </Text>
+        )}
+
         <View>
           <Text className="text-sm font-medium text-base-content mb-1">
             Email
           </Text>
           <TextInput
-            className="border border-base-300 rounded-lg px-3 py-2 text-base-content bg-base-200"
+            className={`border rounded-lg px-3 py-2 text-base-content bg-base-200 ${
+              emailEmpty ? "border-error" : "border-base-300"
+            }`}
             placeholder="Email"
             placeholderTextColor="#9ca3af"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              setEmailEmpty(false);
+              setErrorMessage("");
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
           />
+          {emailEmpty && (
+            <Text className="text-error italic text-sm">Email is required</Text>
+          )}
         </View>
 
         <View>
@@ -110,15 +147,26 @@ export default function LoginPage() {
             Password
           </Text>
           <TextInput
-            className="border border-base-300 rounded-lg px-3 py-2 text-base-content bg-base-200"
+            className={`border rounded-lg px-3 py-2 text-base-content bg-base-200 ${
+              passwordEmpty ? "border-error" : "border-base-300"
+            }`}
             placeholder="Password"
             placeholderTextColor="#9ca3af"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              setPasswordEmpty(false);
+              setErrorMessage("");
+            }}
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
           />
+          {passwordEmpty && (
+            <Text className="text-error italic text-sm">
+              Password is required
+            </Text>
+          )}
         </View>
 
         {!isRegisterMode && (
@@ -131,7 +179,7 @@ export default function LoginPage() {
         )}
 
         <TouchableOpacity
-          className={`w-full py-3 rounded-lg ${loading ? "bg-base-300" : "bg-primary"}`}
+          className={`w-full py-3 mt-2 rounded-lg ${loading ? "bg-base-300" : "bg-primary"}`}
           onPress={handleSubmit}
           disabled={loading}
         >
