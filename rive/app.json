@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "rive",
-    "slug": "rive",
-    "version": "0.1.0",
+    "name": "Rive - Lift Tracker",
+    "slug": "rive-lift-tracker",
+    "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "rive",
+    "scheme": "rive-lift-tracker",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "ios": {
