@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabaseClient";
 
@@ -50,6 +51,7 @@ const ExerciseSelector = ({
     initialSelectedExercises
   );
   const [loading, setLoading] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const fetchExercises = async (
     searchTerm: string,
@@ -134,7 +136,10 @@ const ExerciseSelector = ({
   return (
     <View className="flex-1 bg-base-100">
       {/* Header */}
-      <View className="flex-row items-center justify-between p-4 border-b border-base-300">
+      <View
+        className="flex-row items-center justify-between px-4 pb-4 border-b border-base-300"
+        style={{ paddingTop: insets.top + 16 }}
+      >
         <TouchableOpacity
           onPress={onClose}
           className="w-8 h-8 items-center justify-center"
@@ -148,32 +153,14 @@ const ExerciseSelector = ({
 
         <TouchableOpacity
           onPress={handleConfirm}
-          disabled={selectedExercises.length === 0}
-          className={`w-8 h-8 items-center justify-center rounded-full ${
-            selectedExercises.length === 0 ? "bg-base-300" : "bg-primary"
-          }`}
+          className="w-8 h-8 items-center justify-center rounded-full bg-primary"
         >
-          <Ionicons
-            name="checkmark"
-            size={20}
-            color={selectedExercises.length === 0 ? "#9ca3af" : "#ffffff"}
-          />
+          <Ionicons name="checkmark" size={20} color="#ffffff" />
         </TouchableOpacity>
       </View>
 
       {/* Content */}
       <ScrollView className="flex-1 p-4">
-        {/* Search */}
-        <View className="mb-4">
-          <TextInput
-            className="border border-base-200 rounded-lg px-3 py-2 text-base-content bg-base-200"
-            placeholder="Search exercises..."
-            placeholderTextColor="#9ca3af"
-            value={searchValue}
-            onChangeText={setSearchValue}
-          />
-        </View>
-
         {/* Filters */}
         <View className="mb-4">
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -241,7 +228,7 @@ const ExerciseSelector = ({
 
                 return (
                   <View key={exercise.id}>
-                    <View className="flex-row items-center gap-2">
+                    <View className="flex-row items-center gap-3 py-3">
                       <TouchableOpacity
                         className={`w-8 h-8 rounded-full items-center justify-center ${
                           isSelected ? "bg-success" : "bg-base-300"
@@ -249,22 +236,22 @@ const ExerciseSelector = ({
                         onPress={() => handleExerciseToggle(exercise)}
                       >
                         <Text
-                          className={`text-sm ${isSelected ? "text-success-content" : "text-base-content"}`}
+                          className={`text-md font-bold ${isSelected ? "text-success-content" : "text-primary"}`}
                         >
                           {isSelected ? "✓" : "+"}
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        className="flex-1 py-4 px-3 bg-base-300 rounded-lg"
+                        className="flex-1"
                         onPress={() => handleExerciseToggle(exercise)}
                       >
-                        <Text className="text-base-content">
+                        <Text className="text-base-content text-base">
                           {formatExerciseName(exercise.name)}
                         </Text>
                       </TouchableOpacity>
                     </View>
                     {index < filteredExercises.length - 1 && (
-                      <View className="mb-3" />
+                      <View className="border-b border-base-300" />
                     )}
                   </View>
                 );
@@ -273,6 +260,23 @@ const ExerciseSelector = ({
           )}
         </View>
       </ScrollView>
+
+      {/* Floating Search Bar */}
+      <View
+        className="px-6 pt-4 bg-base-100"
+        style={{ paddingBottom: insets.bottom + 16 }}
+      >
+        <View className="flex-row items-center bg-base-200 rounded-full px-4 py-3 shadow-lg border border-base-300">
+          <Ionicons name="search" size={20} color="#9ca3af" />
+          <TextInput
+            className="flex-1 ml-3 text-base-content bg-transparent"
+            placeholder="Search exercises..."
+            placeholderTextColor="#9ca3af"
+            value={searchValue}
+            onChangeText={setSearchValue}
+          />
+        </View>
+      </View>
     </View>
   );
 };

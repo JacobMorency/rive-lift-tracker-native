@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 
@@ -104,12 +105,18 @@ const SelectWorkoutModal = ({
       <View className="flex-1 bg-base-100">
         {/* Header */}
         <View className="flex-row items-center justify-between p-4 border-b border-base-300">
+          <TouchableOpacity
+            onPress={onClose}
+            className="w-8 h-8 items-center justify-center"
+          >
+            <Ionicons name="close" size={24} color="#6b7280" />
+          </TouchableOpacity>
+
           <Text className="text-lg font-semibold text-base-content">
             Select Workout Template ({workoutTemplates.length})
           </Text>
-          <TouchableOpacity onPress={onClose}>
-            <Text className="text-primary text-lg">✕</Text>
-          </TouchableOpacity>
+
+          <View className="w-8 h-8" />
         </View>
 
         {/* Content */}
@@ -148,7 +155,7 @@ const SelectWorkoutModal = ({
                           </Text>
                         )}
                       </View>
-                      <View className="flex-row items-center space-x-2">
+                      <View className="flex-row items-center gap-2">
                         <Text className="text-muted text-sm">
                           {workout.exercise_count} exercises
                         </Text>

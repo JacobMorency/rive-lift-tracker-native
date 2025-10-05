@@ -208,12 +208,18 @@ const WorkoutTemplatesModal = ({
       <View className="flex-1 bg-base-100">
         {/* Header */}
         <View className="flex-row items-center justify-between p-4 border-b border-base-300">
+          <TouchableOpacity
+            onPress={onClose}
+            className="w-8 h-8 items-center justify-center"
+          >
+            <Ionicons name="close" size={24} color="#6b7280" />
+          </TouchableOpacity>
+
           <Text className="text-lg font-semibold text-base-content">
             Workout Templates ({workoutTemplates.length})
           </Text>
-          <TouchableOpacity onPress={onClose}>
-            <Text className="text-primary text-lg">✕</Text>
-          </TouchableOpacity>
+
+          <View className="w-8 h-8" />
         </View>
 
         {/* Add New Workout Button */}
@@ -296,7 +302,7 @@ const WorkoutTemplatesModal = ({
                             {workout.exercise_count} exercises
                           </Text>
                         </View>
-                        <View className="flex-row space-x-2">
+                        <View className="flex-row gap-2">
                           <TouchableOpacity
                             className="w-8 h-8 bg-info rounded-full items-center justify-center"
                             onPress={() => handleEditWorkout(workout)}

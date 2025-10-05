@@ -100,7 +100,7 @@ export default function LoginPage() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 justify-center items-center p-4 bg-base-100"
     >
-      <View className="w-full max-w-md p-6 space-y-4">
+      <View className="w-full max-w-md p-6 gap-4">
         <Text className="text-2xl font-bold text-center text-base-content">
           {isRegisterMode ? "Create account" : "Sign in"}
         </Text>

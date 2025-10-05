@@ -13,6 +13,7 @@ import {
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 import ExerciseSelector from "./exerciseselector";
+import { Ionicons } from "@expo/vector-icons";
 
 type AddWorkoutModalProps = {
   isOpen: boolean;
@@ -89,28 +90,29 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
     if (!createdWorkoutId) return;
 
     try {
-      // Add selected exercises to the workout
-      const exercisesToAdd = selectedExercises.map((exercise, index) => ({
-        workout_id: createdWorkoutId,
-        exercise_id: exercise.id,
-        order_index: index,
-      }));
+      // Only add exercises if any are selected
+      if (selectedExercises.length > 0) {
+        const exercisesToAdd = selectedExercises.map((exercise, index) => ({
+          workout_id: createdWorkoutId,
+          exercise_id: exercise.id,
+          order_index: index,
+        }));
 
-      const { error } = await supabase
-        .from("workout_exercises")
-        .insert(exercisesToAdd);
+        const { error } = await supabase
+          .from("workout_exercises")
+          .insert(exercisesToAdd);
 
-      if (error) {
-        console.error("Error adding exercises:", error.message);
-        Alert.alert("Error", "Failed to add exercises");
-        return;
+        if (error) {
+          console.error("Error adding exercises:", error.message);
+          Alert.alert("Error", "Failed to add exercises");
+          return;
+        }
+
+        console.log("✅ Exercises added to workout");
+      } else {
+        console.log("✅ Workout template created without exercises");
       }
 
-      console.log("✅ Exercises added to workout");
-      Alert.alert(
-        "Success",
-        `Workout template saved with ${selectedExercises.length} exercises!`
-      );
       handleClose();
     } catch (error) {
       console.error("Error adding exercises:", error);
@@ -119,7 +121,6 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
   };
 
   const handleExercisesComplete = () => {
-    Alert.alert("Success", "Workout template saved successfully!");
     handleClose();
   };
 
@@ -135,20 +136,41 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
           <View className="flex-1">
             {/* Header */}
             <View className="flex-row items-center justify-between p-4 border-b border-base-300">
+              <TouchableOpacity
+                onPress={handleClose}
+                className="w-8 h-8 items-center justify-center"
+              >
+                <Ionicons name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+
               <Text className="text-lg font-semibold text-base-content">
-                Add New Workout
+                New Workout
               </Text>
-              <TouchableOpacity onPress={handleClose}>
-                <Text className="text-primary text-lg">✕</Text>
+
+              <TouchableOpacity
+                onPress={handleSubmit}
+                disabled={loading || !workoutName.trim()}
+                className={`w-8 h-8 items-center justify-center rounded-full ${
+                  loading || !workoutName.trim() ? "bg-base-300" : "bg-primary"
+                }`}
+              >
+                <Ionicons
+                  name="checkmark"
+                  size={20}
+                  color={loading || !workoutName.trim() ? "#9ca3af" : "#ffffff"}
+                />
               </TouchableOpacity>
             </View>
 
             {/* Form */}
-            <ScrollView className="flex-1 p-4">
-              <View className="space-y-4">
+            <ScrollView
+              className="flex-1 p-4"
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
+              <View className="gap-4">
                 <View>
                   <Text className="text-sm font-medium text-base-content mb-1">
-                    Workout Name *
+                    Workout Name
                   </Text>
                   <TextInput
                     className="border border-base-200 rounded-lg px-3 py-2 text-base-content bg-base-200"
@@ -162,7 +184,7 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
 
                 <View>
                   <Text className="text-sm font-medium text-base-content mb-1">
-                    Description (Optional)
+                    Description
                   </Text>
                   <TextInput
                     className="border border-base-200 rounded-lg px-3 py-2 text-base-content bg-base-200 h-20"
@@ -176,32 +198,6 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
                 </View>
               </View>
             </ScrollView>
-
-            {/* Buttons */}
-            <View className="p-4 border-t border-base-300">
-              <View className="flex-row space-x-3">
-                <TouchableOpacity
-                  className="flex-1 py-3 rounded-lg bg-neutral"
-                  onPress={handleClose}
-                  disabled={loading}
-                >
-                  <Text className="text-neutral-content text-center font-medium">
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className={`flex-1 py-3 rounded-lg ${
-                    loading || !workoutName.trim() ? "bg-neutral" : "bg-primary"
-                  }`}
-                  onPress={handleSubmit}
-                  disabled={loading || !workoutName.trim()}
-                >
-                  <Text className="text-primary-content text-center font-medium">
-                    {loading ? "Creating..." : "Create"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
           </View>
         ) : (
           <ExerciseSelector
@@ -210,6 +206,7 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
             title="Add Exercises to Workout"
             confirmText="Add to Workout"
             showCloseButton={true}
+            workoutName={workoutName}
           />
         )}
       </KeyboardAvoidingView>

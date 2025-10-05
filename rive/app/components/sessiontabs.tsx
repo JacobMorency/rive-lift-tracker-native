@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 type Session = {
   id: string;
@@ -186,7 +187,7 @@ const SessionTabs = ({ sessions, onSessionSelect }: SessionTabsProps) => {
                           {new Date(session.started_at).toLocaleDateString()}
                         </Text>
                       </View>
-                      <View className="flex-row items-center space-x-2">
+                      <View className="flex-row items-center gap-2">
                         <View
                           className="px-2 py-1 rounded-full"
                           style={{
@@ -218,9 +219,9 @@ const SessionTabs = ({ sessions, onSessionSelect }: SessionTabsProps) => {
             </View>
           ) : (
             <View className="flex-1 justify-center items-center py-8">
-              <Text className="text-6xl mb-4">▶️</Text>
+              <Ionicons name="play-circle-outline" size={64} color="#9ca3af" />
               <Text
-                className="text-lg font-semibold mb-2"
+                className="text-lg font-semibold mb-2 mt-4"
                 style={{ color: "#fefbee" }}
               >
                 No Sessions

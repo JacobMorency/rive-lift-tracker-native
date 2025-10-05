@@ -557,13 +557,25 @@ export default function SessionDetailPage() {
               Started {new Date(sessionData.started_at).toLocaleDateString()}
             </Text>
           </View>
-          <View className="flex-row space-x-2">
+          <View className="flex-row gap-2">
             <TouchableOpacity
-              className="w-8 h-8 bg-success rounded-full items-center justify-center"
+              className={`w-8 h-8 rounded-full items-center justify-center ${
+                exerciseProgress.every((ex) => !ex.completed)
+                  ? "bg-base-300"
+                  : "bg-success"
+              }`}
               onPress={handleCompleteSession}
               disabled={exerciseProgress.every((ex) => !ex.completed)}
             >
-              <Ionicons name="checkmark" size={16} color="#002d40" />
+              <Ionicons
+                name="checkmark"
+                size={16}
+                color={
+                  exerciseProgress.every((ex) => !ex.completed)
+                    ? "#9ca3af"
+                    : "#002d40"
+                }
+              />
             </TouchableOpacity>
             <TouchableOpacity
               className="w-8 h-8 bg-error rounded-full items-center justify-center"
@@ -576,16 +588,49 @@ export default function SessionDetailPage() {
       </View>
 
       {/* Content */}
-      <ScrollView className="flex-1 p-4">
+      <ScrollView
+        className="flex-1 p-4"
+        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+      >
         {/* Back Button */}
         <View className="mb-4">
           <TouchableOpacity
             className="flex-row items-center"
             onPress={handleBack}
           >
-            <Text className="text-primary text-lg mr-2">←</Text>
-            <Text className="text-primary">Back to Sessions</Text>
+            <Ionicons name="arrow-back" size={20} color="#ff4b8c" />
+            <Text className="text-primary ml-2 font-medium">
+              Back to Sessions
+            </Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Progress Indicator */}
+        <View className="mb-6">
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="text-lg font-semibold text-base-content">
+              Progress
+            </Text>
+            <Text className="text-sm text-muted">
+              {exerciseProgress.filter((ex) => ex.completed).length} of{" "}
+              {sessionData.exercises.length} completed
+            </Text>
+          </View>
+          <View className="bg-base-300 rounded-full h-2">
+            <View
+              className="bg-primary rounded-full h-2"
+              style={{
+                width: `${sessionData.exercises.length > 0 ? (exerciseProgress.filter((ex) => ex.completed).length / sessionData.exercises.length) * 100 : 0}%`,
+              }}
+            />
+          </View>
+          {exerciseProgress.filter((ex) => ex.completed).length ===
+            sessionData.exercises.length &&
+            sessionData.exercises.length > 0 && (
+              <Text className="text-success text-sm font-medium mt-2 text-center">
+                🎉 All exercises completed! Ready to finish your session.
+              </Text>
+            )}
         </View>
 
         <View className="mb-4">
@@ -615,63 +660,101 @@ export default function SessionDetailPage() {
               const progress = exerciseProgress[index];
               const isCompleted = progress?.completed;
               const setCount = progress?.sets.length || 0;
-              const isNewExercise = !exercise.wasInOriginalTemplate;
+              const hasStarted = setCount > 0;
+
+              // Get exercise icon based on category
+              const getExerciseIcon = (category: string) => {
+                // Use dumbbell icon for all exercise categories
+                return "barbell-outline";
+              };
+
+              // Status is now indicated by icon background color and progress bar
 
               return (
                 <View key={exercise.id}>
                   <TouchableOpacity
-                    className={`rounded-lg p-4 ${
-                      isNewExercise
-                        ? "bg-base-200 border-2 border-dashed border-primary"
-                        : "bg-base-300"
+                    className={`rounded-xl p-4 ${
+                      isCompleted
+                        ? "bg-success/10 border border-success/20"
+                        : hasStarted
+                          ? "bg-warning/10 border border-warning/20"
+                          : "bg-base-200 border border-base-300"
                     }`}
                     onPress={() => handleExerciseClick(index)}
+                    style={{
+                      shadowColor: "#000",
+                      shadowOffset: {
+                        width: 0,
+                        height: 2,
+                      },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 3,
+                      elevation: 3,
+                    }}
                   >
-                    <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center">
+                      {/* Exercise Icon */}
+                      <View
+                        className={`w-12 h-12 rounded-full items-center justify-center mr-4 ${
+                          isCompleted
+                            ? "bg-success"
+                            : hasStarted
+                              ? "bg-warning"
+                              : "bg-base-300"
+                        }`}
+                      >
+                        <Ionicons
+                          name={getExerciseIcon(exercise.category)}
+                          size={24}
+                          color={
+                            isCompleted
+                              ? "#ffffff"
+                              : hasStarted
+                                ? "#ffffff"
+                                : "#6b7280"
+                          }
+                        />
+                      </View>
+
+                      {/* Exercise Info */}
                       <View className="flex-1">
-                        <View className="flex-row items-center">
-                          <Text className="text-lg font-medium text-base-content">
+                        <View className="mb-1">
+                          <Text className="text-lg font-semibold text-base-content">
                             {formatExerciseName(exercise.name)}
                           </Text>
-                          {isNewExercise && (
-                            <View className="flex-row items-center ml-2">
+                        </View>
+
+                        <View className="flex-row items-center justify-between">
+                          <Text className="text-sm text-muted">
+                            {exercise.category}
+                          </Text>
+                          {setCount > 0 && (
+                            <View className="flex-row items-center">
                               <Ionicons
-                                name="add-circle"
-                                size={16}
-                                color="#ff4b8c"
+                                name="list-outline"
+                                size={14}
+                                color="#6b7280"
                               />
-                              <Text className="text-xs text-primary ml-1">
-                                Added Later
+                              <Text className="text-sm text-muted ml-1">
+                                {setCount} set{setCount !== 1 ? "s" : ""}
                               </Text>
                             </View>
                           )}
                         </View>
-                        <Text className="text-sm text-muted">
-                          {exercise.category}
-                        </Text>
-                        {isNewExercise && exercise.addedToTemplateAfter && (
-                          <Text className="text-xs text-muted mt-1">
-                            Added to template on{" "}
-                            {new Date(
-                              exercise.addedToTemplateAfter
-                            ).toLocaleDateString()}
-                          </Text>
-                        )}
                       </View>
-                      <View className="flex-row items-center space-x-2">
-                        {isCompleted && (
-                          <View className="px-2 py-1 bg-success rounded-full">
-                            <Text className="text-success-content text-xs font-medium">
-                              {setCount} sets
-                            </Text>
-                          </View>
-                        )}
-                        <Text className="text-muted">›</Text>
+
+                      {/* Chevron */}
+                      <View className="ml-2">
+                        <Ionicons
+                          name="chevron-forward"
+                          size={20}
+                          color="#6b7280"
+                        />
                       </View>
                     </View>
                   </TouchableOpacity>
                   {index < sessionData.exercises.length - 1 && (
-                    <View className="mb-3" />
+                    <View className="mb-4" />
                   )}
                 </View>
               );

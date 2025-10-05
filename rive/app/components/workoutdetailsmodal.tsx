@@ -8,6 +8,7 @@ import {
   Modal,
   Alert,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabaseClient";
 import {
@@ -46,6 +47,7 @@ const WorkoutDetailsModal = ({
   );
   const [loading, setLoading] = useState(false);
   const [showExerciseSelector, setShowExerciseSelector] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (isOpen && workoutId) {
@@ -253,22 +255,29 @@ const WorkoutDetailsModal = ({
     >
       <View className="flex-1 bg-base-100">
         {/* Header */}
-        <View className="flex-row items-center justify-between p-4 border-b border-base-300">
-          <Text className="text-lg font-semibold text-base-content">
-            {loading
-              ? "Loading..."
-              : `${workoutDetails?.name || "Workout"} - Manage Exercises`}
-          </Text>
+        <View
+          className="flex-row items-center justify-between px-4 pb-4 border-b border-base-300"
+          style={{ paddingTop: insets.top + 16 }}
+        >
           <TouchableOpacity
-            className="w-8 h-8 items-center justify-center"
             onPress={onClose}
+            className="w-8 h-8 items-center justify-center"
           >
-            <Text className="text-muted text-xl">×</Text>
+            <Ionicons name="close" size={24} color="#6b7280" />
           </TouchableOpacity>
+
+          <Text className="text-lg font-semibold text-base-content">
+            {loading ? "Loading..." : `${workoutDetails?.name || "Workout"}`}
+          </Text>
+
+          <View className="w-8 h-8" />
         </View>
 
         {/* Content */}
-        <ScrollView className="flex-1 p-4">
+        <ScrollView
+          className="flex-1 p-4"
+          contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        >
           {loading ? (
             <View className="flex-1 justify-center items-center py-8">
               <ActivityIndicator size="large" color="#ff4b8c" />
@@ -277,22 +286,13 @@ const WorkoutDetailsModal = ({
               </Text>
             </View>
           ) : workoutDetails ? (
-            <View className="space-y-4">
+            <View className="gap-4">
               {/* Exercises */}
               <View>
                 <View className="flex-row items-center justify-between mb-3">
                   <Text className="text-lg font-semibold text-base-content">
                     Exercises ({workoutDetails.exercises.length})
                   </Text>
-                  <TouchableOpacity
-                    className="flex-row items-center px-3 py-1 bg-primary rounded-lg"
-                    onPress={handleAddExercise}
-                  >
-                    <Ionicons name="add" size={16} color="#ffffff" />
-                    <Text className="text-primary-content text-sm ml-1">
-                      Add
-                    </Text>
-                  </TouchableOpacity>
                 </View>
                 {workoutDetails.exercises.length === 0 ? (
                   <View className="bg-base-200 rounded-lg p-6 items-center">
@@ -366,7 +366,10 @@ const WorkoutDetailsModal = ({
 
         {/* Footer Actions */}
         {!loading && workoutDetails && (
-          <View className="p-4 border-t border-base-300">
+          <View
+            className="px-4 pt-4 border-t border-base-300"
+            style={{ paddingBottom: insets.bottom + 16 }}
+          >
             <TouchableOpacity
               className="bg-primary py-3 px-4 rounded-lg items-center"
               onPress={handleAddExercise}

@@ -138,7 +138,7 @@ const ExerciseTracker = ({
             Set {currentSet.set_number}
           </Text>
 
-          <View className="flex-row space-x-3">
+          <View className="flex-row gap-3">
             {/* Reps */}
             <View className="flex-1">
               <Text className="text-xs text-muted mb-1">Reps</Text>
@@ -342,7 +342,7 @@ const ExerciseTracker = ({
           </View>
 
           {/* Action Buttons */}
-          <View className="flex-row space-x-2 mt-3">
+          <View className="flex-row gap-2 mt-3">
             <TouchableOpacity
               className={`flex-1 py-2 rounded-lg flex-row items-center justify-center ${
                 currentSet.reps === null || currentSet.weight === null
@@ -417,7 +417,7 @@ const ExerciseTracker = ({
                       elevation: 3,
                     }}
                   >
-                    <View className="flex-row items-center space-x-3">
+                    <View className="flex-row items-center gap-3">
                       <Text className="text-sm font-medium text-base-content">
                         Set {set.set_number}
                       </Text>

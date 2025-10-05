@@ -103,7 +103,10 @@ export default function ProfilePage() {
       </View>
 
       {/* Content */}
-      <ScrollView className="flex-1 px-4 py-6">
+      <ScrollView
+        className="flex-1 px-4 py-6"
+        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+      >
         <View>
           {/* User Info Card */}
           <View
@@ -154,7 +157,7 @@ export default function ProfilePage() {
                 Your Stats
               </Text>
             </View>
-            <View className="space-y-3">
+            <View className="gap-3">
               <View className="flex-row justify-between">
                 <Text className="text-muted">Total Workouts</Text>
                 {statsLoading ? (
@@ -200,7 +203,7 @@ export default function ProfilePage() {
 
           {/* Settings Card */}
           <View
-            className="bg-base-300 rounded-lg p-6"
+            className="bg-base-300 rounded-lg p-6 opacity-50"
             style={{
               shadowColor: "#000",
               shadowOffset: {
@@ -212,25 +215,32 @@ export default function ProfilePage() {
               elevation: 5,
             }}
           >
-            <View className="flex-row items-center mb-4">
-              <Ionicons name="settings" size={20} color="#ff4b8c" />
-              <Text className="text-lg font-semibold text-base-content ml-2">
-                Settings
-              </Text>
+            <View className="flex-row items-center justify-between mb-4">
+              <View className="flex-row items-center">
+                <Ionicons name="settings" size={20} color="#9ca3af" />
+                <Text className="text-lg font-semibold text-muted ml-2">
+                  Settings
+                </Text>
+              </View>
+              <View className="bg-muted px-2 py-1 rounded-full">
+                <Text className="text-xs font-medium text-muted-content">
+                  Coming Soon
+                </Text>
+              </View>
             </View>
-            <View className="space-y-3">
-              <TouchableOpacity className="py-3 border-b border-base-200">
-                <Text className="text-base-content">Edit Profile</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="py-3 border-b border-base-200">
-                <Text className="text-base-content">Notifications</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="py-3 border-b border-base-200">
-                <Text className="text-base-content">Privacy</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="py-3">
-                <Text className="text-base-content">Help & Support</Text>
-              </TouchableOpacity>
+            <View className="gap-3">
+              <View className="py-3 border-b border-base-200">
+                <Text className="text-muted">Edit Profile</Text>
+              </View>
+              <View className="py-3 border-b border-base-200">
+                <Text className="text-muted">Notifications</Text>
+              </View>
+              <View className="py-3 border-b border-base-200">
+                <Text className="text-muted">Privacy</Text>
+              </View>
+              <View className="py-3">
+                <Text className="text-muted">Help & Support</Text>
+              </View>
             </View>
           </View>
 

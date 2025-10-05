@@ -94,7 +94,7 @@ export default function CompleteProfilePage() {
       className="flex-1 justify-center items-center p-4 bg-base-200"
     >
       <View className="w-full max-w-md">
-        <View className="bg-base-100 rounded-lg shadow-lg p-6 space-y-6">
+        <View className="bg-base-100 rounded-lg shadow-lg p-6 gap-6">
           <View className="text-center">
             <View className="bg-primary rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-4">
               <Ionicons name="person" size={32} color="#ffffff" />
@@ -107,7 +107,7 @@ export default function CompleteProfilePage() {
             </Text>
           </View>
 
-          <View className="space-y-4">
+          <View className="gap-4">
             <View>
               <Text className="text-sm font-medium text-base-content mb-1">
                 First Name
