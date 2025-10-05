@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -25,7 +25,7 @@ export default function ProfilePage() {
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
-  const fetchUserStats = async () => {
+  const fetchUserStats = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -64,11 +64,11 @@ export default function ProfilePage() {
     } finally {
       setStatsLoading(false);
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     fetchUserStats();
-  }, [user?.id]);
+  }, [fetchUserStats]);
 
   const handleLogout = async () => {
     try {
@@ -89,17 +89,19 @@ export default function ProfilePage() {
 
   return (
     <View className="flex-1 bg-base-100">
-      {/* Header */}
+      {/* Enhanced Header */}
       <View
         className="bg-base-200 px-4 border-b border-base-300"
-        style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
+        style={{ paddingTop: insets.top + 16, paddingBottom: 20 }}
       >
-        <Text className="text-2xl font-bold text-base-content">Profile</Text>
-        {userData && (
-          <Text className="text-muted mt-1">
-            Manage your account and settings
-          </Text>
-        )}
+        <View>
+          <Text className="text-2xl font-bold text-base-content">Profile</Text>
+          {userData && (
+            <Text className="text-muted mt-1">
+              Welcome back, {userData.first_name}! 👋
+            </Text>
+          )}
+        </View>
       </View>
 
       {/* Content */}
@@ -108,89 +110,37 @@ export default function ProfilePage() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
       >
         <View>
-          {/* User Info Card */}
+          {/* Enhanced User Info Card */}
           <View
-            className="bg-base-300 rounded-lg p-6"
+            className="bg-base-300 rounded-xl p-6"
             style={{
               shadowColor: "#000",
               shadowOffset: {
                 width: 0,
-                height: 2,
+                height: 4,
               },
-              shadowOpacity: 0.25,
-              shadowRadius: 3.84,
-              elevation: 5,
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              elevation: 8,
             }}
           >
-            <View className="items-center mb-4">
-              <View className="bg-primary rounded-full h-20 w-20 flex items-center justify-center mb-4">
-                <Ionicons name="person" size={32} color="#ffffff" />
+            <View className="items-center">
+              <View className="bg-primary rounded-full h-24 w-24 flex items-center justify-center mb-4 relative">
+                <Ionicons name="person" size={36} color="#ffffff" />
+                <View className="absolute -bottom-1 -right-1 bg-success rounded-full h-8 w-8 items-center justify-center border-2 border-base-300">
+                  <Ionicons name="checkmark" size={16} color="#ffffff" />
+                </View>
               </View>
               {userData && (
-                <Text className="text-xl font-semibold text-base-content">
+                <Text className="text-xl font-bold text-base-content">
                   {userData.first_name} {userData.last_name}
                 </Text>
               )}
               {user && <Text className="text-muted mt-1">{user.email}</Text>}
-            </View>
-          </View>
-
-          <View className="mb-6" />
-
-          {/* Stats Card */}
-          <View
-            className="bg-base-300 rounded-lg p-6"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 2,
-              },
-              shadowOpacity: 0.25,
-              shadowRadius: 3.84,
-              elevation: 5,
-            }}
-          >
-            <View className="flex-row items-center mb-4">
-              <Ionicons name="stats-chart" size={20} color="#ff4b8c" />
-              <Text className="text-lg font-semibold text-base-content ml-2">
-                Your Stats
-              </Text>
-            </View>
-            <View className="gap-3">
-              <View className="flex-row justify-between">
-                <Text className="text-muted">Total Workouts</Text>
-                {statsLoading ? (
-                  <ActivityIndicator size="small" color="#ff4b8c" />
-                ) : (
-                  <Text className="font-medium text-base-content">
-                    {userStats.totalWorkouts}
-                  </Text>
-                )}
-              </View>
-              <View className="flex-row justify-between">
-                <Text className="text-muted">Total Sessions</Text>
-                {statsLoading ? (
-                  <ActivityIndicator size="small" color="#ff4b8c" />
-                ) : (
-                  <Text className="font-medium text-base-content">
-                    {userStats.totalSessions}
-                  </Text>
-                )}
-              </View>
-              <View className="flex-row justify-between">
-                <Text className="text-muted">This Month</Text>
-                {statsLoading ? (
-                  <ActivityIndicator size="small" color="#ff4b8c" />
-                ) : (
-                  <Text className="font-medium text-base-content">
-                    {userStats.thisMonthSessions}
-                  </Text>
-                )}
-              </View>
-              <View className="flex-row justify-between">
-                <Text className="text-muted">Member Since</Text>
-                <Text className="font-medium text-base-content">
+              <View className="flex-row items-center gap-2 mt-3">
+                <Ionicons name="calendar" size={14} color="#9ca3af" />
+                <Text className="text-sm text-muted">
+                  Member since{" "}
                   {user?.created_at
                     ? new Date(user.created_at).toLocaleDateString()
                     : "N/A"}
@@ -201,67 +151,198 @@ export default function ProfilePage() {
 
           <View className="mb-6" />
 
-          {/* Settings Card */}
+          {/* Enhanced Stats Card */}
           <View
-            className="bg-base-300 rounded-lg p-6 opacity-50"
+            className="bg-base-300 rounded-xl p-6"
             style={{
               shadowColor: "#000",
               shadowOffset: {
                 width: 0,
-                height: 2,
+                height: 4,
               },
-              shadowOpacity: 0.25,
-              shadowRadius: 3.84,
-              elevation: 5,
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              elevation: 8,
             }}
           >
-            <View className="flex-row items-center justify-between mb-4">
-              <View className="flex-row items-center">
-                <Ionicons name="settings" size={20} color="#9ca3af" />
-                <Text className="text-lg font-semibold text-muted ml-2">
-                  Settings
-                </Text>
-              </View>
-              <View className="bg-muted px-2 py-1 rounded-full">
-                <Text className="text-xs font-medium text-muted-content">
-                  Coming Soon
-                </Text>
-              </View>
+            <View className="flex-row items-center mb-6">
+              <Ionicons name="stats-chart" size={24} color="#ff4b8c" />
+              <Text className="text-xl font-bold text-base-content ml-3">
+                Your Progress
+              </Text>
             </View>
-            <View className="gap-3">
-              <View className="py-3 border-b border-base-200">
-                <Text className="text-muted">Edit Profile</Text>
+
+            {/* Stats Grid */}
+            <View className="gap-4">
+              <View className="flex-row gap-4">
+                <View className="flex-1 bg-base-200 rounded-lg p-4">
+                  <View className="flex-row items-center gap-2 mb-2">
+                    <Ionicons name="fitness" size={16} color="#ff4b8c" />
+                    <Text className="text-sm font-medium text-muted">
+                      Workouts
+                    </Text>
+                  </View>
+                  {statsLoading ? (
+                    <ActivityIndicator size="small" color="#ff4b8c" />
+                  ) : (
+                    <Text className="text-2xl font-bold text-base-content">
+                      {userStats.totalWorkouts}
+                    </Text>
+                  )}
+                </View>
+                <View className="flex-1 bg-base-200 rounded-lg p-4">
+                  <View className="flex-row items-center gap-2 mb-2">
+                    <Ionicons name="play-circle" size={16} color="#10b981" />
+                    <Text className="text-sm font-medium text-muted">
+                      Sessions
+                    </Text>
+                  </View>
+                  {statsLoading ? (
+                    <ActivityIndicator size="small" color="#10b981" />
+                  ) : (
+                    <Text className="text-2xl font-bold text-base-content">
+                      {userStats.totalSessions}
+                    </Text>
+                  )}
+                </View>
               </View>
-              <View className="py-3 border-b border-base-200">
-                <Text className="text-muted">Notifications</Text>
-              </View>
-              <View className="py-3 border-b border-base-200">
-                <Text className="text-muted">Privacy</Text>
-              </View>
-              <View className="py-3">
-                <Text className="text-muted">Help & Support</Text>
+
+              <View className="flex-row gap-4">
+                <View className="flex-1 bg-base-200 rounded-lg p-4">
+                  <View className="flex-row items-center gap-2 mb-2">
+                    <Ionicons name="calendar" size={16} color="#f59e0b" />
+                    <Text className="text-sm font-medium text-muted">
+                      This Month
+                    </Text>
+                  </View>
+                  {statsLoading ? (
+                    <ActivityIndicator size="small" color="#f59e0b" />
+                  ) : (
+                    <Text className="text-2xl font-bold text-base-content">
+                      {userStats.thisMonthSessions}
+                    </Text>
+                  )}
+                </View>
               </View>
             </View>
           </View>
 
           <View className="mb-6" />
 
-          {/* Logout Button */}
-          <TouchableOpacity
-            className="w-full py-3 rounded-lg bg-error"
+          {/* Enhanced Settings Card */}
+          <View
+            className="bg-base-300 rounded-xl p-6"
             style={{
               shadowColor: "#000",
               shadowOffset: {
                 width: 0,
-                height: 2,
+                height: 4,
               },
-              shadowOpacity: 0.25,
-              shadowRadius: 3.84,
-              elevation: 5,
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <View className="flex-row items-center mb-6">
+              <Ionicons name="settings" size={24} color="#ff4b8c" />
+              <Text className="text-xl font-bold text-base-content ml-3">
+                Settings
+              </Text>
+            </View>
+            <View className="gap-2">
+              <TouchableOpacity className="bg-base-200 rounded-lg p-4 flex-row items-center justify-between">
+                <View className="flex-row items-center gap-3">
+                  <View className="w-10 h-10 bg-primary/20 rounded-lg items-center justify-center">
+                    <Ionicons name="person" size={20} color="#ff4b8c" />
+                  </View>
+                  <View>
+                    <Text className="text-base-content font-medium">
+                      Edit Profile
+                    </Text>
+                    <Text className="text-muted text-sm">
+                      Update your personal information
+                    </Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+              </TouchableOpacity>
+
+              <TouchableOpacity className="bg-base-200 rounded-lg p-4 flex-row items-center justify-between">
+                <View className="flex-row items-center gap-3">
+                  <View className="w-10 h-10 bg-warning/20 rounded-lg items-center justify-center">
+                    <Ionicons name="notifications" size={20} color="#f59e0b" />
+                  </View>
+                  <View>
+                    <Text className="text-base-content font-medium">
+                      Notifications
+                    </Text>
+                    <Text className="text-muted text-sm">
+                      Manage your notification preferences
+                    </Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+              </TouchableOpacity>
+
+              <TouchableOpacity className="bg-base-200 rounded-lg p-4 flex-row items-center justify-between">
+                <View className="flex-row items-center gap-3">
+                  <View className="w-10 h-10 bg-success/20 rounded-lg items-center justify-center">
+                    <Ionicons
+                      name="shield-checkmark"
+                      size={20}
+                      color="#10b981"
+                    />
+                  </View>
+                  <View>
+                    <Text className="text-base-content font-medium">
+                      Privacy & Security
+                    </Text>
+                    <Text className="text-muted text-sm">
+                      Control your data and privacy
+                    </Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+              </TouchableOpacity>
+
+              <TouchableOpacity className="bg-base-200 rounded-lg p-4 flex-row items-center justify-between">
+                <View className="flex-row items-center gap-3">
+                  <View className="w-10 h-10 bg-info/20 rounded-lg items-center justify-center">
+                    <Ionicons name="help-circle" size={20} color="#3b82f6" />
+                  </View>
+                  <View>
+                    <Text className="text-base-content font-medium">
+                      Help & Support
+                    </Text>
+                    <Text className="text-muted text-sm">
+                      Get help and contact support
+                    </Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View className="mb-6" />
+
+          {/* Enhanced Logout Button */}
+          <TouchableOpacity
+            className="w-full py-4 rounded-xl bg-error flex-row items-center justify-center"
+            style={{
+              shadowColor: "#ef4444",
+              shadowOffset: {
+                width: 0,
+                height: 4,
+              },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
             }}
             onPress={handleLogout}
           >
-            <Text className="text-error-content text-center font-medium">
+            <Ionicons name="log-out" size={20} color="#ffffff" />
+            <Text className="text-error-content text-center font-bold ml-2 text-lg">
               Logout
             </Text>
           </TouchableOpacity>

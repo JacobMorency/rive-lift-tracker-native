@@ -88,61 +88,76 @@ const SessionTabs = ({ sessions, onSessionSelect }: SessionTabsProps) => {
     onSessionSelect(sessionId);
   };
 
+  const formatDuration = (startTime: string, endTime: string | null) => {
+    if (!endTime) return "In Progress";
+
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const diffMs = end.getTime() - start.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+
+    if (diffMins < 60) {
+      return `${diffMins}m`;
+    } else {
+      const hours = Math.floor(diffMins / 60);
+      const mins = diffMins % 60;
+      return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    }
+  };
+
+  const getWorkoutIcon = (workoutName: string) => {
+    return "barbell-outline" as const;
+  };
+
   return (
     <View className="mt-3">
-      {/* Tab Selector */}
-      <View className="flex-row justify-center mb-4">
-        <View
-          className="flex-row rounded-lg p-1"
-          style={{ backgroundColor: "#333333" }}
-        >
+      {/* Enhanced Tab Selector */}
+      <View className="flex-row justify-center mb-6">
+        <View className="flex-row bg-base-300 rounded-xl p-1">
           <TouchableOpacity
-            className="px-4 py-2 rounded-md"
-            style={{
-              backgroundColor:
-                selectedTab === "week" ? "#ff4b8c" : "transparent",
-            }}
+            className={`px-4 py-2 rounded-lg ${
+              selectedTab === "week" ? "bg-primary" : "bg-transparent"
+            }`}
             onPress={() => setSelectedTab("week")}
           >
             <Text
-              className="text-sm font-medium"
-              style={{
-                color: selectedTab === "week" ? "#ffffff" : "#fefbee",
-              }}
+              className={`text-sm font-medium ${
+                selectedTab === "week"
+                  ? "text-primary-content"
+                  : "text-base-content"
+              }`}
             >
               This Week
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className="px-4 py-2 rounded-md"
-            style={{
-              backgroundColor:
-                selectedTab === "month" ? "#ff4b8c" : "transparent",
-            }}
+            className={`px-4 py-2 rounded-lg ${
+              selectedTab === "month" ? "bg-primary" : "bg-transparent"
+            }`}
             onPress={() => setSelectedTab("month")}
           >
             <Text
-              className="text-sm font-medium"
-              style={{
-                color: selectedTab === "month" ? "#ffffff" : "#fefbee",
-              }}
+              className={`text-sm font-medium ${
+                selectedTab === "month"
+                  ? "text-primary-content"
+                  : "text-base-content"
+              }`}
             >
               This Month
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className="px-4 py-2 rounded-md"
-            style={{
-              backgroundColor:
-                selectedTab === "all" ? "#ff4b8c" : "transparent",
-            }}
+            className={`px-4 py-2 rounded-lg ${
+              selectedTab === "all" ? "bg-primary" : "bg-transparent"
+            }`}
             onPress={() => setSelectedTab("all")}
           >
             <Text
-              className="text-sm font-medium"
-              style={{
-                color: selectedTab === "all" ? "#ffffff" : "#fefbee",
-              }}
+              className={`text-sm font-medium ${
+                selectedTab === "all"
+                  ? "text-primary-content"
+                  : "text-base-content"
+              }`}
             >
               All Time
             </Text>
@@ -154,83 +169,106 @@ const SessionTabs = ({ sessions, onSessionSelect }: SessionTabsProps) => {
       {!loading && (
         <View className="px-4">
           {selectedSessions.length > 0 ? (
-            <View>
-              {selectedSessions.map((session, index) => (
-                <View key={session.id}>
-                  <TouchableOpacity
-                    className="rounded-lg p-4"
-                    style={{
-                      backgroundColor: "#333333",
-                      shadowColor: "#000",
-                      shadowOffset: {
-                        width: 0,
-                        height: 2,
-                      },
-                      shadowOpacity: 0.25,
-                      shadowRadius: 3.84,
-                      elevation: 5,
-                    }}
-                    onPress={() => handleSessionClick(session.id)}
-                  >
-                    <View className="flex-row items-center justify-between">
+            <View className="gap-4">
+              {selectedSessions.map((session) => (
+                <TouchableOpacity
+                  key={session.id}
+                  className="bg-base-200 rounded-xl p-4"
+                  style={{
+                    shadowColor: "#000",
+                    shadowOffset: {
+                      width: 0,
+                      height: 2,
+                    },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}
+                  onPress={() => handleSessionClick(session.id)}
+                >
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-1 flex-row items-center gap-3">
+                      {/* Workout Icon */}
+                      <View
+                        className={`w-12 h-12 rounded-xl items-center justify-center ${
+                          session.completed ? "bg-success/20" : "bg-warning/20"
+                        }`}
+                      >
+                        <Ionicons
+                          name={getWorkoutIcon(session.name)}
+                          size={24}
+                          color={session.completed ? "#10b981" : "#f59e0b"}
+                        />
+                      </View>
+
+                      {/* Session Info */}
                       <View className="flex-1">
-                        <Text
-                          className="text-lg font-medium"
-                          style={{ color: "#fefbee" }}
-                        >
+                        <Text className="text-lg font-semibold text-base-content">
                           {session.name}
                         </Text>
-                        <Text
-                          className="text-sm mt-1"
-                          style={{ color: "#9ca3af" }}
-                        >
-                          {new Date(session.started_at).toLocaleDateString()}
-                        </Text>
-                      </View>
-                      <View className="flex-row items-center gap-2">
-                        <View
-                          className="px-2 py-1 rounded-full"
-                          style={{
-                            backgroundColor: session.completed
-                              ? "#22c55e"
-                              : "#facc15",
-                          }}
-                        >
-                          <Text
-                            className="text-xs font-medium"
-                            style={{
-                              color: session.completed ? "#002d40" : "#002d40",
-                            }}
-                          >
-                            {session.completed ? "Completed" : "In Progress"}
+                        <View className="flex-row items-center gap-3 mt-1">
+                          <Text className="text-sm text-muted">
+                            {new Date(session.started_at).toLocaleDateString()}
+                          </Text>
+                          <Text className="text-sm text-muted">
+                            {formatDuration(
+                              session.started_at,
+                              session.ended_at
+                            )}
                           </Text>
                         </View>
-                        <Text className="text-xs" style={{ color: "#9ca3af" }}>
-                          ›
-                        </Text>
                       </View>
                     </View>
-                  </TouchableOpacity>
-                  {index < selectedSessions.length - 1 && (
-                    <View className="mb-3" />
-                  )}
-                </View>
+
+                    {/* Status and Arrow */}
+                    <View className="flex-row items-center gap-3">
+                      <View
+                        className={`px-3 py-1 rounded-full ${
+                          session.completed ? "bg-success/10" : "bg-warning/10"
+                        }`}
+                      >
+                        <Text
+                          className={`text-xs font-medium ${
+                            session.completed ? "text-success" : "text-warning"
+                          }`}
+                        >
+                          {session.completed ? "Completed" : "In Progress"}
+                        </Text>
+                      </View>
+                      <Ionicons
+                        name="chevron-forward"
+                        size={16}
+                        color="#9ca3af"
+                      />
+                    </View>
+                  </View>
+                </TouchableOpacity>
               ))}
             </View>
           ) : (
-            <View className="flex-1 justify-center items-center py-8">
-              <Ionicons name="play-circle-outline" size={64} color="#9ca3af" />
-              <Text
-                className="text-lg font-semibold mb-2 mt-4"
-                style={{ color: "#fefbee" }}
-              >
-                No Sessions
-              </Text>
-              <Text className="text-center" style={{ color: "#9ca3af" }}>
-                {selectedTab === "week" && "No sessions this week."}
-                {selectedTab === "month" && "No sessions this month."}
-                {selectedTab === "all" && "No sessions yet."}
-              </Text>
+            <View className="flex-1 justify-center items-center py-12">
+              <View className="items-center">
+                <View className="w-20 h-20 bg-base-300 rounded-full items-center justify-center mb-4">
+                  <Ionicons name="fitness-outline" size={40} color="#9ca3af" />
+                </View>
+                <Text className="text-xl font-bold text-base-content mb-2">
+                  No Sessions Yet
+                </Text>
+                <Text className="text-center text-muted mb-6 max-w-xs">
+                  {selectedTab === "week" &&
+                    "Start your week strong with a new workout session!"}
+                  {selectedTab === "month" &&
+                    "Ready to make this month count? Start a new session!"}
+                  {selectedTab === "all" &&
+                    "Ready to begin your fitness journey? Let's start with your first session!"}
+                </Text>
+                <View className="flex-row items-center gap-2">
+                  <Ionicons name="arrow-up" size={16} color="#ff4b8c" />
+                  <Text className="text-sm font-medium text-primary">
+                    Tap "Start New Session" above
+                  </Text>
+                </View>
+              </View>
             </View>
           )}
         </View>

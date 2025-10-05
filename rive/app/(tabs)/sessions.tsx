@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -39,13 +39,7 @@ export default function SessionsPage() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  useEffect(() => {
-    if (user) {
-      fetchSessions();
-    }
-  }, [user]);
-
-  const fetchSessions = async (): Promise<void> => {
+  const fetchSessions = useCallback(async (): Promise<void> => {
     if (!user) return;
 
     setLoading(true);
@@ -114,7 +108,13 @@ export default function SessionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchSessions();
+    }
+  }, [user, fetchSessions]);
 
   const handleNewSession = () => {
     setIsSelectWorkoutModalOpen(true);
@@ -179,15 +179,17 @@ export default function SessionsPage() {
 
   return (
     <View className="flex-1 bg-base-100">
-      {/* Header */}
+      {/* Enhanced Header */}
       <View
         className="bg-base-200 px-4 border-b border-base-300"
-        style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
+        style={{ paddingTop: insets.top + 16, paddingBottom: 20 }}
       >
-        <Text className="text-2xl font-bold text-base-content">Sessions</Text>
-        {userData && (
-          <Text className="text-muted mt-1">Track your workout sessions</Text>
-        )}
+        <View>
+          <Text className="text-2xl font-bold text-base-content">Sessions</Text>
+          {userData && (
+            <Text className="text-muted mt-1">Track your workout sessions</Text>
+          )}
+        </View>
       </View>
 
       {/* Content */}
@@ -195,15 +197,22 @@ export default function SessionsPage() {
         className="flex-1"
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
       >
-        {/* New Session Button */}
+        {/* Enhanced New Session Button */}
         <View className="px-4 py-4">
           <TouchableOpacity
-            className="w-full py-3 rounded-lg bg-primary flex-row items-center justify-center"
+            className="w-full py-4 rounded-xl bg-primary flex-row items-center justify-center"
             onPress={handleNewSession}
+            style={{
+              shadowColor: "#ff4b8c",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
           >
-            <Ionicons name="add-circle-outline" size={20} color="#ffffff" />
-            <Text className="text-primary-content text-center font-medium ml-2">
-              New Session
+            <Ionicons name="fitness" size={24} color="#ffffff" />
+            <Text className="text-primary-content text-center font-bold ml-3 text-lg">
+              Start New Session
             </Text>
           </TouchableOpacity>
         </View>
