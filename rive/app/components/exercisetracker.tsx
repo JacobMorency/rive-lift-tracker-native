@@ -128,7 +128,8 @@ const ExerciseTracker = ({
 
   // Get sets to display (last 3 or all if showAllSets is true, in reverse order)
   const getDisplaySets = () => {
-    const allSets = [...sets].reverse(); // Reverse to show latest first
+    if (!sets || sets.length === 0) return [];
+    const allSets = [...sets].reverse().filter((set) => set != null); // Reverse to show latest first and filter out null/undefined
     if (sets.length <= 3 || showAllSets) {
       return allSets;
     }
@@ -611,6 +612,9 @@ const ExerciseTracker = ({
             </View>
             <View className="gap-3">
               {getDisplaySets().map((set, index) => {
+                // Safety check for undefined/null set
+                if (!set) return null;
+
                 // Find the original index for proper removal
                 const originalIndex = sets.findIndex((s) => s === set);
                 const isEditing = editingSetIndex === originalIndex;
@@ -637,7 +641,7 @@ const ExerciseTracker = ({
                           <View className="flex-row items-center gap-2">
                             <View className="bg-warning w-8 h-8 rounded-full items-center justify-center">
                               <Text className="text-white text-sm font-bold">
-                                {editingSet?.set_number}
+                                {editingSet?.set_number || 0}
                               </Text>
                             </View>
                             <Text className="text-sm font-semibold text-base-content">
@@ -909,20 +913,20 @@ const ExerciseTracker = ({
                         <View className="flex-row items-center gap-4">
                           <View className="bg-success w-8 h-8 rounded-full items-center justify-center">
                             <Text className="text-white text-sm font-bold">
-                              {set.set_number}
+                              {set.set_number || 0}
                             </Text>
                           </View>
                           <View className="flex-row items-center gap-4">
                             <View className="items-center">
                               <Text className="text-xs text-muted">Reps</Text>
                               <Text className="text-base font-bold text-base-content">
-                                {set.reps}
+                                {set.reps || 0}
                               </Text>
                             </View>
                             <View className="items-center">
                               <Text className="text-xs text-muted">Weight</Text>
                               <Text className="text-base font-bold text-base-content">
-                                {set.weight} lbs
+                                {set.weight || 0} lbs
                               </Text>
                             </View>
                             {set.partialReps && set.partialReps > 0 && (
@@ -931,7 +935,7 @@ const ExerciseTracker = ({
                                   Partials
                                 </Text>
                                 <Text className="text-base font-bold text-warning">
-                                  +{set.partialReps}
+                                  +{set.partialReps || 0}
                                 </Text>
                               </View>
                             )}

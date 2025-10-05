@@ -135,44 +135,100 @@ const ExerciseSelector = ({
 
   return (
     <View className="flex-1 bg-base-100">
-      {/* Header */}
+      {/* Enhanced Header */}
       <View
-        className="flex-row items-center justify-between px-4 pb-4 border-b border-base-300"
+        className="bg-base-200 px-4 py-4 border-b border-base-300"
         style={{ paddingTop: insets.top + 16 }}
       >
-        <TouchableOpacity
-          onPress={onClose}
-          className="w-8 h-8 items-center justify-center"
-        >
-          <Ionicons name="close" size={24} color="#6b7280" />
-        </TouchableOpacity>
+        <View className="flex-row items-center justify-between mb-3">
+          <TouchableOpacity
+            onPress={onClose}
+            className="w-10 h-10 items-center justify-center rounded-full bg-base-300"
+          >
+            <Ionicons name="close" size={20} color="#6b7280" />
+          </TouchableOpacity>
 
-        <Text className="text-lg font-semibold text-base-content">
-          {workoutName ? `Add Exercises to "${workoutName}"` : title}
-        </Text>
+          <View className="flex-1 items-center">
+            <Text className="text-xl font-bold text-base-content">
+              {workoutName ? `Add Exercises to "${workoutName}"` : title}
+            </Text>
+            {selectedExercises.length > 0 && (
+              <Text className="text-sm text-muted mt-1">
+                {selectedExercises.length} exercise
+                {selectedExercises.length !== 1 ? "s" : ""} selected
+              </Text>
+            )}
+          </View>
 
-        <TouchableOpacity
-          onPress={handleConfirm}
-          className="w-8 h-8 items-center justify-center rounded-full bg-primary"
-        >
-          <Ionicons name="checkmark" size={20} color="#ffffff" />
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleConfirm}
+            className="w-10 h-10 items-center justify-center rounded-full bg-primary"
+            style={{
+              shadowColor: "#ff4b8c",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 4,
+            }}
+          >
+            <Ionicons name="checkmark" size={20} color="#ffffff" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Progress Indicator */}
+        <View className="flex-row items-center gap-2">
+          <View className="flex-1 h-2 bg-base-300 rounded-full overflow-hidden">
+            <View
+              className="h-full bg-primary rounded-full"
+              style={{ width: "100%" }}
+            />
+          </View>
+          <Text className="text-xs text-muted ml-2">Step 2 of 2</Text>
+        </View>
       </View>
 
       {/* Content */}
       <ScrollView className="flex-1 p-4">
-        {/* Filters */}
-        <View className="mb-4">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View className="flex-row gap-2">
+        {/* Enhanced Filters */}
+        <View className="mb-6">
+          <View className="flex-row items-center justify-between mb-3">
+            <Text className="text-lg font-semibold text-base-content">
+              Filter by Category
+            </Text>
+            {selectedExercises.length > 0 && (
               <TouchableOpacity
-                className={`px-4 py-2 rounded-full ${
+                onPress={() => setSelectedExercises([])}
+                className="flex-row items-center gap-1"
+              >
+                <Ionicons name="close-circle" size={16} color="#ef4444" />
+                <Text className="text-sm text-error">Clear All</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                className={`px-4 py-3 rounded-xl flex-row items-center gap-2 ${
                   selectedFilter === "" ? "bg-primary" : "bg-base-300"
                 }`}
                 onPress={() => setSelectedFilter("")}
+                style={{
+                  shadowColor:
+                    selectedFilter === "" ? "#ff4b8c" : "transparent",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 4,
+                  elevation: 3,
+                }}
               >
+                <Ionicons
+                  name="grid"
+                  size={16}
+                  color={selectedFilter === "" ? "#ffffff" : "#6b7280"}
+                />
                 <Text
-                  className={`text-sm ${
+                  className={`text-sm font-medium ${
                     selectedFilter === ""
                       ? "text-primary-content"
                       : "text-base-content"
@@ -181,16 +237,25 @@ const ExerciseSelector = ({
                   All
                 </Text>
               </TouchableOpacity>
+
               {["Chest", "Back", "Legs", "Arms"].map((filter) => (
                 <TouchableOpacity
                   key={filter}
-                  className={`px-4 py-2 rounded-full ${
+                  className={`px-4 py-3 rounded-xl ${
                     selectedFilter === filter ? "bg-primary" : "bg-base-300"
                   }`}
                   onPress={() => setSelectedFilter(filter)}
+                  style={{
+                    shadowColor:
+                      selectedFilter === filter ? "#ff4b8c" : "transparent",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}
                 >
                   <Text
-                    className={`text-sm ${
+                    className={`text-sm font-medium ${
                       selectedFilter === filter
                         ? "text-primary-content"
                         : "text-base-content"
@@ -204,56 +269,93 @@ const ExerciseSelector = ({
           </ScrollView>
         </View>
 
-        {/* Exercise List */}
+        {/* Enhanced Exercise List */}
         <View>
-          <Text className="text-sm font-semibold text-base-content mb-3">
-            {selectedFilter || "All"} Exercises ({filteredExercises.length})
-          </Text>
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-lg font-semibold text-base-content">
+              {selectedFilter || "All"} Exercises
+            </Text>
+            <View className="bg-primary/10 px-3 py-1 rounded-full">
+              <Text className="text-sm font-medium text-primary">
+                {filteredExercises.length} available
+              </Text>
+            </View>
+          </View>
 
           {loading ? (
-            <View className="flex-1 justify-center items-center py-8">
+            <View className="flex-1 justify-center items-center py-12">
               <ActivityIndicator size="large" color="#ff4b8c" />
-              <Text className="text-muted mt-2">Loading exercises...</Text>
+              <Text className="text-muted mt-3 text-center">
+                Loading exercises...
+              </Text>
             </View>
           ) : filteredExercises.length === 0 ? (
-            <View className="flex-1 justify-center items-center py-8">
-              <Text className="text-muted">No exercises found</Text>
+            <View className="flex-1 justify-center items-center py-12">
+              <View className="w-20 h-20 bg-base-300 rounded-full items-center justify-center mb-4">
+                <Ionicons name="search" size={32} color="#9ca3af" />
+              </View>
+              <Text className="text-lg font-semibold text-base-content mb-2">
+                No exercises found
+              </Text>
+              <Text className="text-muted text-center">
+                Try adjusting your search or filter criteria
+              </Text>
             </View>
           ) : (
-            <View>
-              {filteredExercises.map((exercise, index) => {
+            <View className="gap-2">
+              {filteredExercises.map((exercise) => {
                 const isSelected = selectedExercises.some(
                   (ex) => ex.id === exercise.id
                 );
 
                 return (
-                  <View key={exercise.id}>
-                    <View className="flex-row items-center gap-3 py-3">
-                      <TouchableOpacity
-                        className={`w-8 h-8 rounded-full items-center justify-center ${
-                          isSelected ? "bg-success" : "bg-base-300"
+                  <TouchableOpacity
+                    key={exercise.id}
+                    className={`rounded-xl p-4 ${
+                      isSelected
+                        ? "bg-primary/10 border-2 border-primary"
+                        : "bg-base-200 border-2 border-transparent"
+                    }`}
+                    onPress={() => handleExerciseToggle(exercise)}
+                    style={{
+                      shadowColor: isSelected ? "#ff4b8c" : "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: isSelected ? 0.15 : 0.05,
+                      shadowRadius: 4,
+                      elevation: 3,
+                    }}
+                  >
+                    <View className="flex-row items-center gap-4">
+                      <View
+                        className={`w-10 h-10 rounded-full items-center justify-center ${
+                          isSelected ? "bg-primary" : "bg-base-300"
                         }`}
-                        onPress={() => handleExerciseToggle(exercise)}
                       >
+                        <Ionicons
+                          name={isSelected ? "checkmark" : "add"}
+                          size={20}
+                          color={isSelected ? "#ffffff" : "#6b7280"}
+                        />
+                      </View>
+
+                      <View className="flex-1">
                         <Text
-                          className={`text-md font-bold ${isSelected ? "text-success-content" : "text-primary"}`}
+                          className={`text-lg font-semibold ${
+                            isSelected ? "text-primary" : "text-base-content"
+                          }`}
                         >
-                          {isSelected ? "✓" : "+"}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        className="flex-1"
-                        onPress={() => handleExerciseToggle(exercise)}
-                      >
-                        <Text className="text-base-content text-base">
                           {formatExerciseName(exercise.name)}
                         </Text>
-                      </TouchableOpacity>
+                        <View className="flex-row items-center gap-2 mt-1">
+                          <View className="bg-base-300 px-2 py-1 rounded-full">
+                            <Text className="text-xs text-muted">
+                              {exercise.category}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
                     </View>
-                    {index < filteredExercises.length - 1 && (
-                      <View className="border-b border-base-300" />
-                    )}
-                  </View>
+                  </TouchableOpacity>
                 );
               })}
             </View>
@@ -261,20 +363,38 @@ const ExerciseSelector = ({
         </View>
       </ScrollView>
 
-      {/* Floating Search Bar */}
+      {/* Enhanced Floating Search Bar */}
       <View
         className="px-6 pt-4 bg-base-100"
         style={{ paddingBottom: insets.bottom + 16 }}
       >
-        <View className="flex-row items-center bg-base-200 rounded-full px-4 py-3 shadow-lg border border-base-300">
+        <View
+          className="flex-row items-center bg-base-200 rounded-full px-4 py-3 border-2 border-base-300"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
+            elevation: 8,
+          }}
+        >
           <Ionicons name="search" size={20} color="#9ca3af" />
           <TextInput
-            className="flex-1 ml-3 text-base-content bg-transparent"
+            className="flex-1 ml-3 text-base-content bg-transparent text-base"
             placeholder="Search exercises..."
             placeholderTextColor="#9ca3af"
             value={searchValue}
             onChangeText={setSearchValue}
+            returnKeyType="search"
           />
+          {searchValue.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setSearchValue("")}
+              className="ml-2"
+            >
+              <Ionicons name="close-circle" size={20} color="#9ca3af" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>

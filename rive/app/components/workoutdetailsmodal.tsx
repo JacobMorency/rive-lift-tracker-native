@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -49,13 +49,7 @@ const WorkoutDetailsModal = ({
   const [showExerciseSelector, setShowExerciseSelector] = useState(false);
   const insets = useSafeAreaInsets();
 
-  useEffect(() => {
-    if (isOpen && workoutId) {
-      fetchWorkoutDetails();
-    }
-  }, [isOpen, workoutId]);
-
-  const fetchWorkoutDetails = async () => {
+  const fetchWorkoutDetails = useCallback(async () => {
     if (!workoutId) return;
 
     setLoading(true);
@@ -153,7 +147,13 @@ const WorkoutDetailsModal = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [workoutId]);
+
+  useEffect(() => {
+    if (isOpen && workoutId) {
+      fetchWorkoutDetails();
+    }
+  }, [isOpen, workoutId, fetchWorkoutDetails]);
 
   const handleAddExercise = () => {
     setShowExerciseSelector(true);
@@ -254,23 +254,45 @@ const WorkoutDetailsModal = ({
       presentationStyle="fullScreen"
     >
       <View className="flex-1 bg-base-100">
-        {/* Header */}
+        {/* Enhanced Header */}
         <View
-          className="flex-row items-center justify-between px-4 pb-4 border-b border-base-300"
+          className="bg-base-200 px-4 py-4 border-b border-base-300"
           style={{ paddingTop: insets.top + 16 }}
         >
-          <TouchableOpacity
-            onPress={onClose}
-            className="w-8 h-8 items-center justify-center"
-          >
-            <Ionicons name="close" size={24} color="#6b7280" />
-          </TouchableOpacity>
+          <View className="flex-row items-center justify-between mb-3">
+            <TouchableOpacity
+              onPress={onClose}
+              className="w-10 h-10 items-center justify-center rounded-full bg-base-300"
+            >
+              <Ionicons name="close" size={20} color="#6b7280" />
+            </TouchableOpacity>
 
-          <Text className="text-lg font-semibold text-base-content">
-            {loading ? "Loading..." : `${workoutDetails?.name || "Workout"}`}
-          </Text>
+            <View className="flex-1 items-center">
+              <Text className="text-xl font-bold text-base-content">
+                {loading
+                  ? "Loading..."
+                  : `${workoutDetails?.name || "Workout"}`}
+              </Text>
+              {workoutDetails && (
+                <Text className="text-sm text-muted mt-1">
+                  {workoutDetails.exercises.length} exercise
+                  {workoutDetails.exercises.length !== 1 ? "s" : ""}
+                </Text>
+              )}
+            </View>
 
-          <View className="w-8 h-8" />
+            <View className="w-10 h-10" />
+          </View>
+
+          {/* Workout Info */}
+          {workoutDetails && workoutDetails.description && (
+            <View className="bg-base-300 rounded-lg p-3">
+              <View className="flex-row items-center gap-2">
+                <Ionicons name="document-text" size={14} color="#9ca3af" />
+                <Text className="text-xs text-muted">Has description</Text>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Content */}
@@ -279,76 +301,114 @@ const WorkoutDetailsModal = ({
           contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
         >
           {loading ? (
-            <View className="flex-1 justify-center items-center py-8">
+            <View className="flex-1 justify-center items-center py-12">
               <ActivityIndicator size="large" color="#ff4b8c" />
-              <Text className="text-muted mt-2">
+              <Text className="text-muted mt-3 text-center">
                 Loading workout details...
               </Text>
             </View>
           ) : workoutDetails ? (
-            <View className="gap-4">
-              {/* Exercises */}
-              <View>
-                <View className="flex-row items-center justify-between mb-3">
-                  <Text className="text-lg font-semibold text-base-content">
-                    Exercises ({workoutDetails.exercises.length})
-                  </Text>
-                </View>
-                {workoutDetails.exercises.length === 0 ? (
-                  <View className="bg-base-200 rounded-lg p-6 items-center">
-                    <Ionicons
-                      name="barbell-outline"
-                      size={32}
-                      color="#9ca3af"
-                    />
-                    <Text className="text-muted mt-2 text-center">
-                      No exercises added to this workout.
-                    </Text>
-                    <Text className="text-muted text-sm text-center mt-1">
-                      Tap "Add" to add exercises to this template.
+            <View className="gap-6">
+              {/* Workout Description */}
+              {workoutDetails.description && (
+                <View className="bg-base-200 rounded-xl p-4">
+                  <View className="flex-row items-center gap-2 mb-2">
+                    <Ionicons name="document-text" size={16} color="#ff4b8c" />
+                    <Text className="text-sm font-semibold text-base-content">
+                      Description
                     </Text>
                   </View>
+                  <Text className="text-muted text-sm">
+                    {workoutDetails.description}
+                  </Text>
+                </View>
+              )}
+
+              {/* Exercises Section */}
+              <View>
+                <View className="flex-row items-center justify-between mb-4">
+                  <Text className="text-xl font-bold text-base-content">
+                    Exercises
+                  </Text>
+                  <View className="bg-primary/10 px-3 py-1 rounded-full">
+                    <Text className="text-sm font-medium text-primary">
+                      {workoutDetails.exercises.length} total
+                    </Text>
+                  </View>
+                </View>
+
+                {workoutDetails.exercises.length === 0 ? (
+                  <View className="bg-base-200 rounded-xl p-8 items-center">
+                    <View className="w-20 h-20 bg-base-300 rounded-full items-center justify-center mb-4">
+                      <Ionicons
+                        name="barbell-outline"
+                        size={40}
+                        color="#9ca3af"
+                      />
+                    </View>
+                    <Text className="text-xl font-bold text-base-content mb-2">
+                      No Exercises Yet
+                    </Text>
+                    <Text className="text-muted text-center mb-6 max-w-xs">
+                      This workout template is empty. Add some exercises to get
+                      started!
+                    </Text>
+                    <View className="flex-row items-center gap-2">
+                      <Ionicons name="arrow-down" size={16} color="#ff4b8c" />
+                      <Text className="text-sm font-medium text-primary">
+                        Tap &quot;Add Exercises&quot; below
+                      </Text>
+                    </View>
+                  </View>
                 ) : (
-                  <View>
+                  <View className="gap-3">
                     {workoutDetails.exercises.map((exercise, index) => (
-                      <View key={exercise.id}>
-                        <View
-                          className="flex-row items-center py-4 px-3 bg-base-300 rounded-lg"
-                          style={{
-                            shadowColor: "#000",
-                            shadowOffset: {
-                              width: 0,
-                              height: 1,
-                            },
-                            shadowOpacity: 0.15,
-                            shadowRadius: 2,
-                            elevation: 3,
-                          }}
-                        >
-                          <Ionicons
-                            name="barbell-outline"
-                            size={20}
-                            color="#ff4b8c"
-                          />
-                          <Text className="flex-1 text-base-content font-medium ml-3">
-                            {formatExerciseName(exercise.name)}
-                          </Text>
+                      <View
+                        key={exercise.id}
+                        className="bg-base-200 rounded-xl p-4"
+                        style={{
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.1,
+                          shadowRadius: 4,
+                          elevation: 3,
+                        }}
+                      >
+                        <View className="flex-row items-center gap-4">
+                          <View className="w-10 h-10 bg-primary/20 rounded-xl items-center justify-center">
+                            <Ionicons
+                              name="barbell-outline"
+                              size={20}
+                              color="#ff4b8c"
+                            />
+                          </View>
+
+                          <View className="flex-1">
+                            <Text className="text-lg font-semibold text-base-content">
+                              {formatExerciseName(exercise.name)}
+                            </Text>
+                            <View className="flex-row items-center gap-2 mt-1">
+                              <View className="bg-base-300 px-2 py-1 rounded-full">
+                                <Text className="text-xs text-muted">
+                                  {exercise.category}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+
                           <TouchableOpacity
-                            className="w-8 h-8 bg-error rounded-full items-center justify-center"
+                            className="w-10 h-10 bg-error/20 rounded-xl items-center justify-center"
                             onPress={() =>
                               handleRemoveExercise(exercise.id, exercise.name)
                             }
                           >
                             <Ionicons
                               name="trash-outline"
-                              size={16}
-                              color="#ffffff"
+                              size={18}
+                              color="#ef4444"
                             />
                           </TouchableOpacity>
                         </View>
-                        {index < workoutDetails.exercises.length - 1 && (
-                          <View className="mb-3" />
-                        )}
                       </View>
                     ))}
                   </View>
@@ -364,18 +424,26 @@ const WorkoutDetailsModal = ({
           )}
         </ScrollView>
 
-        {/* Footer Actions */}
+        {/* Enhanced Footer Actions */}
         {!loading && workoutDetails && (
           <View
             className="px-4 pt-4 border-t border-base-300"
             style={{ paddingBottom: insets.bottom + 16 }}
           >
             <TouchableOpacity
-              className="bg-primary py-3 px-4 rounded-lg items-center"
+              className="bg-primary py-4 px-6 rounded-xl flex-row items-center justify-center"
               onPress={handleAddExercise}
+              style={{
+                shadowColor: "#ff4b8c",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
             >
-              <Text className="text-primary-content font-medium">
-                + Add Exercises
+              <Ionicons name="add-circle" size={20} color="#ffffff" />
+              <Text className="text-primary-content font-bold ml-2 text-lg">
+                Add Exercises
               </Text>
             </TouchableOpacity>
           </View>
