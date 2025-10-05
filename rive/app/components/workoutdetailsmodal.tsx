@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Modal,
   Alert,
+  TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -27,6 +28,8 @@ type WorkoutDetailsModalProps = {
   isOpen: boolean;
   onClose: () => void;
   workoutId: string | null;
+  onWorkoutUpdated?: () => void;
+  onWorkoutDeleted?: () => void;
 };
 
 type WorkoutDetails = {
@@ -41,12 +44,16 @@ const WorkoutDetailsModal = ({
   isOpen,
   onClose,
   workoutId,
+  onWorkoutUpdated,
+  onWorkoutDeleted,
 }: WorkoutDetailsModalProps) => {
   const [workoutDetails, setWorkoutDetails] = useState<WorkoutDetails | null>(
     null
   );
   const [loading, setLoading] = useState(false);
   const [showExerciseSelector, setShowExerciseSelector] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editingName, setEditingName] = useState("");
   const insets = useSafeAreaInsets();
 
   const fetchWorkoutDetails = useCallback(async () => {
@@ -218,6 +225,84 @@ const WorkoutDetailsModal = ({
     setShowExerciseSelector(false);
   };
 
+  const handleEditName = () => {
+    if (workoutDetails) {
+      setEditingName(workoutDetails.name);
+      setIsEditingName(true);
+    }
+  };
+
+  const handleSaveName = async () => {
+    if (!workoutId || !editingName.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from("workouts")
+        .update({ name: editingName.trim() })
+        .eq("id", workoutId);
+
+      if (error) {
+        console.error("Error updating workout name:", error);
+        Alert.alert("Error", "Failed to update workout name");
+        return;
+      }
+
+      // Update local state
+      setWorkoutDetails((prev) =>
+        prev ? { ...prev, name: editingName.trim() } : null
+      );
+      setIsEditingName(false);
+      onWorkoutUpdated?.();
+    } catch (error) {
+      console.error("Error updating workout name:", error);
+      Alert.alert("Error", "Failed to update workout name");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingName(false);
+    setEditingName("");
+  };
+
+  const handleDeleteWorkout = () => {
+    if (!workoutDetails) return;
+
+    Alert.alert(
+      "Delete Workout",
+      `Are you sure you want to delete "${workoutDetails.name}"? This action cannot be undone.`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const { error } = await supabase
+                .from("workouts")
+                .delete()
+                .eq("id", workoutId);
+
+              if (error) {
+                console.error("Error deleting workout:", error);
+                Alert.alert("Error", "Failed to delete workout");
+                return;
+              }
+
+              onWorkoutDeleted?.();
+              onClose();
+            } catch (error) {
+              console.error("Error deleting workout:", error);
+              Alert.alert("Error", "Failed to delete workout");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const formatExerciseName = (name: string) => {
     return name
       .split("_")
@@ -268,11 +353,39 @@ const WorkoutDetailsModal = ({
             </TouchableOpacity>
 
             <View className="flex-1 items-center">
-              <Text className="text-xl font-bold text-base-content">
-                {loading
-                  ? "Loading..."
-                  : `${workoutDetails?.name || "Workout"}`}
-              </Text>
+              {isEditingName ? (
+                <View className="flex-row items-center gap-2">
+                  <TextInput
+                    className="text-xl font-bold text-base-content bg-base-300 px-3 py-1 rounded-lg"
+                    value={editingName}
+                    onChangeText={setEditingName}
+                    autoFocus
+                    selectTextOnFocus
+                    onSubmitEditing={handleSaveName}
+                    returnKeyType="done"
+                  />
+                  <TouchableOpacity
+                    onPress={handleSaveName}
+                    className="w-6 h-6 bg-success rounded-full items-center justify-center"
+                  >
+                    <Ionicons name="checkmark" size={14} color="#ffffff" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleCancelEdit}
+                    className="w-6 h-6 bg-error rounded-full items-center justify-center"
+                  >
+                    <Ionicons name="close" size={14} color="#ffffff" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity onPress={handleEditName}>
+                  <Text className="text-xl font-bold text-base-content">
+                    {loading
+                      ? "Loading..."
+                      : `${workoutDetails?.name || "Workout"}`}
+                  </Text>
+                </TouchableOpacity>
+              )}
               {workoutDetails && (
                 <Text className="text-sm text-muted mt-1">
                   {workoutDetails.exercises.length} exercise
@@ -281,7 +394,14 @@ const WorkoutDetailsModal = ({
               )}
             </View>
 
-            <View className="w-10 h-10" />
+            <View className="flex-row items-center gap-2">
+              <TouchableOpacity
+                onPress={handleDeleteWorkout}
+                className="w-10 h-10 items-center justify-center rounded-full bg-error/20"
+              >
+                <Ionicons name="trash-outline" size={20} color="#ef4444" />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Workout Info */}

@@ -120,6 +120,16 @@ export default function WorkoutsPage() {
     fetchWorkoutTemplates();
   };
 
+  const handleWorkoutUpdated = () => {
+    // Refresh templates when a workout is updated
+    fetchWorkoutTemplates();
+  };
+
+  const handleWorkoutDeleted = () => {
+    // Refresh templates when a workout is deleted
+    fetchWorkoutTemplates();
+  };
+
   return (
     <View className="flex-1 bg-base-100">
       {/* Enhanced Header */}
@@ -324,6 +334,8 @@ export default function WorkoutsPage() {
         isOpen={isDetailsModalOpen}
         onClose={handleCloseDetailsModal}
         workoutId={selectedWorkoutId}
+        onWorkoutUpdated={handleWorkoutUpdated}
+        onWorkoutDeleted={handleWorkoutDeleted}
       />
     </View>
   );
