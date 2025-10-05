@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Rive - Lift Tracker",
-    "slug": "rive-lift-tracker",
+    "slug": "rive",
     "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
