@@ -174,9 +174,6 @@ export default function WorkoutsPage() {
                   <Text className="text-primary-content font-bold text-lg">
                     Create New Workout
                   </Text>
-                  <Text className="text-primary-content/80 text-sm mt-1">
-                    Build your custom workout template
-                  </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#ffffff" />
               </View>
@@ -200,9 +197,6 @@ export default function WorkoutsPage() {
                 <View className="flex-1">
                   <Text className="text-base-content font-bold text-lg">
                     Quick Start Session
-                  </Text>
-                  <Text className="text-muted text-sm mt-1">
-                    Jump into a workout right away
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
@@ -228,7 +222,7 @@ export default function WorkoutsPage() {
                 <Text className="text-muted ml-2">Loading templates...</Text>
               </View>
             ) : workoutTemplates.length === 0 ? (
-              <View className="bg-base-200 rounded-xl p-8 items-center">
+              <View className="items-center py-12">
                 <View className="w-20 h-20 bg-base-300 rounded-full items-center justify-center mb-4">
                   <Ionicons name="barbell-outline" size={40} color="#9ca3af" />
                 </View>
@@ -247,11 +241,11 @@ export default function WorkoutsPage() {
                 </View>
               </View>
             ) : (
-              <View className="gap-4">
+              <View className="gap-3">
                 {workoutTemplates.map((template) => (
                   <TouchableOpacity
                     key={template.id}
-                    className="bg-base-200 rounded-xl p-4"
+                    className="bg-base-200 rounded-xl p-3"
                     onPress={() => handleViewWorkoutDetails(template.id)}
                     style={{
                       shadowColor: "#000",
@@ -263,50 +257,29 @@ export default function WorkoutsPage() {
                   >
                     <View className="flex-row items-center justify-between">
                       <View className="flex-1 flex-row items-center gap-3">
-                        {/* Workout Icon */}
-                        <View className="w-12 h-12 bg-primary/20 rounded-xl items-center justify-center">
-                          <Ionicons
-                            name="barbell-outline"
-                            size={24}
-                            color="#ff4b8c"
-                          />
-                        </View>
-
                         {/* Template Info */}
                         <View className="flex-1">
-                          <Text className="text-base-content font-semibold text-lg">
+                          <Text className="text-base-content font-semibold">
                             {template.name}
                           </Text>
                           {template.description && (
-                            <Text className="text-muted text-sm mt-1">
+                            <Text className="text-muted text-sm mt-0.5">
                               {template.description}
                             </Text>
                           )}
-                          <View className="flex-row items-center gap-3 mt-2">
-                            <View className="flex-row items-center gap-1">
-                              <Ionicons name="list" size={14} color="#9ca3af" />
-                              <Text className="text-muted text-xs">
-                                {template.exercises.length} exercise
-                                {template.exercises.length !== 1 ? "s" : ""}
-                              </Text>
-                            </View>
-                            <View className="flex-row items-center gap-1">
-                              <Ionicons
-                                name="calendar"
-                                size={14}
-                                color="#9ca3af"
-                              />
-                              <Text className="text-muted text-xs">
-                                {new Date(
-                                  template.created_at
-                                ).toLocaleDateString()}
-                              </Text>
-                            </View>
+                          <View className="flex-row items-center gap-2 mt-1">
+                            <Text className="text-muted text-xs">
+                              {template.exercises.length} exercise
+                              {template.exercises.length !== 1 ? "s" : ""}
+                            </Text>
+                            <Text className="text-muted text-xs">
+                              {new Date(
+                                template.created_at
+                              ).toLocaleDateString()}
+                            </Text>
                           </View>
                         </View>
                       </View>
-
-                      {/* Arrow */}
                       <Ionicons
                         name="chevron-forward"
                         size={20}
