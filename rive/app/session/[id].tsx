@@ -54,6 +54,9 @@ type RawExerciseSet = {
   reps: number;
   weight: number;
   partial_reps: number;
+  is_unilateral?: boolean;
+  left_reps?: number;
+  right_reps?: number;
   created_at: string;
 };
 
@@ -248,6 +251,9 @@ export default function SessionDetailPage() {
             reps,
             weight,
             partial_reps,
+            is_unilateral,
+            left_reps,
+            right_reps,
             created_at
           )
         `
@@ -286,6 +292,9 @@ export default function SessionDetailPage() {
             weight: set.weight,
             partialReps: set.partial_reps,
             set_number: index + 1,
+            is_unilateral: set.is_unilateral || false,
+            left_reps: set.left_reps || null,
+            right_reps: set.right_reps || null,
           }));
 
           updatedProgress[exerciseIndex] = {
@@ -387,9 +396,12 @@ export default function SessionDetailPage() {
       if (sets.length > 0) {
         const setsToInsert = sets.map((set) => ({
           session_exercise_id: sessionExerciseData.id,
-          reps: set.reps,
+          reps: set.is_unilateral ? set.left_reps || 0 : set.reps, // Use left_reps for unilateral, regular reps otherwise
           weight: set.weight,
           partial_reps: set.partialReps || 0,
+          is_unilateral: set.is_unilateral || false,
+          left_reps: set.left_reps || null,
+          right_reps: set.right_reps || null,
         }));
 
         const { error: setsError } = await supabase
