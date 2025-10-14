@@ -236,12 +236,7 @@ const ExerciseTracker = ({
                   Compare to Last Session
                 </Text>
               </View>
-              <View className="flex-row items-center gap-2">
-                <View className="bg-primary/10 px-2 py-1 rounded">
-                  <Text className="text-primary text-xs font-medium">
-                    Beat Last Session
-                  </Text>
-                </View>
+              <View className="flex-row items-center">
                 <Ionicons
                   name={isComparisonExpanded ? "chevron-up" : "chevron-down"}
                   size={16}
