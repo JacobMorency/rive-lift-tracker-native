@@ -57,7 +57,9 @@ const ExerciseTracker = ({
   const [showAllSets, setShowAllSets] = useState<boolean>(false);
   const [editingSetIndex, setEditingSetIndex] = useState<number | null>(null);
   const [editingSet, setEditingSet] = useState<ExerciseSet | null>(null);
-  const [isComparisonExpanded, setIsComparisonExpanded] = useState(true);
+  const [isComparisonExpanded, setIsComparisonExpanded] = useState(
+    lastSessionSets.length > 0
+  );
   const insets = useSafeAreaInsets();
 
   // No refs needed - users will use buttons instead of keyboard navigation
@@ -232,9 +234,19 @@ const ExerciseTracker = ({
             >
               <View className="flex-row items-center">
                 <Ionicons name="trending-up" size={16} color="#10b981" />
-                <Text className="text-sm font-semibold text-base-content ml-2">
-                  Compare to Last Session
-                </Text>
+                <View className="ml-2">
+                  <Text className="text-sm font-semibold text-base-content">
+                    Compare to Last Session
+                  </Text>
+                  {lastSessionSets.length > 0 &&
+                    lastSessionSets[0].created_at && (
+                      <Text className="text-xs text-muted">
+                        {new Date(
+                          lastSessionSets[0].created_at
+                        ).toLocaleDateString()}
+                      </Text>
+                    )}
+                </View>
               </View>
               <View className="flex-row items-center">
                 <Ionicons
@@ -274,6 +286,18 @@ const ExerciseTracker = ({
                         ? "down"
                         : "same"
                     : "neutral";
+
+                  // Calculate percentage improvements
+                  const weightPercentage =
+                    lastWeight > 0
+                      ? Math.round(
+                          ((currentWeight - lastWeight) / lastWeight) * 100
+                        )
+                      : 0;
+                  const repsPercentage =
+                    lastReps > 0
+                      ? Math.round(((currentReps - lastReps) / lastReps) * 100)
+                      : 0;
 
                   return (
                     <View key={index} className="bg-base-200 rounded-lg p-3">
@@ -346,19 +370,35 @@ const ExerciseTracker = ({
                                       : "bg-base-300"
                               }`}
                             >
-                              <Text
-                                className={`text-sm font-semibold ${
-                                  weightProgress === "up"
-                                    ? "text-success"
-                                    : weightProgress === "down"
-                                      ? "text-error"
-                                      : weightProgress === "neutral"
-                                        ? "text-muted"
-                                        : "text-base-content"
-                                }`}
-                              >
-                                {currentWeight || "--"} lbs
-                              </Text>
+                              <View>
+                                <Text
+                                  className={`text-sm font-semibold ${
+                                    weightProgress === "up"
+                                      ? "text-success"
+                                      : weightProgress === "down"
+                                        ? "text-error"
+                                        : weightProgress === "neutral"
+                                          ? "text-muted"
+                                          : "text-base-content"
+                                  }`}
+                                >
+                                  {currentWeight || "--"} lbs
+                                </Text>
+                                {hasCurrentData && weightPercentage !== 0 && (
+                                  <Text
+                                    className={`text-xs ${
+                                      weightProgress === "up"
+                                        ? "text-success"
+                                        : weightProgress === "down"
+                                          ? "text-error"
+                                          : "text-muted"
+                                    }`}
+                                  >
+                                    {weightPercentage > 0 ? "+" : ""}
+                                    {weightPercentage}%
+                                  </Text>
+                                )}
+                              </View>
                             </View>
                             <View
                               className={`px-2 py-1 rounded ${
@@ -371,19 +411,35 @@ const ExerciseTracker = ({
                                       : "bg-base-300"
                               }`}
                             >
-                              <Text
-                                className={`text-sm font-semibold ${
-                                  repsProgress === "up"
-                                    ? "text-success"
-                                    : repsProgress === "down"
-                                      ? "text-error"
-                                      : repsProgress === "neutral"
-                                        ? "text-muted"
-                                        : "text-base-content"
-                                }`}
-                              >
-                                {currentReps || "--"} reps
-                              </Text>
+                              <View>
+                                <Text
+                                  className={`text-sm font-semibold ${
+                                    repsProgress === "up"
+                                      ? "text-success"
+                                      : repsProgress === "down"
+                                        ? "text-error"
+                                        : repsProgress === "neutral"
+                                          ? "text-muted"
+                                          : "text-base-content"
+                                  }`}
+                                >
+                                  {currentReps || "--"} reps
+                                </Text>
+                                {hasCurrentData && repsPercentage !== 0 && (
+                                  <Text
+                                    className={`text-xs ${
+                                      repsProgress === "up"
+                                        ? "text-success"
+                                        : repsProgress === "down"
+                                          ? "text-error"
+                                          : "text-muted"
+                                    }`}
+                                  >
+                                    {repsPercentage > 0 ? "+" : ""}
+                                    {repsPercentage}%
+                                  </Text>
+                                )}
+                              </View>
                             </View>
                           </View>
                         </View>
@@ -487,10 +543,24 @@ const ExerciseTracker = ({
                 )}
               </View>
             ) : (
-              <View className="py-2">
-                <Text className="text-sm text-muted text-center">
-                  Tap to expand comparison
-                </Text>
+              <View className="py-4">
+                <View className="items-center">
+                  <Ionicons
+                    name="information-circle-outline"
+                    size={24}
+                    color="#6b7280"
+                  />
+                  <Text className="text-sm text-muted text-center mt-2">
+                    {lastSessionSets.length === 0
+                      ? "No previous session data available"
+                      : "Tap to expand comparison"}
+                  </Text>
+                  {lastSessionSets.length === 0 && (
+                    <Text className="text-xs text-muted text-center mt-1">
+                      Complete this exercise to start tracking progress
+                    </Text>
+                  )}
+                </View>
               </View>
             )}
           </View>

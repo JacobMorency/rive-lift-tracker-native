@@ -2,6 +2,64 @@ import { supabase } from "./supabaseClient";
 
 export type Timeframe = "week" | "month" | "year" | "all";
 
+export type DateRange = {
+  type: "week" | "month" | "year" | "all" | "custom";
+  startDate?: Date;
+  endDate?: Date;
+};
+
+export type ExerciseProgressData = {
+  exerciseId: number;
+  exerciseName: string;
+  dataPoints: { date: string; volume: number; maxWeight: number }[];
+  currentPR: number;
+  prHistory: { date: string; weight: number }[];
+  progression: {
+    volumeChange: number;
+    weightChange: number;
+    volumePercentage: number;
+    weightPercentage: number;
+    trend: "up" | "down" | "stable";
+  };
+};
+
+export type VolumeDataPoint = {
+  date: string;
+  volume: number;
+  maxWeight: number;
+  maxReps: number;
+};
+
+export type MuscleGroupVolume = {
+  muscleGroup: string;
+  totalVolume: number;
+  percentage: number;
+  color: string;
+};
+
+export type BalanceMetrics = {
+  pushVolume: number;
+  pullVolume: number;
+  legsVolume: number;
+  pushPercentage: number;
+  pullPercentage: number;
+  legsPercentage: number;
+};
+
+export type SessionTrend = {
+  date: string;
+  duration: number;
+  volume: number;
+  exercises: number;
+};
+
+export type TimeOfDayStats = {
+  hour: number;
+  averageVolume: number;
+  sessionCount: number;
+  averageDuration: number;
+};
+
 export type ExerciseSet = {
   id: string;
   reps: number | null;
@@ -41,6 +99,28 @@ export type UserStats = {
   active_days_this_month: number;
   personal_records: PersonalRecord[];
   recent_sessions: SessionStats[];
+};
+
+export type TrackedPR = {
+  exerciseId: number;
+  exerciseName: string;
+  category: string;
+  maxWeight: number;
+  maxWeightReps: number;
+  maxWeightDate: string;
+  maxReps: number;
+  maxRepsWeight: number;
+  maxRepsDate: string;
+  prHistory: PRHistoryEntry[];
+};
+
+export type PRHistoryEntry = {
+  date: string;
+  type: "weight" | "reps";
+  value: number;
+  reps?: number;
+  weight?: number;
+  sessionId: string;
 };
 
 /**
@@ -523,6 +603,710 @@ export const getLastSessionData = async (
 };
 
 /**
+ * Get date range for filtering queries
+ */
+export const getDateRangeFilter = (dateRange: DateRange) => {
+  if (dateRange.type === "all") return {};
+
+  let startDate: Date;
+  let endDate = new Date();
+
+  switch (dateRange.type) {
+    case "week":
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - 7);
+      break;
+    case "month":
+      startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 1);
+      break;
+    case "year":
+      startDate = new Date();
+      startDate.setFullYear(startDate.getFullYear() - 1);
+      break;
+    case "custom":
+      startDate = dateRange.startDate || new Date();
+      endDate = dateRange.endDate || new Date();
+      break;
+    default:
+      return {};
+  }
+
+  return {
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+  };
+};
+
+/**
+ * Get exercise progress data for a specific exercise
+ */
+export async function getExerciseProgressData(
+  userId: string,
+  exerciseId: number,
+  dateRange: DateRange = { type: "all" }
+): Promise<ExerciseProgressData> {
+  try {
+    const dateFilter = getDateRangeFilter(dateRange);
+
+    // Get exercise name
+    const { data: exercise, error: exerciseError } = await supabase
+      .from("exercise_library")
+      .select("name")
+      .eq("id", exerciseId)
+      .maybeSingle();
+
+    if (exerciseError || !exercise) {
+      console.error("Error fetching exercise:", exerciseError);
+      return {
+        exerciseId,
+        exerciseName: "Unknown Exercise",
+        dataPoints: [],
+        currentPR: 0,
+        prHistory: [],
+        progression: {
+          volumeChange: 0,
+          weightChange: 0,
+          volumePercentage: 0,
+          weightPercentage: 0,
+          trend: "stable",
+        },
+      };
+    }
+
+    // Get exercise sets with date filtering
+    let query = supabase
+      .from("exercise_sets")
+      .select(
+        `
+        weight,
+        reps,
+        left_reps,
+        right_reps,
+        is_unilateral,
+        created_at,
+        session_exercises!inner(
+          session_id,
+          exercise_id,
+          workout_sessions!inner(
+            started_at,
+            user_id
+          )
+        )
+      `
+      )
+      .eq("session_exercises.exercise_id", exerciseId)
+      .eq("session_exercises.workout_sessions.user_id", userId)
+      .order("created_at", { ascending: true });
+
+    if (dateFilter.startDate) {
+      query = query.gte("created_at", dateFilter.startDate);
+    }
+    if (dateFilter.endDate) {
+      query = query.lte("created_at", dateFilter.endDate);
+    }
+
+    const { data: exerciseSets, error: setsError } = await query;
+
+    if (setsError) {
+      console.error("Error fetching exercise sets:", setsError);
+      return {
+        exerciseId,
+        exerciseName: exercise.name,
+        dataPoints: [],
+        currentPR: 0,
+        prHistory: [],
+        progression: {
+          volumeChange: 0,
+          weightChange: 0,
+          volumePercentage: 0,
+          weightPercentage: 0,
+          trend: "stable",
+        },
+      };
+    }
+
+    // Group by date and calculate daily stats
+    const dailyStats = new Map<
+      string,
+      { volume: number; maxWeight: number; maxReps: number }
+    >();
+
+    exerciseSets?.forEach((set: any) => {
+      const date = new Date(set.created_at).toISOString().split("T")[0];
+      const weight = set.weight || 0;
+      const reps = set.is_unilateral
+        ? (set.left_reps || 0) + (set.right_reps || 0)
+        : set.reps || 0;
+      const volume = weight * reps;
+
+      if (!dailyStats.has(date)) {
+        dailyStats.set(date, { volume: 0, maxWeight: 0, maxReps: 0 });
+      }
+
+      const dayStats = dailyStats.get(date)!;
+      dayStats.volume += volume;
+      dayStats.maxWeight = Math.max(dayStats.maxWeight, weight);
+      dayStats.maxReps = Math.max(dayStats.maxReps, reps);
+    });
+
+    // Convert to data points
+    const dataPoints = Array.from(dailyStats.entries()).map(
+      ([date, stats]) => ({
+        date,
+        volume: stats.volume,
+        maxWeight: stats.maxWeight,
+      })
+    );
+
+    // Calculate current PR
+    const currentPR = Math.max(...dataPoints.map((dp) => dp.maxWeight), 0);
+
+    // Get PR history
+    const prHistory = dataPoints
+      .filter((dp) => dp.maxWeight > 0)
+      .map((dp) => ({ date: dp.date, weight: dp.maxWeight }));
+
+    // Calculate progression
+    let progression = {
+      volumeChange: 0,
+      weightChange: 0,
+      volumePercentage: 0,
+      weightPercentage: 0,
+      trend: "stable" as "up" | "down" | "stable",
+    };
+
+    if (dataPoints.length >= 2) {
+      // Compare first half vs second half of data points
+      const midpoint = Math.floor(dataPoints.length / 2);
+      const firstHalf = dataPoints.slice(0, midpoint);
+      const secondHalf = dataPoints.slice(midpoint);
+
+      // Calculate averages
+      const firstHalfAvgVolume =
+        firstHalf.reduce((sum, dp) => sum + dp.volume, 0) / firstHalf.length;
+      const secondHalfAvgVolume =
+        secondHalf.reduce((sum, dp) => sum + dp.volume, 0) / secondHalf.length;
+      const firstHalfAvgWeight =
+        firstHalf.reduce((sum, dp) => sum + dp.maxWeight, 0) / firstHalf.length;
+      const secondHalfAvgWeight =
+        secondHalf.reduce((sum, dp) => sum + dp.maxWeight, 0) /
+        secondHalf.length;
+
+      // Calculate changes
+      progression.volumeChange = secondHalfAvgVolume - firstHalfAvgVolume;
+      progression.weightChange = secondHalfAvgWeight - firstHalfAvgWeight;
+      progression.volumePercentage =
+        firstHalfAvgVolume > 0
+          ? (progression.volumeChange / firstHalfAvgVolume) * 100
+          : 0;
+      progression.weightPercentage =
+        firstHalfAvgWeight > 0
+          ? (progression.weightChange / firstHalfAvgWeight) * 100
+          : 0;
+
+      // Determine trend based on volume change (primary metric)
+      if (progression.volumePercentage > 5) {
+        progression.trend = "up";
+      } else if (progression.volumePercentage < -5) {
+        progression.trend = "down";
+      } else {
+        progression.trend = "stable";
+      }
+    }
+
+    return {
+      exerciseId,
+      exerciseName: exercise.name,
+      dataPoints,
+      currentPR,
+      prHistory,
+      progression,
+    };
+  } catch (error) {
+    console.error("Error in getExerciseProgressData:", error);
+    return {
+      exerciseId,
+      exerciseName: "Unknown Exercise",
+      dataPoints: [],
+      currentPR: 0,
+      prHistory: [],
+      progression: {
+        volumeChange: 0,
+        weightChange: 0,
+        volumePercentage: 0,
+        weightPercentage: 0,
+        trend: "stable",
+      },
+    };
+  }
+}
+
+/**
+ * Get volume by muscle group
+ */
+export async function getVolumeByMuscleGroup(
+  userId: string,
+  dateRange: DateRange = { type: "all" }
+): Promise<MuscleGroupVolume[]> {
+  try {
+    const dateFilter = getDateRangeFilter(dateRange);
+
+    // Get all exercise sets with exercise categories
+    let query = supabase
+      .from("exercise_sets")
+      .select(
+        `
+        weight,
+        reps,
+        left_reps,
+        right_reps,
+        is_unilateral,
+        session_exercises!inner(
+          exercise_id,
+          workout_sessions!inner(
+            user_id,
+            started_at
+          )
+        )
+      `
+      )
+      .eq("session_exercises.workout_sessions.user_id", userId)
+      .order("created_at", { ascending: true });
+
+    if (dateFilter.startDate) {
+      query = query.gte(
+        "session_exercises.workout_sessions.started_at",
+        dateFilter.startDate
+      );
+    }
+    if (dateFilter.endDate) {
+      query = query.lte(
+        "session_exercises.workout_sessions.started_at",
+        dateFilter.endDate
+      );
+    }
+
+    const { data: exerciseSets, error: setsError } = await query;
+
+    if (setsError) {
+      console.error("Error fetching exercise sets:", setsError);
+      return [];
+    }
+
+    // Get exercise categories
+    const exerciseIds = [
+      ...new Set(
+        exerciseSets?.map((set: any) => set.session_exercises.exercise_id) || []
+      ),
+    ];
+    const { data: exercises, error: exercisesError } = await supabase
+      .from("exercise_library")
+      .select("id, category")
+      .in("id", exerciseIds);
+
+    if (exercisesError) {
+      console.error("Error fetching exercises:", exercisesError);
+      return [];
+    }
+
+    // Create exercise to category mapping
+    const exerciseCategoryMap = new Map<number, string>();
+    exercises?.forEach((exercise) => {
+      exerciseCategoryMap.set(exercise.id, exercise.category);
+    });
+
+    // Calculate volume by muscle group
+    const muscleGroupVolume = new Map<string, number>();
+
+    exerciseSets?.forEach((set: any) => {
+      const category =
+        exerciseCategoryMap.get(set.session_exercises.exercise_id) || "Other";
+      const weight = set.weight || 0;
+      const reps = set.is_unilateral
+        ? (set.left_reps || 0) + (set.right_reps || 0)
+        : set.reps || 0;
+      const volume = weight * reps;
+
+      muscleGroupVolume.set(
+        category,
+        (muscleGroupVolume.get(category) || 0) + volume
+      );
+    });
+
+    // Convert to array with percentages and colors
+    const totalVolume = Array.from(muscleGroupVolume.values()).reduce(
+      (sum, vol) => sum + vol,
+      0
+    );
+    const colors = [
+      "#ff4b8c",
+      "#10b981",
+      "#f59e0b",
+      "#3b82f6",
+      "#8b5cf6",
+      "#ef4444",
+      "#06b6d4",
+    ];
+
+    return Array.from(muscleGroupVolume.entries()).map(
+      ([muscleGroup, volume], index) => ({
+        muscleGroup,
+        totalVolume: volume,
+        percentage:
+          totalVolume > 0 ? Math.round((volume / totalVolume) * 100) : 0,
+        color: colors[index % colors.length],
+      })
+    );
+  } catch (error) {
+    console.error("Error in getVolumeByMuscleGroup:", error);
+    return [];
+  }
+}
+
+/**
+ * Get push/pull/legs balance metrics
+ */
+export async function getPushPullBalance(
+  userId: string,
+  dateRange: DateRange = { type: "all" }
+): Promise<BalanceMetrics> {
+  try {
+    const muscleGroupVolumes = await getVolumeByMuscleGroup(userId, dateRange);
+
+    // Categorize muscle groups
+    const pushGroups = ["Chest", "Shoulders", "Triceps"];
+    const pullGroups = ["Back", "Biceps"];
+    const legsGroups = ["Legs", "Glutes", "Calves"];
+
+    let pushVolume = 0;
+    let pullVolume = 0;
+    let legsVolume = 0;
+
+    muscleGroupVolumes.forEach(({ muscleGroup, totalVolume }) => {
+      if (
+        pushGroups.some((group) =>
+          muscleGroup.toLowerCase().includes(group.toLowerCase())
+        )
+      ) {
+        pushVolume += totalVolume;
+      } else if (
+        pullGroups.some((group) =>
+          muscleGroup.toLowerCase().includes(group.toLowerCase())
+        )
+      ) {
+        pullVolume += totalVolume;
+      } else if (
+        legsGroups.some((group) =>
+          muscleGroup.toLowerCase().includes(group.toLowerCase())
+        )
+      ) {
+        legsVolume += totalVolume;
+      }
+    });
+
+    const totalVolume = pushVolume + pullVolume + legsVolume;
+
+    return {
+      pushVolume,
+      pullVolume,
+      legsVolume,
+      pushPercentage:
+        totalVolume > 0 ? Math.round((pushVolume / totalVolume) * 100) : 0,
+      pullPercentage:
+        totalVolume > 0 ? Math.round((pullVolume / totalVolume) * 100) : 0,
+      legsPercentage:
+        totalVolume > 0 ? Math.round((legsVolume / totalVolume) * 100) : 0,
+    };
+  } catch (error) {
+    console.error("Error in getPushPullBalance:", error);
+    return {
+      pushVolume: 0,
+      pullVolume: 0,
+      legsVolume: 0,
+      pushPercentage: 0,
+      pullPercentage: 0,
+      legsPercentage: 0,
+    };
+  }
+}
+
+/**
+ * Get session duration trends
+ */
+export async function getSessionDurationTrends(
+  userId: string,
+  dateRange: DateRange = { type: "all" }
+): Promise<SessionTrend[]> {
+  try {
+    const dateFilter = getDateRangeFilter(dateRange);
+
+    let query = supabase
+      .from("workout_sessions")
+      .select(
+        `
+        id,
+        started_at,
+        ended_at,
+        session_exercises!inner(
+          exercise_sets!inner(
+            weight,
+            reps,
+            left_reps,
+            right_reps,
+            is_unilateral
+          )
+        )
+      `
+      )
+      .eq("user_id", userId)
+      .order("started_at", { ascending: true });
+
+    if (dateFilter.startDate) {
+      query = query.gte("started_at", dateFilter.startDate);
+    }
+    if (dateFilter.endDate) {
+      query = query.lte("started_at", dateFilter.endDate);
+    }
+
+    const { data: sessions, error: sessionsError } = await query;
+
+    if (sessionsError) {
+      console.error("Error fetching sessions:", sessionsError);
+      return [];
+    }
+
+    return (
+      sessions?.map((session: any) => {
+        const startTime = new Date(session.started_at);
+        const endTime = session.ended_at
+          ? new Date(session.ended_at)
+          : new Date();
+        const duration = Math.round(
+          (endTime.getTime() - startTime.getTime()) / (1000 * 60)
+        ); // minutes
+
+        // Calculate volume and exercise count
+        let volume = 0;
+        let exerciseCount = 0;
+
+        if (session.session_exercises) {
+          exerciseCount = session.session_exercises.length;
+          session.session_exercises.forEach((sessionExercise: any) => {
+            sessionExercise.exercise_sets?.forEach((set: any) => {
+              const weight = set.weight || 0;
+              const reps = set.is_unilateral
+                ? (set.left_reps || 0) + (set.right_reps || 0)
+                : set.reps || 0;
+              volume += weight * reps;
+            });
+          });
+        }
+
+        return {
+          date: startTime.toISOString().split("T")[0],
+          duration,
+          volume,
+          exercises: exerciseCount,
+        };
+      }) || []
+    );
+  } catch (error) {
+    console.error("Error in getSessionDurationTrends:", error);
+    return [];
+  }
+}
+
+/**
+ * Get time of day performance stats
+ */
+export async function getTimeOfDayPerformance(
+  userId: string
+): Promise<TimeOfDayStats[]> {
+  try {
+    const { data: sessions, error: sessionsError } = await supabase
+      .from("workout_sessions")
+      .select(
+        `
+        started_at,
+        ended_at,
+        session_exercises!inner(
+          exercise_sets!inner(
+            weight,
+            reps,
+            left_reps,
+            right_reps,
+            is_unilateral
+          )
+        )
+      `
+      )
+      .eq("user_id", userId)
+      .order("started_at", { ascending: true });
+
+    if (sessionsError) {
+      console.error("Error fetching sessions:", sessionsError);
+      return [];
+    }
+
+    // Group by hour
+    const hourlyStats = new Map<
+      number,
+      { totalVolume: number; sessionCount: number; totalDuration: number }
+    >();
+
+    sessions?.forEach((session: any) => {
+      const startTime = new Date(session.started_at);
+      const hour = startTime.getHours();
+      const endTime = session.ended_at
+        ? new Date(session.ended_at)
+        : new Date();
+      const duration = Math.round(
+        (endTime.getTime() - startTime.getTime()) / (1000 * 60)
+      ); // minutes
+
+      // Calculate volume
+      let volume = 0;
+      if (session.session_exercises) {
+        session.session_exercises.forEach((sessionExercise: any) => {
+          sessionExercise.exercise_sets?.forEach((set: any) => {
+            const weight = set.weight || 0;
+            const reps = set.is_unilateral
+              ? (set.left_reps || 0) + (set.right_reps || 0)
+              : set.reps || 0;
+            volume += weight * reps;
+          });
+        });
+      }
+
+      if (!hourlyStats.has(hour)) {
+        hourlyStats.set(hour, {
+          totalVolume: 0,
+          sessionCount: 0,
+          totalDuration: 0,
+        });
+      }
+
+      const stats = hourlyStats.get(hour)!;
+      stats.totalVolume += volume;
+      stats.sessionCount += 1;
+      stats.totalDuration += duration;
+    });
+
+    // Convert to array
+    return Array.from(hourlyStats.entries())
+      .map(([hour, stats]) => ({
+        hour,
+        averageVolume:
+          stats.sessionCount > 0
+            ? Math.round(stats.totalVolume / stats.sessionCount)
+            : 0,
+        sessionCount: stats.sessionCount,
+        averageDuration:
+          stats.sessionCount > 0
+            ? Math.round(stats.totalDuration / stats.sessionCount)
+            : 0,
+      }))
+      .sort((a, b) => a.hour - b.hour);
+  } catch (error) {
+    console.error("Error in getTimeOfDayPerformance:", error);
+    return [];
+  }
+}
+
+/**
+ * Get average rest time (placeholder - would need rest time tracking)
+ */
+export async function getAverageRestTime(
+  userId: string,
+  dateRange: DateRange = { type: "all" }
+): Promise<number> {
+  // This would require tracking rest times between sets
+  // For now, return a placeholder value
+  return 90; // 90 seconds average
+}
+
+/**
+ * Get user's most used exercises ordered by frequency
+ */
+export async function getMostUsedExercises(
+  userId: string,
+  dateRange: DateRange = { type: "all" }
+): Promise<
+  Array<{ id: number; name: string; category: string; usageCount: number }>
+> {
+  try {
+    const dateFilter = getDateRangeFilter(dateRange);
+
+    // Get exercise usage count with exercise details
+    let query = supabase
+      .from("exercise_sets")
+      .select(
+        `
+        session_exercises!inner(
+          exercise_id,
+          exercise_library!inner(
+            id,
+            name,
+            category
+          ),
+          workout_sessions!inner(
+            user_id
+          )
+        )
+      `
+      )
+      .eq("session_exercises.workout_sessions.user_id", userId);
+
+    if (dateFilter.startDate) {
+      query = query.gte("created_at", dateFilter.startDate);
+    }
+    if (dateFilter.endDate) {
+      query = query.lte("created_at", dateFilter.endDate);
+    }
+
+    const { data: exerciseSets, error: setsError } = await query;
+
+    if (setsError) {
+      console.error("Error fetching exercise usage:", setsError);
+      return [];
+    }
+
+    // Count usage by exercise
+    const exerciseUsage = new Map<
+      number,
+      { name: string; category: string; count: number }
+    >();
+
+    exerciseSets?.forEach((set: any) => {
+      const exercise = set.session_exercises.exercise_library;
+      if (exercise) {
+        const current = exerciseUsage.get(exercise.id) || {
+          name: exercise.name,
+          category: exercise.category,
+          count: 0,
+        };
+        current.count += 1;
+        exerciseUsage.set(exercise.id, current);
+      }
+    });
+
+    // Convert to array and sort by usage count
+    return Array.from(exerciseUsage.entries())
+      .map(([id, data]) => ({
+        id,
+        name: data.name,
+        category: data.category,
+        usageCount: data.count,
+      }))
+      .sort((a, b) => b.usageCount - a.usageCount);
+  } catch (error) {
+    console.error("Error in getMostUsedExercises:", error);
+    return [];
+  }
+}
+
+/**
  * Get exercise history for progressive overload tracking
  */
 export const getExerciseHistory = async (
@@ -565,3 +1349,221 @@ export const getExerciseHistory = async (
     return [];
   }
 };
+
+/**
+ * Get user's tracked exercises from Supabase
+ */
+export async function getTrackedExercises(userId: string): Promise<number[]> {
+  try {
+    const { data, error } = await supabase
+      .from("user_tracked_prs")
+      .select("exercise_id")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("Error getting tracked exercises:", error);
+      return [];
+    }
+
+    return data?.map((item) => item.exercise_id) || [];
+  } catch (error) {
+    console.error("Error getting tracked exercises:", error);
+    return [];
+  }
+}
+
+/**
+ * Save tracked exercises for PR monitoring
+ */
+export async function saveTrackedExercises(
+  userId: string,
+  exerciseIds: number[]
+): Promise<void> {
+  try {
+    // First, get current tracked exercises
+    const currentTracked = await getTrackedExercises(userId);
+
+    // Find exercises to add and remove
+    const toAdd = exerciseIds.filter((id) => !currentTracked.includes(id));
+    const toRemove = currentTracked.filter((id) => !exerciseIds.includes(id));
+
+    // Remove exercises that are no longer tracked
+    if (toRemove.length > 0) {
+      const { error: deleteError } = await supabase
+        .from("user_tracked_prs")
+        .delete()
+        .eq("user_id", userId)
+        .in("exercise_id", toRemove);
+
+      if (deleteError) {
+        console.error("Error removing tracked exercises:", deleteError);
+      }
+    }
+
+    // Add new exercises to track
+    if (toAdd.length > 0) {
+      const insertData = toAdd.map((exerciseId) => ({
+        user_id: userId,
+        exercise_id: exerciseId,
+      }));
+
+      const { error: insertError } = await supabase
+        .from("user_tracked_prs")
+        .insert(insertData);
+
+      if (insertError) {
+        console.error("Error adding tracked exercises:", insertError);
+      }
+    }
+  } catch (error) {
+    console.error("Error saving tracked exercises:", error);
+  }
+}
+
+/**
+ * Get detailed PR data for tracked exercises
+ */
+export async function getTrackedPRData(
+  userId: string,
+  exerciseIds: number[],
+  dateRange: DateRange = { type: "all" }
+): Promise<TrackedPR[]> {
+  try {
+    if (exerciseIds.length === 0) return [];
+
+    const dateFilter = getDateRangeFilter(dateRange);
+    const trackedPRs: TrackedPR[] = [];
+
+    for (const exerciseId of exerciseIds) {
+      // Get exercise details
+      const { data: exercise, error: exerciseError } = await supabase
+        .from("exercise_library")
+        .select("name, category")
+        .eq("id", exerciseId)
+        .maybeSingle();
+
+      if (exerciseError || !exercise) continue;
+
+      // Get all sets for this exercise
+      let query = supabase
+        .from("exercise_sets")
+        .select(
+          `
+          weight,
+          reps,
+          left_reps,
+          right_reps,
+          is_unilateral,
+          created_at,
+          session_exercises!inner(
+            session_id,
+            workout_sessions!inner(
+              user_id,
+              started_at
+            )
+          )
+        `
+        )
+        .eq("session_exercises.exercise_id", exerciseId)
+        .eq("session_exercises.workout_sessions.user_id", userId)
+        .order("created_at", { ascending: true });
+
+      if (dateFilter.startDate) {
+        query = query.gte("created_at", dateFilter.startDate);
+      }
+      if (dateFilter.endDate) {
+        query = query.lte("created_at", dateFilter.endDate);
+      }
+
+      const { data: sets, error: setsError } = await query;
+
+      if (setsError || !sets) continue;
+
+      // Calculate PRs and history
+      let maxWeight = 0;
+      let maxWeightReps = 0;
+      let maxWeightDate = "";
+      let maxReps = 0;
+      let maxRepsWeight = 0;
+      let maxRepsDate = "";
+      const prHistory: PRHistoryEntry[] = [];
+
+      sets.forEach((set: any) => {
+        const weight = set.weight || 0;
+        const reps = set.is_unilateral
+          ? (set.left_reps || 0) + (set.right_reps || 0)
+          : set.reps || 0;
+        const date = set.created_at;
+
+        // Track weight PRs (only track when weight increases)
+        if (weight > maxWeight) {
+          maxWeight = weight;
+          maxWeightReps = reps;
+          maxWeightDate = date;
+          prHistory.push({
+            date,
+            type: "weight",
+            value: weight,
+            reps: reps,
+            sessionId: set.session_exercises.session_id,
+          });
+        }
+
+        // Track reps PRs (only track when reps increase)
+        if (reps > maxReps) {
+          maxReps = reps;
+          maxRepsWeight = weight;
+          maxRepsDate = date;
+          prHistory.push({
+            date,
+            type: "reps",
+            value: reps,
+            weight: weight,
+            sessionId: set.session_exercises.session_id,
+          });
+        }
+      });
+
+      // Sort PR history by date (newest first)
+      prHistory.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      trackedPRs.push({
+        exerciseId,
+        exerciseName: exercise.name,
+        category: exercise.category,
+        maxWeight,
+        maxWeightReps,
+        maxWeightDate,
+        maxReps,
+        maxRepsWeight,
+        maxRepsDate,
+        prHistory,
+      });
+    }
+
+    return trackedPRs;
+  } catch (error) {
+    console.error("Error in getTrackedPRData:", error);
+    return [];
+  }
+}
+
+/**
+ * Get PR history timeline for an exercise
+ */
+export async function getPRHistory(
+  userId: string,
+  exerciseId: number,
+  dateRange: DateRange = { type: "all" }
+): Promise<PRHistoryEntry[]> {
+  try {
+    const trackedPRs = await getTrackedPRData(userId, [exerciseId], dateRange);
+    return trackedPRs.length > 0 ? trackedPRs[0].prHistory : [];
+  } catch (error) {
+    console.error("Error in getPRHistory:", error);
+    return [];
+  }
+}
