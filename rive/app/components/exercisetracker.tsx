@@ -57,6 +57,7 @@ const ExerciseTracker = ({
   const [showAllSets, setShowAllSets] = useState<boolean>(false);
   const [editingSetIndex, setEditingSetIndex] = useState<number | null>(null);
   const [editingSet, setEditingSet] = useState<ExerciseSet | null>(null);
+  const [isComparisonExpanded, setIsComparisonExpanded] = useState(true);
   const insets = useSafeAreaInsets();
 
   // No refs needed - users will use buttons instead of keyboard navigation
@@ -210,7 +211,7 @@ const ExerciseTracker = ({
         className="flex-1 p-4"
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
       >
-        {/* Last Session Data */}
+        {/* Progressive Overload Comparison */}
         {lastSessionSets.length > 0 && (
           <View
             className="bg-base-300 rounded-xl p-4 mb-4"
@@ -225,25 +226,278 @@ const ExerciseTracker = ({
               elevation: 3,
             }}
           >
-            <View className="flex-row items-center mb-3">
-              <Ionicons name="time-outline" size={16} color="#6b7280" />
-              <Text className="text-sm font-semibold text-base-content ml-2">
-                Last Session
-              </Text>
-            </View>
-            <View className="flex-row flex-wrap gap-2">
-              {lastSessionSets.map((set, index) => (
-                <View key={index} className="bg-base-200 px-3 py-2 rounded-lg">
-                  <Text className="text-xs text-muted">Set {index + 1}</Text>
-                  <Text className="text-sm font-semibold text-base-content">
-                    {set.weight || 0} lbs ×{" "}
-                    {set.is_unilateral
-                      ? `${set.left_reps || 0}L + ${set.right_reps || 0}R`
-                      : set.reps || 0}
+            <TouchableOpacity
+              onPress={() => setIsComparisonExpanded(!isComparisonExpanded)}
+              className="flex-row items-center justify-between mb-4"
+            >
+              <View className="flex-row items-center">
+                <Ionicons name="trending-up" size={16} color="#10b981" />
+                <Text className="text-sm font-semibold text-base-content ml-2">
+                  Compare to Last Session
+                </Text>
+              </View>
+              <View className="flex-row items-center gap-2">
+                <View className="bg-primary/10 px-2 py-1 rounded">
+                  <Text className="text-primary text-xs font-medium">
+                    Beat Last Session
                   </Text>
                 </View>
-              ))}
-            </View>
+                <Ionicons
+                  name={isComparisonExpanded ? "chevron-up" : "chevron-down"}
+                  size={16}
+                  color="#6b7280"
+                />
+              </View>
+            </TouchableOpacity>
+
+            {isComparisonExpanded ? (
+              <View className="gap-3">
+                {lastSessionSets.map((lastSet, index) => {
+                  const currentSet = sets[index];
+                  const currentWeight = currentSet?.weight || 0;
+                  const currentReps = currentSet?.is_unilateral
+                    ? (currentSet.left_reps || 0) + (currentSet.right_reps || 0)
+                    : currentSet?.reps || 0;
+
+                  const lastWeight = lastSet.weight || 0;
+                  const lastReps = lastSet.is_unilateral
+                    ? (lastSet.left_reps || 0) + (lastSet.right_reps || 0)
+                    : lastSet.reps || 0;
+
+                  const hasCurrentData = currentWeight > 0 || currentReps > 0;
+                  const weightProgress = hasCurrentData
+                    ? currentWeight > lastWeight
+                      ? "up"
+                      : currentWeight < lastWeight
+                        ? "down"
+                        : "same"
+                    : "neutral";
+                  const repsProgress = hasCurrentData
+                    ? currentReps > lastReps
+                      ? "up"
+                      : currentReps < lastReps
+                        ? "down"
+                        : "same"
+                    : "neutral";
+
+                  return (
+                    <View key={index} className="bg-base-200 rounded-lg p-3">
+                      <View className="flex-row items-center justify-between mb-2">
+                        <Text className="text-sm font-semibold text-base-content">
+                          Set {index + 1}
+                        </Text>
+                        <View className="flex-row items-center gap-1">
+                          {weightProgress === "up" && (
+                            <Ionicons
+                              name="arrow-up"
+                              size={12}
+                              color="#10b981"
+                            />
+                          )}
+                          {weightProgress === "down" && (
+                            <Ionicons
+                              name="arrow-down"
+                              size={12}
+                              color="#ef4444"
+                            />
+                          )}
+                          {weightProgress === "same" && (
+                            <Ionicons name="remove" size={12} color="#6b7280" />
+                          )}
+                          {weightProgress === "neutral" && (
+                            <Ionicons
+                              name="ellipse-outline"
+                              size={12}
+                              color="#9ca3af"
+                            />
+                          )}
+                        </View>
+                      </View>
+
+                      <View className="flex-row items-center justify-between">
+                        {/* Last Session */}
+                        <View className="flex-1">
+                          <Text className="text-xs text-muted mb-1">
+                            Last Session
+                          </Text>
+                          <View className="flex-row items-center gap-2">
+                            <View className="bg-base-300 px-2 py-1 rounded">
+                              <Text className="text-sm font-semibold text-base-content">
+                                {lastWeight} lbs
+                              </Text>
+                            </View>
+                            <View className="bg-base-300 px-2 py-1 rounded">
+                              <Text className="text-sm font-semibold text-base-content">
+                                {lastReps} reps
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+
+                        {/* Current Session */}
+                        <View className="flex-1 items-end">
+                          <Text className="text-xs text-muted mb-1">
+                            Current
+                          </Text>
+                          <View className="flex-row items-center gap-2">
+                            <View
+                              className={`px-2 py-1 rounded ${
+                                weightProgress === "up"
+                                  ? "bg-success/20"
+                                  : weightProgress === "down"
+                                    ? "bg-error/20"
+                                    : weightProgress === "neutral"
+                                      ? "bg-base-300/50"
+                                      : "bg-base-300"
+                              }`}
+                            >
+                              <Text
+                                className={`text-sm font-semibold ${
+                                  weightProgress === "up"
+                                    ? "text-success"
+                                    : weightProgress === "down"
+                                      ? "text-error"
+                                      : weightProgress === "neutral"
+                                        ? "text-muted"
+                                        : "text-base-content"
+                                }`}
+                              >
+                                {currentWeight || "--"} lbs
+                              </Text>
+                            </View>
+                            <View
+                              className={`px-2 py-1 rounded ${
+                                repsProgress === "up"
+                                  ? "bg-success/20"
+                                  : repsProgress === "down"
+                                    ? "bg-error/20"
+                                    : repsProgress === "neutral"
+                                      ? "bg-base-300/50"
+                                      : "bg-base-300"
+                              }`}
+                            >
+                              <Text
+                                className={`text-sm font-semibold ${
+                                  repsProgress === "up"
+                                    ? "text-success"
+                                    : repsProgress === "down"
+                                      ? "text-error"
+                                      : repsProgress === "neutral"
+                                        ? "text-muted"
+                                        : "text-base-content"
+                                }`}
+                              >
+                                {currentReps || "--"} reps
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                })}
+
+                {/* Progress Summary */}
+                {sets.length > 0 && (
+                  <View className="mt-4 pt-3 border-t border-base-300">
+                    <View className="flex-row items-center justify-between">
+                      <Text className="text-sm font-medium text-muted">
+                        Overall Progress
+                      </Text>
+                      <View className="flex-row items-center gap-2">
+                        {(() => {
+                          const totalLastVolume = lastSessionSets.reduce(
+                            (total, set) => {
+                              const reps = set.is_unilateral
+                                ? (set.left_reps || 0) + (set.right_reps || 0)
+                                : set.reps || 0;
+                              return total + (set.weight || 0) * reps;
+                            },
+                            0
+                          );
+
+                          const totalCurrentVolume = sets.reduce(
+                            (total, set) => {
+                              const reps = set.is_unilateral
+                                ? (set.left_reps || 0) + (set.right_reps || 0)
+                                : set.reps || 0;
+                              return total + (set.weight || 0) * reps;
+                            },
+                            0
+                          );
+
+                          const hasAnyCurrentData = sets.some(
+                            (set) =>
+                              (set.weight && set.weight > 0) ||
+                              (set.reps && set.reps > 0) ||
+                              (set.left_reps && set.left_reps > 0) ||
+                              (set.right_reps && set.right_reps > 0)
+                          );
+
+                          const volumeProgress = hasAnyCurrentData
+                            ? totalCurrentVolume > totalLastVolume
+                              ? "up"
+                              : totalCurrentVolume < totalLastVolume
+                                ? "down"
+                                : "same"
+                            : "neutral";
+
+                          return (
+                            <>
+                              <View className="flex-row items-center gap-1">
+                                <Text className="text-xs text-muted">
+                                  Volume:
+                                </Text>
+                                <Text
+                                  className={`text-sm font-semibold ${
+                                    volumeProgress === "up"
+                                      ? "text-success"
+                                      : volumeProgress === "down"
+                                        ? "text-error"
+                                        : volumeProgress === "neutral"
+                                          ? "text-muted"
+                                          : "text-base-content"
+                                  }`}
+                                >
+                                  {totalCurrentVolume.toLocaleString()} lbs
+                                </Text>
+                              </View>
+                              {volumeProgress === "up" && (
+                                <Ionicons
+                                  name="trending-up"
+                                  size={14}
+                                  color="#10b981"
+                                />
+                              )}
+                              {volumeProgress === "down" && (
+                                <Ionicons
+                                  name="trending-down"
+                                  size={14}
+                                  color="#ef4444"
+                                />
+                              )}
+                              {volumeProgress === "neutral" && (
+                                <Ionicons
+                                  name="ellipse-outline"
+                                  size={14}
+                                  color="#9ca3af"
+                                />
+                              )}
+                            </>
+                          );
+                        })()}
+                      </View>
+                    </View>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <View className="py-2">
+                <Text className="text-sm text-muted text-center">
+                  Tap to expand comparison
+                </Text>
+              </View>
+            )}
           </View>
         )}
 
