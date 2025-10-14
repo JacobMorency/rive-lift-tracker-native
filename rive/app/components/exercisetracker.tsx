@@ -1383,7 +1383,7 @@ const ExerciseTracker = ({
                                 {set.weight || 0} lbs
                               </Text>
                             </View>
-                            {set.partialReps && set.partialReps > 0 && (
+                            {(set.partialReps ?? 0) > 0 && (
                               <View className="items-center">
                                 <Text className="text-xs text-muted">
                                   Partials
