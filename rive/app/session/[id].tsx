@@ -12,13 +12,14 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
+import { getLastSessionData } from "../lib/statsUtils";
 import ExerciseTracker from "../components/exercisetracker";
 
 type Exercise = {
   id: number;
   name: string;
   category: string;
-  wasInOriginalTemplate?: boolean; // New field to track if exercise was in original session
+  wasInOriginalTemplate: boolean; // New field to track if exercise was in original session
   addedToTemplateAfter?: string; // When it was added to template
 };
 
@@ -70,6 +71,7 @@ export default function SessionDetailPage() {
     []
   );
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [lastSessionSets, setLastSessionSets] = useState<any[]>([]);
   const { user } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -192,7 +194,10 @@ export default function SessionDetailPage() {
               }
             : null;
         })
-        .filter((exercise): exercise is Exercise => exercise !== null);
+        .filter(
+          (exercise): exercise is NonNullable<typeof exercise> =>
+            exercise !== null
+        );
 
       // Initialize exercise progress
       const initialProgress = exercises.map((exercise) => ({
@@ -312,8 +317,19 @@ export default function SessionDetailPage() {
     }
   };
 
-  const handleExerciseClick = (exerciseIndex: number) => {
+  const handleExerciseClick = async (exerciseIndex: number) => {
     setCurrentExerciseIndex(exerciseIndex);
+
+    // Fetch last session data for this exercise
+    if (user && sessionData) {
+      const exercise = sessionData.exercises[exerciseIndex];
+      const lastSets = await getLastSessionData(
+        user.id,
+        sessionData.workout_id,
+        exercise.id
+      );
+      setLastSessionSets(lastSets);
+    }
   };
 
   const handleExerciseComplete = async (sets: any[]) => {
@@ -530,7 +546,7 @@ export default function SessionDetailPage() {
         {/* Content */}
         <View className="flex-1 justify-center items-center px-4">
           <Text className="text-muted text-center">
-            Session not found or you don't have access to it.
+            Session not found or you don&apos;t have access to it.
           </Text>
         </View>
       </View>
@@ -548,6 +564,7 @@ export default function SessionDetailPage() {
         onComplete={handleExerciseComplete}
         onBack={handleBackToExercises}
         initialSets={progress.sets}
+        lastSessionSets={lastSessionSets}
       />
     );
   }
@@ -675,7 +692,7 @@ export default function SessionDetailPage() {
               const hasStarted = setCount > 0;
 
               // Get exercise icon based on category
-              const getExerciseIcon = (category: string) => {
+              const getExerciseIcon = (category: string): "barbell-outline" => {
                 // Use dumbbell icon for all exercise categories
                 return "barbell-outline";
               };

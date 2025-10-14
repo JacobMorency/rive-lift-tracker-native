@@ -13,6 +13,7 @@ import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 import AddWorkoutModal from "../components/addworkoutmodal";
 import WorkoutDetailsModal from "../components/workoutdetailsmodal";
+import Header from "../components/header";
 
 type WorkoutTemplate = {
   id: string;
@@ -132,20 +133,12 @@ export default function WorkoutsPage() {
 
   return (
     <View className="flex-1 bg-base-100">
-      {/* Enhanced Header */}
-      <View
-        className="bg-base-200 px-4 border-b border-base-300"
-        style={{ paddingTop: insets.top + 16, paddingBottom: 20 }}
-      >
-        <View>
-          <Text className="text-2xl font-bold text-base-content">Workouts</Text>
-          {userData && (
-            <Text className="text-muted mt-1">
-              Welcome back, {userData.first_name}! 💪
-            </Text>
-          )}
-        </View>
-      </View>
+      <Header
+        title="Workouts"
+        subtitle={
+          userData ? `Welcome back, ${userData.first_name}! 💪` : undefined
+        }
+      />
 
       {/* Content */}
       <ScrollView

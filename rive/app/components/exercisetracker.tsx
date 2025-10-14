@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ExerciseSet as StatsExerciseSet } from "../lib/statsUtils";
 
 type Exercise = {
   id: number;
@@ -32,6 +33,7 @@ type ExerciseTrackerProps = {
   onComplete: (sets: ExerciseSet[]) => void;
   onBack: () => void;
   initialSets?: ExerciseSet[];
+  lastSessionSets?: StatsExerciseSet[];
 };
 
 const ExerciseTracker = ({
@@ -39,6 +41,7 @@ const ExerciseTracker = ({
   onComplete,
   onBack,
   initialSets = [],
+  lastSessionSets = [],
 }: ExerciseTrackerProps) => {
   const [sets, setSets] = useState<ExerciseSet[]>(initialSets);
   const [currentSet, setCurrentSet] = useState<ExerciseSet>({
@@ -207,6 +210,43 @@ const ExerciseTracker = ({
         className="flex-1 p-4"
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
       >
+        {/* Last Session Data */}
+        {lastSessionSets.length > 0 && (
+          <View
+            className="bg-base-300 rounded-xl p-4 mb-4"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+            }}
+          >
+            <View className="flex-row items-center mb-3">
+              <Ionicons name="time-outline" size={16} color="#6b7280" />
+              <Text className="text-sm font-semibold text-base-content ml-2">
+                Last Session
+              </Text>
+            </View>
+            <View className="flex-row flex-wrap gap-2">
+              {lastSessionSets.map((set, index) => (
+                <View key={index} className="bg-base-200 px-3 py-2 rounded-lg">
+                  <Text className="text-xs text-muted">Set {index + 1}</Text>
+                  <Text className="text-sm font-semibold text-base-content">
+                    {set.weight || 0} lbs ×{" "}
+                    {set.is_unilateral
+                      ? `${set.left_reps || 0}L + ${set.right_reps || 0}R`
+                      : set.reps || 0}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* Current Set Input */}
         <View
           className="bg-base-200 rounded-xl p-6 mb-6"

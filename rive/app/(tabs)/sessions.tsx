@@ -13,6 +13,7 @@ import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 import SelectWorkoutModal from "../components/selectworkoutmodal";
 import SessionTabs from "../components/sessiontabs";
+import Header from "../components/header";
 
 type Session = {
   id: string;
@@ -157,16 +158,10 @@ export default function SessionsPage() {
   if (loading) {
     return (
       <View className="flex-1 bg-base-100">
-        {/* Header */}
-        <View
-          className="bg-base-200 px-4 border-b border-base-300"
-          style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
-        >
-          <Text className="text-2xl font-bold text-base-content">Sessions</Text>
-          {userData && (
-            <Text className="text-muted mt-1">Track your workout sessions</Text>
-          )}
-        </View>
+        <Header
+          title="Sessions"
+          subtitle={userData ? "Track your workout sessions" : undefined}
+        />
 
         {/* Loading */}
         <View className="flex-1 justify-center items-center">
@@ -179,18 +174,10 @@ export default function SessionsPage() {
 
   return (
     <View className="flex-1 bg-base-100">
-      {/* Enhanced Header */}
-      <View
-        className="bg-base-200 px-4 border-b border-base-300"
-        style={{ paddingTop: insets.top + 16, paddingBottom: 20 }}
-      >
-        <View>
-          <Text className="text-2xl font-bold text-base-content">Sessions</Text>
-          {userData && (
-            <Text className="text-muted mt-1">Track your workout sessions</Text>
-          )}
-        </View>
-      </View>
+      <Header
+        title="Sessions"
+        subtitle={userData ? "Track your workout sessions" : undefined}
+      />
 
       {/* Content */}
       <ScrollView

@@ -1,74 +1,16 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import React from "react";
+import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
+import Header from "../components/header";
 
 export default function ProfilePage() {
   const { user, userData } = useAuth();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-
-  const [userStats, setUserStats] = useState({
-    totalWorkouts: 0,
-    totalSessions: 0,
-    thisMonthSessions: 0,
-  });
-  const [statsLoading, setStatsLoading] = useState(true);
-
-  const fetchUserStats = useCallback(async () => {
-    if (!user?.id) return;
-
-    try {
-      setStatsLoading(true);
-
-      // Get total workouts
-      const { count: totalWorkouts } = await supabase
-        .from("workouts")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
-
-      // Get total sessions
-      const { count: totalSessions } = await supabase
-        .from("workout_sessions")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
-
-      // Get this month's sessions
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
-
-      const { count: thisMonthSessions } = await supabase
-        .from("workout_sessions")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .gte("started_at", startOfMonth.toISOString());
-
-      setUserStats({
-        totalWorkouts: totalWorkouts || 0,
-        totalSessions: totalSessions || 0,
-        thisMonthSessions: thisMonthSessions || 0,
-      });
-    } catch (error) {
-      console.error("Error fetching user stats:", error);
-    } finally {
-      setStatsLoading(false);
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    fetchUserStats();
-  }, [fetchUserStats]);
 
   const handleLogout = async () => {
     try {
@@ -89,20 +31,12 @@ export default function ProfilePage() {
 
   return (
     <View className="flex-1 bg-base-100">
-      {/* Enhanced Header */}
-      <View
-        className="bg-base-200 px-4 border-b border-base-300"
-        style={{ paddingTop: insets.top + 16, paddingBottom: 20 }}
-      >
-        <View>
-          <Text className="text-2xl font-bold text-base-content">Profile</Text>
-          {userData && (
-            <Text className="text-muted mt-1">
-              Welcome back, {userData.first_name}! 👋
-            </Text>
-          )}
-        </View>
-      </View>
+      <Header
+        title="Profile"
+        subtitle={
+          userData ? `Welcome back, ${userData.first_name}! 👋` : undefined
+        }
+      />
 
       {/* Content */}
       <ScrollView
@@ -145,84 +79,6 @@ export default function ProfilePage() {
                     ? new Date(user.created_at).toLocaleDateString()
                     : "N/A"}
                 </Text>
-              </View>
-            </View>
-          </View>
-
-          <View className="mb-6" />
-
-          {/* Enhanced Stats Card */}
-          <View
-            className="bg-base-300 rounded-xl p-6"
-            style={{
-              shadowColor: "#000",
-              shadowOffset: {
-                width: 0,
-                height: 4,
-              },
-              shadowOpacity: 0.15,
-              shadowRadius: 8,
-              elevation: 8,
-            }}
-          >
-            <View className="flex-row items-center mb-6">
-              <Ionicons name="stats-chart" size={24} color="#ff4b8c" />
-              <Text className="text-xl font-bold text-base-content ml-3">
-                Your Progress
-              </Text>
-            </View>
-
-            {/* Stats Grid */}
-            <View className="gap-4">
-              <View className="flex-row gap-4">
-                <View className="flex-1 bg-base-200 rounded-lg p-4">
-                  <View className="flex-row items-center gap-2 mb-2">
-                    <Ionicons name="fitness" size={16} color="#ff4b8c" />
-                    <Text className="text-sm font-medium text-muted">
-                      Workouts
-                    </Text>
-                  </View>
-                  {statsLoading ? (
-                    <ActivityIndicator size="small" color="#ff4b8c" />
-                  ) : (
-                    <Text className="text-2xl font-bold text-base-content">
-                      {userStats.totalWorkouts}
-                    </Text>
-                  )}
-                </View>
-                <View className="flex-1 bg-base-200 rounded-lg p-4">
-                  <View className="flex-row items-center gap-2 mb-2">
-                    <Ionicons name="play-circle" size={16} color="#10b981" />
-                    <Text className="text-sm font-medium text-muted">
-                      Sessions
-                    </Text>
-                  </View>
-                  {statsLoading ? (
-                    <ActivityIndicator size="small" color="#10b981" />
-                  ) : (
-                    <Text className="text-2xl font-bold text-base-content">
-                      {userStats.totalSessions}
-                    </Text>
-                  )}
-                </View>
-              </View>
-
-              <View className="flex-row gap-4">
-                <View className="flex-1 bg-base-200 rounded-lg p-4">
-                  <View className="flex-row items-center gap-2 mb-2">
-                    <Ionicons name="calendar" size={16} color="#f59e0b" />
-                    <Text className="text-sm font-medium text-muted">
-                      This Month
-                    </Text>
-                  </View>
-                  {statsLoading ? (
-                    <ActivityIndicator size="small" color="#f59e0b" />
-                  ) : (
-                    <Text className="text-2xl font-bold text-base-content">
-                      {userStats.thisMonthSessions}
-                    </Text>
-                  )}
-                </View>
               </View>
             </View>
           </View>
