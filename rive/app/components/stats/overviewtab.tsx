@@ -7,6 +7,7 @@ import {
   DateRange,
   getUserStats,
   getMostUsedExercises,
+  getVolumeByMuscleGroup,
   UserStats,
 } from "../../lib/statsUtils";
 
@@ -23,6 +24,13 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
     { id: number; name: string; category: string; usageCount: number }[]
   >([]);
   const [loading, setLoading] = useState(true);
+  const [topMuscleGroup, setTopMuscleGroup] = useState<{
+    name: string;
+    volume: number;
+    percentage?: number;
+  } | null>(null);
+  const [isTopExercisesExpanded, setIsTopExercisesExpanded] = useState(true);
+  const [isRecentPRsExpanded, setIsRecentPRsExpanded] = useState(true);
 
   const fetchOverviewData = useCallback(async () => {
     if (!user?.id) return;
@@ -31,12 +39,25 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
       setLoading(true);
       // Map DateRange to timeframe expected by getUserStats
       const timeframe = dateRange.type === "custom" ? "all" : dateRange.type;
-      const [stats, exercises] = await Promise.all([
+      const [stats, exercises, muscleGroups] = await Promise.all([
         getUserStats(user.id, timeframe as any),
         getMostUsedExercises(user.id, dateRange),
+        getVolumeByMuscleGroup(user.id, dateRange),
       ]);
       setUserStats(stats);
       setMostUsedExercises(exercises.slice(0, 5)); // Top 5 exercises
+      if (muscleGroups && muscleGroups.length > 0) {
+        const top = [...muscleGroups].sort(
+          (a, b) => b.totalVolume - a.totalVolume
+        )[0];
+        setTopMuscleGroup({
+          name: top.muscleGroup,
+          volume: top.totalVolume,
+          percentage: top.percentage,
+        });
+      } else {
+        setTopMuscleGroup(null);
+      }
     } catch (error) {
       console.error("Error fetching overview data:", error);
     } finally {
@@ -98,108 +119,179 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
           </View>
         </View>
 
-        <View className="bg-base-300 rounded-lg p-4">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Ionicons name="trophy" size={16} color="#8b5cf6" />
-            <Text className="text-sm font-medium text-muted">
-              Personal Records
-            </Text>
+        <View className="flex-row gap-4">
+          <View className="flex-1 bg-base-300 rounded-lg p-4">
+            <View className="flex-row items-center gap-2 mb-2">
+              <Ionicons name="trophy" size={16} color="#8b5cf6" />
+              <Text className="text-sm font-medium text-muted">
+                Personal Records
+              </Text>
+            </View>
+            {loading ? (
+              <ActivityIndicator size="small" color="#8b5cf6" />
+            ) : (
+              <Text className="text-2xl font-bold text-base-content">
+                {userStats?.personal_records.length || 0}
+              </Text>
+            )}
           </View>
-          {loading ? (
-            <ActivityIndicator size="small" color="#8b5cf6" />
-          ) : (
-            <Text className="text-2xl font-bold text-base-content">
-              {userStats?.personal_records.length || 0}
-            </Text>
-          )}
+
+          <View className="flex-1 bg-base-300 rounded-lg p-4">
+            <View className="flex-row items-center gap-2 mb-2">
+              <Ionicons name="body" size={16} color="#3b82f6" />
+              <Text className="text-sm font-medium text-muted">
+                Most Trained Muscle Group
+              </Text>
+            </View>
+            {loading ? (
+              <ActivityIndicator size="small" color="#3b82f6" />
+            ) : topMuscleGroup ? (
+              <View>
+                <Text className="text-2xl font-bold text-base-content">
+                  {topMuscleGroup.name}
+                </Text>
+                {typeof topMuscleGroup.percentage === "number" && (
+                  <Text className="text-xs text-muted mt-1">
+                    {topMuscleGroup.percentage.toFixed(0)}% of volume
+                  </Text>
+                )}
+              </View>
+            ) : (
+              <Text className="text-base text-muted">—</Text>
+            )}
+          </View>
         </View>
       </View>
 
       {/* Most Used Exercises */}
       {mostUsedExercises.length > 0 && (
         <View className="mb-6 bg-base-300 rounded-xl p-6">
-          <View className="flex-row items-center mb-4">
-            <Ionicons name="list" size={20} color="#ff4b8c" />
-            <Text className="text-lg font-semibold text-base-content ml-2">
-              Your Top Exercises
+          <View className="flex-row items-center justify-between mb-2">
+            <View className="flex-row items-center">
+              <Ionicons name="list" size={20} color="#ff4b8c" />
+              <Text className="text-lg font-semibold text-base-content ml-2">
+                Your Top Exercises
+              </Text>
+            </View>
+            <Text
+              className="text-sm text-muted"
+              onPress={() => setIsTopExercisesExpanded(!isTopExercisesExpanded)}
+            >
+              {isTopExercisesExpanded ? "Hide" : "Show"}
             </Text>
           </View>
 
-          <View className="gap-3">
-            {mostUsedExercises.map((exercise, index) => (
-              <View key={exercise.id} className="flex-row items-center gap-3">
-                <View className="w-6 h-6 bg-primary rounded-full items-center justify-center">
-                  <Text className="text-xs font-bold text-primary-content">
-                    {index + 1}
-                  </Text>
-                </View>
-                <View className="flex-1">
-                  <View className="flex-row items-center justify-between mb-1">
-                    <Text
-                      className="text-base font-semibold text-base-content flex-1"
-                      numberOfLines={1}
-                    >
-                      {exercise.name}
-                    </Text>
-                    <Text className="text-sm text-muted ml-2">
-                      {exercise.usageCount} uses
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-xs text-muted">
+              Tap to {isTopExercisesExpanded ? "collapse" : "expand"}
+            </Text>
+            <Ionicons
+              name={isTopExercisesExpanded ? "chevron-up" : "chevron-down"}
+              size={16}
+              color="#6b7280"
+              onPress={() => setIsTopExercisesExpanded(!isTopExercisesExpanded)}
+            />
+          </View>
+
+          {isTopExercisesExpanded && (
+            <View className="gap-3">
+              {mostUsedExercises.map((exercise, index) => (
+                <View key={exercise.id} className="flex-row items-center gap-3">
+                  <View className="w-6 h-6 bg-primary rounded-full items-center justify-center">
+                    <Text className="text-xs font-bold text-primary-content">
+                      {index + 1}
                     </Text>
                   </View>
-                  <View className="flex-row items-center gap-2">
-                    <View
-                      className="px-2 py-1 rounded-full"
-                      style={{
-                        backgroundColor:
-                          getCategoryColor(exercise.category) + "20",
-                      }}
-                    >
+                  <View className="flex-1">
+                    <View className="flex-row items-center justify-between mb-1">
                       <Text
-                        className="text-xs font-medium"
-                        style={{ color: getCategoryColor(exercise.category) }}
+                        className="text-base font-semibold text-base-content flex-1"
+                        numberOfLines={1}
                       >
-                        {exercise.category}
+                        {exercise.name}
                       </Text>
+                      <Text className="text-sm text-muted ml-2">
+                        {exercise.usageCount} uses
+                      </Text>
+                    </View>
+                    <View className="flex-row items-center gap-2">
+                      <View
+                        className="px-2 py-1 rounded-full"
+                        style={{
+                          backgroundColor:
+                            getCategoryColor(exercise.category) + "20",
+                        }}
+                      >
+                        <Text
+                          className="text-xs font-medium"
+                          style={{ color: getCategoryColor(exercise.category) }}
+                        >
+                          {exercise.category}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          )}
         </View>
       )}
 
       {/* Recent Personal Records */}
       {userStats?.personal_records && userStats.personal_records.length > 0 && (
         <View className="mb-6 bg-base-300 rounded-xl p-6">
-          <View className="flex-row items-center mb-4">
-            <Ionicons name="trophy" size={20} color="#ff4b8c" />
-            <Text className="text-lg font-semibold text-base-content ml-2">
-              Recent Personal Records
+          <View className="flex-row items-center justify-between mb-2">
+            <View className="flex-row items-center">
+              <Ionicons name="trophy" size={20} color="#ff4b8c" />
+              <Text className="text-lg font-semibold text-base-content ml-2">
+                Recent Personal Records
+              </Text>
+            </View>
+            <Text
+              className="text-sm text-muted"
+              onPress={() => setIsRecentPRsExpanded(!isRecentPRsExpanded)}
+            >
+              {isRecentPRsExpanded ? "Hide" : "Show"}
             </Text>
           </View>
 
-          <View className="gap-3">
-            {userStats.personal_records.slice(0, 3).map((pr, index) => (
-              <View
-                key={`${pr.exercise_id}-${pr.max_weight}-${index}`}
-                className="flex-row items-center justify-between"
-              >
-                <View className="flex-1">
-                  <Text className="text-base font-semibold text-base-content">
-                    {pr.exercise_name}
-                  </Text>
-                  <Text className="text-sm text-muted">
-                    {pr.max_weight} lbs × {pr.max_reps} reps
-                  </Text>
-                </View>
-                <View className="items-end">
-                  <Text className="text-sm font-semibold text-primary">
-                    {formatDate(pr.date_achieved)}
-                  </Text>
-                </View>
-              </View>
-            ))}
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-xs text-muted">
+              Tap to {isRecentPRsExpanded ? "collapse" : "expand"}
+            </Text>
+            <Ionicons
+              name={isRecentPRsExpanded ? "chevron-up" : "chevron-down"}
+              size={16}
+              color="#6b7280"
+              onPress={() => setIsRecentPRsExpanded(!isRecentPRsExpanded)}
+            />
           </View>
+
+          {isRecentPRsExpanded && (
+            <View className="gap-3">
+              {userStats.personal_records.slice(0, 3).map((pr, index) => (
+                <View
+                  key={`${pr.exercise_id}-${pr.max_weight}-${index}`}
+                  className="flex-row items-center justify-between"
+                >
+                  <View className="flex-1">
+                    <Text className="text-base font-semibold text-base-content">
+                      {pr.exercise_name}
+                    </Text>
+                    <Text className="text-sm text-muted">
+                      {pr.max_weight} lbs × {pr.max_reps} reps
+                    </Text>
+                  </View>
+                  <View className="items-end">
+                    <Text className="text-sm font-semibold text-primary">
+                      {formatDate(pr.date_achieved)}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       )}
 
