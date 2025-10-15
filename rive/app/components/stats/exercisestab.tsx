@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -30,23 +30,18 @@ export default function ExercisesTab({ dateRange }: ExercisesTabProps) {
   );
   const [loading, setLoading] = useState(false);
   const [availableExercises, setAvailableExercises] = useState<
-    Array<{ id: number; name: string; category: string; usageCount: number }>
+    {
+      id: number;
+      name: string;
+      category: string;
+      usageCount: number;
+      progressionTrend: "up" | "down" | "stable";
+      progressionPercentage: number;
+    }[]
   >([]);
   const [exercisesLoading, setExercisesLoading] = useState(true);
 
-  useEffect(() => {
-    if (user?.id) {
-      fetchMostUsedExercises();
-    }
-  }, [user?.id, dateRange]);
-
-  useEffect(() => {
-    if (selectedExercise && user?.id) {
-      fetchExerciseData();
-    }
-  }, [selectedExercise, dateRange, user?.id]);
-
-  const fetchMostUsedExercises = async () => {
+  const fetchMostUsedExercises = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -63,9 +58,9 @@ export default function ExercisesTab({ dateRange }: ExercisesTabProps) {
     } finally {
       setExercisesLoading(false);
     }
-  };
+  }, [user?.id, dateRange, selectedExercise]);
 
-  const fetchExerciseData = async () => {
+  const fetchExerciseData = useCallback(async () => {
     if (!selectedExercise || !user?.id) return;
 
     try {
@@ -81,7 +76,19 @@ export default function ExercisesTab({ dateRange }: ExercisesTabProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedExercise, user?.id, dateRange]);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchMostUsedExercises();
+    }
+  }, [user?.id, dateRange, fetchMostUsedExercises]);
+
+  useEffect(() => {
+    if (selectedExercise && user?.id) {
+      fetchExerciseData();
+    }
+  }, [selectedExercise, dateRange, user?.id, fetchExerciseData]);
 
   // Create chart data
   const volumeChartData =
@@ -97,15 +104,6 @@ export default function ExercisesTab({ dateRange }: ExercisesTabProps) {
       label: `${index + 1}`,
       dataPointText: `${point.maxWeight} lbs`,
     })) || [];
-
-  const exerciseComparisonData = availableExercises.map((exercise) => ({
-    value:
-      exercise.id === selectedExercise
-        ? exerciseData?.currentPR || 0
-        : Math.random() * 200 + 50,
-    label: exercise.name.split(" ")[0],
-    frontColor: exercise.id === selectedExercise ? "#ff4b8c" : "#6b7280",
-  }));
 
   return (
     <ScrollView
@@ -135,24 +133,62 @@ export default function ExercisesTab({ dateRange }: ExercisesTabProps) {
                       : "bg-base-300"
                   }`}
                 >
-                  <Text
-                    className={`text-sm font-medium ${
-                      selectedExercise === exercise.id
-                        ? "text-primary-content"
-                        : "text-base-content"
-                    }`}
-                  >
-                    {exercise.name}
-                  </Text>
-                  <Text
-                    className={`text-xs ${
-                      selectedExercise === exercise.id
-                        ? "text-primary-content/70"
-                        : "text-muted"
-                    }`}
-                  >
-                    {exercise.usageCount} uses
-                  </Text>
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-1">
+                      <Text
+                        className={`text-sm font-medium ${
+                          selectedExercise === exercise.id
+                            ? "text-primary-content"
+                            : "text-base-content"
+                        }`}
+                        numberOfLines={1}
+                      >
+                        {exercise.name}
+                      </Text>
+                      <Text
+                        className={`text-xs ${
+                          selectedExercise === exercise.id
+                            ? "text-primary-content/70"
+                            : "text-muted"
+                        }`}
+                      >
+                        {exercise.usageCount} uses
+                      </Text>
+                    </View>
+                    <View className="ml-2 items-center">
+                      <Ionicons
+                        name={
+                          exercise.progressionTrend === "up"
+                            ? "trending-up"
+                            : exercise.progressionTrend === "down"
+                              ? "trending-down"
+                              : "remove"
+                        }
+                        size={16}
+                        color={
+                          exercise.progressionTrend === "up"
+                            ? "#10b981"
+                            : exercise.progressionTrend === "down"
+                              ? "#ef4444"
+                              : selectedExercise === exercise.id
+                                ? "#ffffff"
+                                : "#6b7280"
+                        }
+                      />
+                      {exercise.progressionTrend !== "stable" && (
+                        <Text
+                          className={`text-xs font-medium ${
+                            exercise.progressionTrend === "up"
+                              ? "text-success"
+                              : "text-error"
+                          }`}
+                        >
+                          {exercise.progressionTrend === "up" ? "+" : ""}
+                          {Math.abs(exercise.progressionPercentage).toFixed(0)}%
+                        </Text>
+                      )}
+                    </View>
+                  </View>
                 </TouchableOpacity>
               ))}
             </View>

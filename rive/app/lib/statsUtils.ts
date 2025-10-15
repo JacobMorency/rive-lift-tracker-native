@@ -1233,7 +1233,14 @@ export async function getMostUsedExercises(
   userId: string,
   dateRange: DateRange = { type: "all" }
 ): Promise<
-  Array<{ id: number; name: string; category: string; usageCount: number }>
+  Array<{
+    id: number;
+    name: string;
+    category: string;
+    usageCount: number;
+    progressionTrend: "up" | "down" | "stable";
+    progressionPercentage: number;
+  }>
 > {
   try {
     const dateFilter = getDateRangeFilter(dateRange);
@@ -1291,15 +1298,39 @@ export async function getMostUsedExercises(
       }
     });
 
-    // Convert to array and sort by usage count
-    return Array.from(exerciseUsage.entries())
-      .map(([id, data]) => ({
-        id,
-        name: data.name,
-        category: data.category,
-        usageCount: data.count,
-      }))
-      .sort((a, b) => b.usageCount - a.usageCount);
+    // Get progression data for each exercise
+    const exercisesWithProgression = await Promise.all(
+      Array.from(exerciseUsage.entries()).map(async ([id, data]) => {
+        try {
+          const progressionData = await getExerciseProgressData(
+            userId,
+            id,
+            dateRange
+          );
+          return {
+            id,
+            name: data.name,
+            category: data.category,
+            usageCount: data.count,
+            progressionTrend: progressionData.progression.trend,
+            progressionPercentage: progressionData.progression.volumePercentage,
+          };
+        } catch (error) {
+          console.error(`Error getting progression for exercise ${id}:`, error);
+          return {
+            id,
+            name: data.name,
+            category: data.category,
+            usageCount: data.count,
+            progressionTrend: "stable" as const,
+            progressionPercentage: 0,
+          };
+        }
+      })
+    );
+
+    // Sort by usage count
+    return exercisesWithProgression.sort((a, b) => b.usageCount - a.usageCount);
   } catch (error) {
     console.error("Error in getMostUsedExercises:", error);
     return [];
