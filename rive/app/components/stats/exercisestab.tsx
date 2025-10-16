@@ -5,6 +5,8 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Modal,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -40,6 +42,8 @@ export default function ExercisesTab({ dateRange }: ExercisesTabProps) {
     }[]
   >([]);
   const [exercisesLoading, setExercisesLoading] = useState(true);
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchMostUsedExercises = useCallback(async () => {
     if (!user?.id) return;
@@ -112,9 +116,19 @@ export default function ExercisesTab({ dateRange }: ExercisesTabProps) {
     >
       {/* Exercise Selector */}
       <View className="mb-6">
-        <Text className="text-lg font-semibold text-base-content mb-3">
-          Your Most Used Exercises
-        </Text>
+        <View className="flex-row items-center justify-between mb-3">
+          <Text className="text-lg font-semibold text-base-content">
+            Your Most Used Exercises
+          </Text>
+          {availableExercises.length > 0 && (
+            <TouchableOpacity
+              className="px-3 py-2 rounded-lg bg-base-300"
+              onPress={() => setIsSelectorOpen(true)}
+            >
+              <Text className="text-sm text-base-content">Browse</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         {exercisesLoading ? (
           <View className="flex-row justify-center py-4">
             <ActivityIndicator size="small" color="#ff4b8c" />
@@ -206,6 +220,87 @@ export default function ExercisesTab({ dateRange }: ExercisesTabProps) {
         )}
       </View>
 
+      {/* Searchable Exercise Modal */}
+      <Modal visible={isSelectorOpen} animationType="slide" transparent>
+        <View
+          className="flex-1 bg-base-100/95 px-4 py-6"
+          style={{
+            paddingTop: insets.top + 8,
+            paddingBottom: insets.bottom + 8,
+          }}
+        >
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-lg font-semibold text-base-content">
+              Select Exercise
+            </Text>
+            <TouchableOpacity onPress={() => setIsSelectorOpen(false)}>
+              <Ionicons name="close" size={22} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
+
+          <View className="mb-4 bg-base-300 rounded-lg px-3">
+            <TextInput
+              placeholder="Search by name or category"
+              placeholderTextColor="#9ca3af"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              className="py-3 text-base text-base-content"
+            />
+          </View>
+
+          <ScrollView className="flex-1">
+            <View className="gap-2">
+              {availableExercises
+                .filter((e) => {
+                  if (!searchQuery.trim()) return true;
+                  const q = searchQuery.toLowerCase();
+                  return (
+                    e.name.toLowerCase().includes(q) ||
+                    e.category.toLowerCase().includes(q)
+                  );
+                })
+                .sort((a, b) => b.usageCount - a.usageCount)
+                .map((exercise) => (
+                  <TouchableOpacity
+                    key={`modal-${exercise.id}`}
+                    className="p-3 rounded-lg bg-base-300"
+                    onPress={() => {
+                      setSelectedExercise(exercise.id);
+                      setIsSelectorOpen(false);
+                    }}
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-1 mr-3">
+                        <Text
+                          className="text-base font-semibold text-base-content"
+                          numberOfLines={1}
+                        >
+                          {exercise.name}
+                        </Text>
+                        <View className="flex-row items-center gap-2 mt-1">
+                          <View className="px-2 py-0.5 rounded-full bg-primary/10">
+                            <Text className="text-xs text-primary">
+                              {exercise.category}
+                            </Text>
+                          </View>
+                          <Text className="text-xs text-muted">
+                            {exercise.usageCount} uses
+                          </Text>
+                        </View>
+                      </View>
+                      <Ionicons
+                        name="chevron-forward"
+                        size={18}
+                        color="#6b7280"
+                      />
+                    </View>
+                  </TouchableOpacity>
+                ))}
+            </View>
+          </ScrollView>
+        </View>
+      </Modal>
+
       {selectedExercise && (
         <>
           {/* Exercise Stats Cards */}
@@ -243,110 +338,113 @@ export default function ExercisesTab({ dateRange }: ExercisesTabProps) {
               </View>
             </View>
 
-            {/* Progression Card */}
-            {exerciseData?.progression &&
-              exerciseData.dataPoints.length >= 2 && (
-                <View className="bg-base-300 rounded-lg p-4">
-                  <View className="flex-row items-center gap-2 mb-3">
-                    <Ionicons
-                      name={
-                        exerciseData.progression.trend === "up"
-                          ? "trending-up"
-                          : exerciseData.progression.trend === "down"
-                            ? "trending-down"
-                            : "remove"
-                      }
-                      size={16}
-                      color={
-                        exerciseData.progression.trend === "up"
-                          ? "#10b981"
-                          : exerciseData.progression.trend === "down"
-                            ? "#ef4444"
-                            : "#6b7280"
-                      }
-                    />
-                    <Text className="text-sm font-medium text-muted">
-                      Progression Trend
-                    </Text>
-                  </View>
-                  <View className="gap-2">
-                    <View className="flex-row justify-between items-center">
-                      <Text className="text-base-content">Volume Change:</Text>
-                      <View className="flex-row items-center gap-1">
-                        <Text
-                          className={`text-sm font-semibold ${
-                            exerciseData.progression.volumePercentage > 0
-                              ? "text-success"
-                              : exerciseData.progression.volumePercentage < 0
-                                ? "text-error"
-                                : "text-muted"
-                          }`}
-                        >
-                          {exerciseData.progression.volumePercentage > 0
-                            ? "+"
-                            : ""}
-                          {exerciseData.progression.volumePercentage.toFixed(1)}
-                          %
-                        </Text>
-                        <Ionicons
-                          name={
-                            exerciseData.progression.volumePercentage > 0
-                              ? "arrow-up"
-                              : exerciseData.progression.volumePercentage < 0
-                                ? "arrow-down"
-                                : "remove"
-                          }
-                          size={12}
-                          color={
-                            exerciseData.progression.volumePercentage > 0
-                              ? "#10b981"
-                              : exerciseData.progression.volumePercentage < 0
-                                ? "#ef4444"
-                                : "#6b7280"
-                          }
-                        />
-                      </View>
+            {/* Progression Card (always visible; neutral if insufficient data) */}
+            {exerciseData?.progression && (
+              <View className="bg-base-300 rounded-lg p-4">
+                <View className="flex-row items-center gap-2 mb-3">
+                  <Ionicons
+                    name={
+                      exerciseData.progression.trend === "up"
+                        ? "trending-up"
+                        : exerciseData.progression.trend === "down"
+                          ? "trending-down"
+                          : "remove"
+                    }
+                    size={16}
+                    color={
+                      exerciseData.progression.trend === "up"
+                        ? "#10b981"
+                        : exerciseData.progression.trend === "down"
+                          ? "#ef4444"
+                          : "#6b7280"
+                    }
+                  />
+                  <Text className="text-sm font-medium text-muted">
+                    Progression (since start of range)
+                  </Text>
+                </View>
+                <View className="gap-2">
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-base-content">Volume Change:</Text>
+                    <View className="flex-row items-center gap-1">
+                      <Text
+                        className={`text-sm font-semibold ${
+                          exerciseData.progression.volumePercentage > 0
+                            ? "text-success"
+                            : exerciseData.progression.volumePercentage < 0
+                              ? "text-error"
+                              : "text-muted"
+                        }`}
+                      >
+                        {exerciseData.progression.volumePercentage > 0
+                          ? "+"
+                          : ""}
+                        {Math.abs(
+                          exerciseData.progression.volumePercentage
+                        ).toFixed(1)}
+                        %
+                      </Text>
+                      <Ionicons
+                        name={
+                          exerciseData.progression.volumePercentage > 0
+                            ? "arrow-up"
+                            : exerciseData.progression.volumePercentage < 0
+                              ? "arrow-down"
+                              : "remove"
+                        }
+                        size={12}
+                        color={
+                          exerciseData.progression.volumePercentage > 0
+                            ? "#10b981"
+                            : exerciseData.progression.volumePercentage < 0
+                              ? "#ef4444"
+                              : "#6b7280"
+                        }
+                      />
                     </View>
-                    <View className="flex-row justify-between items-center">
-                      <Text className="text-base-content">Weight Change:</Text>
-                      <View className="flex-row items-center gap-1">
-                        <Text
-                          className={`text-sm font-semibold ${
-                            exerciseData.progression.weightPercentage > 0
-                              ? "text-success"
-                              : exerciseData.progression.weightPercentage < 0
-                                ? "text-error"
-                                : "text-muted"
-                          }`}
-                        >
-                          {exerciseData.progression.weightPercentage > 0
-                            ? "+"
-                            : ""}
-                          {exerciseData.progression.weightPercentage.toFixed(1)}
-                          %
-                        </Text>
-                        <Ionicons
-                          name={
-                            exerciseData.progression.weightPercentage > 0
-                              ? "arrow-up"
-                              : exerciseData.progression.weightPercentage < 0
-                                ? "arrow-down"
-                                : "remove"
-                          }
-                          size={12}
-                          color={
-                            exerciseData.progression.weightPercentage > 0
-                              ? "#10b981"
-                              : exerciseData.progression.weightPercentage < 0
-                                ? "#ef4444"
-                                : "#6b7280"
-                          }
-                        />
-                      </View>
+                  </View>
+                  <View className="flex-row justify-between items-center">
+                    <Text className="text-base-content">Weight Change:</Text>
+                    <View className="flex-row items-center gap-1">
+                      <Text
+                        className={`text-sm font-semibold ${
+                          exerciseData.progression.weightPercentage > 0
+                            ? "text-success"
+                            : exerciseData.progression.weightPercentage < 0
+                              ? "text-error"
+                              : "text-muted"
+                        }`}
+                      >
+                        {exerciseData.progression.weightPercentage > 0
+                          ? "+"
+                          : ""}
+                        {Math.abs(
+                          exerciseData.progression.weightPercentage
+                        ).toFixed(1)}
+                        %
+                      </Text>
+                      <Ionicons
+                        name={
+                          exerciseData.progression.weightPercentage > 0
+                            ? "arrow-up"
+                            : exerciseData.progression.weightPercentage < 0
+                              ? "arrow-down"
+                              : "remove"
+                        }
+                        size={12}
+                        color={
+                          exerciseData.progression.weightPercentage > 0
+                            ? "#10b981"
+                            : exerciseData.progression.weightPercentage < 0
+                              ? "#ef4444"
+                              : "#6b7280"
+                        }
+                      />
                     </View>
                   </View>
                 </View>
-              )}
+              </View>
+            )}
           </View>
 
           {/* Volume Progression Summary */}
@@ -429,33 +527,6 @@ export default function ExercisesTab({ dateRange }: ExercisesTabProps) {
               </View>
             </View>
           )}
-
-          {/* Exercise Comparison Summary */}
-          <View className="mb-6 bg-base-300 rounded-xl p-6">
-            <View className="flex-row items-center mb-4">
-              <Ionicons name="bar-chart" size={20} color="#3b82f6" />
-              <Text className="text-lg font-semibold text-base-content ml-2">
-                Exercise Comparison (Max Weight)
-              </Text>
-            </View>
-
-            <View className="gap-3">
-              {availableExercises.map((exercise) => (
-                <View
-                  key={exercise.id}
-                  className="flex-row justify-between items-center"
-                >
-                  <Text className="text-base-content">{exercise.name}:</Text>
-                  <Text className="text-lg font-bold text-primary">
-                    {exercise.id === selectedExercise
-                      ? exerciseData?.currentPR || 0
-                      : Math.round(Math.random() * 200 + 50)}{" "}
-                    lbs
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </View>
 
           {/* PR History */}
           {exerciseData?.prHistory && exerciseData.prHistory.length > 0 && (

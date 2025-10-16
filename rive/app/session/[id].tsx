@@ -48,6 +48,8 @@ type ExerciseProgress = {
   exerciseName: string;
   sets: any[];
   completed: boolean;
+  volumeTrend?: "up" | "down" | "neutral";
+  volumePercentage?: number;
 };
 
 type RawExerciseSet = {
@@ -336,10 +338,40 @@ export default function SessionDetailPage() {
     if (currentExerciseIndex === null) return;
 
     const updatedProgress = [...exerciseProgress];
+
+    // Compute volume trend vs last session for this exercise
+    const computeVolume = (inputSets: any[]) => {
+      return inputSets.reduce((total, set) => {
+        const reps = set.is_unilateral
+          ? (set.left_reps || 0) + (set.right_reps || 0)
+          : set.reps || 0;
+        const weight = set.weight || 0;
+        return total + weight * reps;
+      }, 0);
+    };
+
+    const currentVolume = computeVolume(sets);
+    const lastVolume = computeVolume(lastSessionSets || []);
+    let volumeTrend: "up" | "down" | "neutral" = "neutral";
+    let volumePercentage = 0;
+    if (lastVolume > 0) {
+      const change = currentVolume - lastVolume;
+      volumePercentage = (change / lastVolume) * 100;
+      if (change > 0) volumeTrend = "up";
+      else if (change < 0) volumeTrend = "down";
+      else volumeTrend = "neutral";
+    } else if (currentVolume > 0) {
+      // No last data; keep neutral to avoid misleading signal
+      volumeTrend = "neutral";
+      volumePercentage = 0;
+    }
+
     updatedProgress[currentExerciseIndex] = {
       ...updatedProgress[currentExerciseIndex],
       sets,
       completed: true,
+      volumeTrend,
+      volumePercentage,
     };
     setExerciseProgress(updatedProgress);
     setCurrentExerciseIndex(null);
@@ -757,18 +789,59 @@ export default function SessionDetailPage() {
                           <Text className="text-sm text-muted">
                             {exercise.category}
                           </Text>
-                          {setCount > 0 && (
-                            <View className="flex-row items-center">
-                              <Ionicons
-                                name="list-outline"
-                                size={14}
-                                color="#6b7280"
-                              />
-                              <Text className="text-sm text-muted ml-1">
-                                {setCount} set{setCount !== 1 ? "s" : ""}
-                              </Text>
-                            </View>
-                          )}
+                          <View className="flex-row items-center gap-3">
+                            {setCount > 0 && (
+                              <View className="flex-row items-center">
+                                <Ionicons
+                                  name="list-outline"
+                                  size={14}
+                                  color="#6b7280"
+                                />
+                                <Text className="text-sm text-muted ml-1">
+                                  {setCount} set{setCount !== 1 ? "s" : ""}
+                                </Text>
+                              </View>
+                            )}
+                            {progress?.completed && (
+                              <View className="flex-row items-center">
+                                <Ionicons
+                                  name={
+                                    progress.volumeTrend === "up"
+                                      ? "arrow-up"
+                                      : progress.volumeTrend === "down"
+                                        ? "arrow-down"
+                                        : "remove"
+                                  }
+                                  size={14}
+                                  color={
+                                    progress.volumeTrend === "up"
+                                      ? "#10b981"
+                                      : progress.volumeTrend === "down"
+                                        ? "#ef4444"
+                                        : "#6b7280"
+                                  }
+                                />
+                                {typeof progress.volumePercentage ===
+                                  "number" && (
+                                  <Text
+                                    className={`text-sm font-medium ml-1 ${
+                                      progress.volumeTrend === "up"
+                                        ? "text-success"
+                                        : progress.volumeTrend === "down"
+                                          ? "text-error"
+                                          : "text-muted"
+                                    }`}
+                                  >
+                                    {progress.volumeTrend === "up" ? "+" : ""}
+                                    {Math.abs(
+                                      progress.volumePercentage || 0
+                                    ).toFixed(0)}
+                                    %
+                                  </Text>
+                                )}
+                              </View>
+                            )}
+                          </View>
                         </View>
                       </View>
 
