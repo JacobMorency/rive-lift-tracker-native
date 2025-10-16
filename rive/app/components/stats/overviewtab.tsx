@@ -30,7 +30,6 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
     percentage?: number;
   } | null>(null);
   const [isTopExercisesExpanded, setIsTopExercisesExpanded] = useState(true);
-  const [isRecentPRsExpanded, setIsRecentPRsExpanded] = useState(true);
 
   const fetchOverviewData = useCallback(async () => {
     if (!user?.id) return;
@@ -70,10 +69,6 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
       fetchOverviewData();
     }
   }, [user?.id, dateRange, fetchOverviewData]);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
-  };
 
   const getCategoryColor = (category: string) => {
     return "#ff4b8c"; // All badges use primary color
@@ -120,22 +115,6 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
         </View>
 
         <View className="flex-row gap-4">
-          <View className="flex-1 bg-base-300 rounded-lg p-4">
-            <View className="flex-row items-center gap-2 mb-2">
-              <Ionicons name="trophy" size={16} color="#8b5cf6" />
-              <Text className="text-sm font-medium text-muted">
-                Personal Records
-              </Text>
-            </View>
-            {loading ? (
-              <ActivityIndicator size="small" color="#8b5cf6" />
-            ) : (
-              <Text className="text-2xl font-bold text-base-content">
-                {userStats?.personal_records.length || 0}
-              </Text>
-            )}
-          </View>
-
           <View className="flex-1 bg-base-300 rounded-lg p-4">
             <View className="flex-row items-center gap-2 mb-2">
               <Ionicons name="body" size={16} color="#3b82f6" />
@@ -230,63 +209,6 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
                         </Text>
                       </View>
                     </View>
-                  </View>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-      )}
-
-      {/* Recent Personal Records */}
-      {userStats?.personal_records && userStats.personal_records.length > 0 && (
-        <View className="mb-6 bg-base-300 rounded-xl p-6">
-          <View className="flex-row items-center justify-between mb-2">
-            <View className="flex-row items-center">
-              <Ionicons name="trophy" size={20} color="#ff4b8c" />
-              <Text className="text-lg font-semibold text-base-content ml-2">
-                Recent Personal Records
-              </Text>
-            </View>
-            <Text
-              className="text-sm text-muted"
-              onPress={() => setIsRecentPRsExpanded(!isRecentPRsExpanded)}
-            >
-              {isRecentPRsExpanded ? "Hide" : "Show"}
-            </Text>
-          </View>
-
-          <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-xs text-muted">
-              Tap to {isRecentPRsExpanded ? "collapse" : "expand"}
-            </Text>
-            <Ionicons
-              name={isRecentPRsExpanded ? "chevron-up" : "chevron-down"}
-              size={16}
-              color="#6b7280"
-              onPress={() => setIsRecentPRsExpanded(!isRecentPRsExpanded)}
-            />
-          </View>
-
-          {isRecentPRsExpanded && (
-            <View className="gap-3">
-              {userStats.personal_records.slice(0, 3).map((pr, index) => (
-                <View
-                  key={`${pr.exercise_id}-${pr.max_weight}-${index}`}
-                  className="flex-row items-center justify-between"
-                >
-                  <View className="flex-1">
-                    <Text className="text-base font-semibold text-base-content">
-                      {pr.exercise_name}
-                    </Text>
-                    <Text className="text-sm text-muted">
-                      {pr.max_weight} lbs × {pr.max_reps} reps
-                    </Text>
-                  </View>
-                  <View className="items-end">
-                    <Text className="text-sm font-semibold text-primary">
-                      {formatDate(pr.date_achieved)}
-                    </Text>
                   </View>
                 </View>
               ))}
