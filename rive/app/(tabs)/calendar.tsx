@@ -56,43 +56,39 @@ export default function CalendarPage() {
     [user]
   );
 
-  const fetchCalendarMarkers = useCallback(async () => {
-    if (!user) return;
+  const fetchCalendarMarkers = useCallback(
+    async (year: number, month: number) => {
+      if (!user) return;
 
-    try {
-      // Parse the date string as local time to avoid timezone issues
-      const [year, month, day] = selectedDate.split("-").map(Number);
-      const currentDate = new Date(year, month - 1, day);
-      const yearNum = currentDate.getFullYear();
-      const monthNum = currentDate.getMonth() + 1;
+      try {
+        const markers = await getScheduledWorkoutsForMonth(
+          user.id,
+          year,
+          month
+        );
 
-      const markers = await getScheduledWorkoutsForMonth(
-        user.id,
-        yearNum,
-        monthNum
-      );
+        // Convert markers to custom calendar format
+        const markedDates: Record<string, CalendarMarker> = {};
+        markers.forEach((marker) => {
+          markedDates[marker.date] = {
+            date: marker.date,
+            dots: marker.dots,
+          };
+        });
 
-      // Convert markers to custom calendar format
-      const markedDates: Record<string, CalendarMarker> = {};
-      markers.forEach((marker) => {
-        markedDates[marker.date] = {
-          date: marker.date,
-          dots: marker.dots,
-        };
-      });
-
-      setCalendarMarkers(markedDates);
-    } catch (error) {
-      console.error("Error fetching calendar markers:", error);
-    }
-  }, [user, selectedDate]);
+        setCalendarMarkers(markedDates);
+      } catch (error) {
+        console.error("Error fetching calendar markers:", error);
+      }
+    },
+    [user]
+  );
 
   useEffect(() => {
     if (user) {
       fetchScheduledWorkouts(selectedDate);
-      fetchCalendarMarkers();
     }
-  }, [user, selectedDate, fetchScheduledWorkouts, fetchCalendarMarkers]);
+  }, [user, selectedDate, fetchScheduledWorkouts]);
 
   const handleDateSelect = (dateString: string) => {
     setSelectedDate(dateString);
@@ -100,12 +96,16 @@ export default function CalendarPage() {
 
   const handleScheduleCreated = () => {
     fetchScheduledWorkouts(selectedDate);
-    fetchCalendarMarkers();
+    // Get current month from selected date to refresh markers
+    const [year, month] = selectedDate.split("-").map(Number);
+    fetchCalendarMarkers(year, month);
   };
 
   const handleScheduleDeleted = () => {
     fetchScheduledWorkouts(selectedDate);
-    fetchCalendarMarkers();
+    // Get current month from selected date to refresh markers
+    const [year, month] = selectedDate.split("-").map(Number);
+    fetchCalendarMarkers(year, month);
   };
 
   const formatSelectedDate = (dateString: string) => {
@@ -141,6 +141,7 @@ export default function CalendarPage() {
           <CustomCalendar
             selectedDate={selectedDate}
             onDateSelect={handleDateSelect}
+            onMonthChange={fetchCalendarMarkers}
             markedDates={calendarMarkers}
             theme={{
               backgroundColor: "#1a1a1a",

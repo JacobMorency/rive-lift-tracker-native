@@ -85,9 +85,17 @@ export default function ScheduleWorkoutModal({
     []
   );
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string>("");
-  const [startDate, setStartDate] = useState<string>(
-    selectedDate || new Date().toISOString().split("T")[0]
-  );
+  const [startDate, setStartDate] = useState<string>(() => {
+    if (selectedDate) {
+      return selectedDate;
+    } else {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+  });
   const [endDate, setEndDate] = useState<string>("");
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("once");
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
@@ -148,7 +156,10 @@ export default function ScheduleWorkoutModal({
 
     // For weekly, automatically set the day based on start date
     if (type === "weekly" && startDate) {
-      const dayOfWeek = new Date(startDate).getDay();
+      // Parse the date string as local time to avoid timezone issues
+      const [year, month, day] = startDate.split("-").map(Number);
+      const dateObj = new Date(year, month - 1, day);
+      const dayOfWeek = dateObj.getDay();
       setSelectedDays([dayOfWeek]);
     }
   };
@@ -156,7 +167,11 @@ export default function ScheduleWorkoutModal({
   const handleStartDateChange = (event: any, selectedDate?: Date) => {
     setShowStartDatePicker(Platform.OS === "ios");
     if (selectedDate) {
-      const dateString = selectedDate.toISOString().split("T")[0];
+      // Format date in local timezone to match calendar format
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const day = String(selectedDate.getDate()).padStart(2, "0");
+      const dateString = `${year}-${month}-${day}`;
       setStartDate(dateString);
 
       // Update weekly recurrence day if it's set to weekly
@@ -176,7 +191,11 @@ export default function ScheduleWorkoutModal({
   const handleEndDateChange = (event: any, selectedDate?: Date) => {
     setShowEndDatePicker(Platform.OS === "ios");
     if (selectedDate) {
-      const dateString = selectedDate.toISOString().split("T")[0];
+      // Format date in local timezone to match calendar format
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+      const day = String(selectedDate.getDate()).padStart(2, "0");
+      const dateString = `${year}-${month}-${day}`;
       setEndDate(dateString);
     }
   };
@@ -267,7 +286,16 @@ export default function ScheduleWorkoutModal({
 
   const resetForm = () => {
     setSelectedWorkoutId("");
-    setStartDate(selectedDate || new Date().toISOString().split("T")[0]);
+    // Use selectedDate if provided, otherwise use today's date in local timezone
+    if (selectedDate) {
+      setStartDate(selectedDate);
+    } else {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      setStartDate(`${year}-${month}-${day}`);
+    }
     setEndDate("");
     setRecurrenceType("once");
     setSelectedDays([]);
@@ -292,7 +320,9 @@ export default function ScheduleWorkoutModal({
             onPress={() => setShowStartDatePicker(true)}
           >
             <Text className="text-base-content">
-              {new Date(startDate).toLocaleDateString()}
+              {new Date(
+                new Date(startDate).getTime() + 24 * 60 * 60 * 1000
+              ).toLocaleDateString()}
             </Text>
             <Ionicons name="calendar-outline" size={20} color="#6b7280" />
           </TouchableOpacity>
@@ -315,7 +345,11 @@ export default function ScheduleWorkoutModal({
             onPress={() => setShowEndDatePicker(true)}
           >
             <Text className="text-base-content">
-              {endDate ? new Date(endDate).toLocaleDateString() : "No end date"}
+              {endDate
+                ? new Date(
+                    new Date(endDate).getTime() + 24 * 60 * 60 * 1000
+                  ).toLocaleDateString()
+                : "No end date"}
             </Text>
             <Ionicons name="calendar-outline" size={20} color="#6b7280" />
           </TouchableOpacity>

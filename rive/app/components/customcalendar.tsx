@@ -17,6 +17,7 @@ type CalendarMarker = {
 type CustomCalendarProps = {
   selectedDate: string;
   onDateSelect: (date: string) => void;
+  onMonthChange?: (year: number, month: number) => void;
   markedDates?: Record<string, CalendarMarker>;
   theme?: {
     backgroundColor?: string;
@@ -59,10 +60,18 @@ const MONTHS = [
 export default function CustomCalendar({
   selectedDate,
   onDateSelect,
+  onMonthChange,
   markedDates = {},
   theme = {},
 }: CustomCalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
+
+  // Notify parent when month changes
+  React.useEffect(() => {
+    if (onMonthChange) {
+      onMonthChange(currentMonth.getFullYear(), currentMonth.getMonth() + 1);
+    }
+  }, [currentMonth, onMonthChange]);
 
   // Default theme
   const defaultTheme = {
@@ -263,108 +272,118 @@ export default function CustomCalendar({
       </View>
 
       {/* Calendar Grid */}
-      <View
-        style={{
-          flexDirection: "row",
-          flexWrap: "wrap",
-        }}
-      >
-        {days.map((day, index) => {
-          if (day === null) {
-            return (
-              <View
-                key={`empty-${index}`}
-                style={{
-                  width: DAY_WIDTH,
-                  height: DAY_WIDTH,
-                  marginBottom: 4,
-                }}
-              />
-            );
-          }
+      <View>
+        {Array.from({ length: Math.ceil(days.length / 7) }, (_, weekIndex) => (
+          <View
+            key={weekIndex}
+            style={{
+              flexDirection: "row",
+              marginBottom: 4,
+            }}
+          >
+            {Array.from({ length: 7 }, (_, dayIndex) => {
+              const globalIndex = weekIndex * 7 + dayIndex;
+              const day = days[globalIndex];
 
-          const dateString = formatDate(
-            new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
-          );
-          const marked = markedDates[dateString];
-          const isSelectedDay = isSelected(day);
-          const isTodayDay = isToday(day);
-          const isPast = isPastDate(day);
+              if (day === null) {
+                return (
+                  <View
+                    key={`empty-${globalIndex}`}
+                    style={{
+                      width: DAY_WIDTH,
+                      height: DAY_WIDTH,
+                    }}
+                  />
+                );
+              }
 
-          return (
-            <TouchableOpacity
-              key={`day-${day}-${currentMonth.getMonth()}-${currentMonth.getFullYear()}`}
-              onPress={() => handleDatePress(day)}
-              style={{
-                width: DAY_WIDTH,
-                height: DAY_WIDTH,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 4,
-                borderRadius: 8,
-                backgroundColor: isSelectedDay
-                  ? defaultTheme.selectedDayBackgroundColor
-                  : "transparent",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: defaultTheme.textDayFontSize,
-                  fontWeight: defaultTheme.textDayFontWeight,
-                  color: isSelectedDay
-                    ? defaultTheme.selectedDayTextColor
-                    : isTodayDay
-                      ? defaultTheme.todayTextColor
-                      : isPast
-                        ? defaultTheme.textDisabledColor
-                        : defaultTheme.dayTextColor,
-                }}
-              >
-                {day}
-              </Text>
+              const dateString = formatDate(
+                new Date(
+                  currentMonth.getFullYear(),
+                  currentMonth.getMonth(),
+                  day
+                )
+              );
+              const marked = markedDates[dateString];
+              const isSelectedDay = isSelected(day);
+              const isTodayDay = isToday(day);
+              const isPast = isPastDate(day);
 
-              {/* Workout Dots */}
-              {marked && marked.dots && marked.dots.length > 0 && (
-                <View
+              return (
+                <TouchableOpacity
+                  key={`day-${day}-${currentMonth.getMonth()}-${currentMonth.getFullYear()}`}
+                  onPress={() => handleDatePress(day)}
                   style={{
-                    flexDirection: "row",
+                    width: DAY_WIDTH,
+                    height: DAY_WIDTH,
+                    alignItems: "center",
                     justifyContent: "center",
-                    marginTop: 2,
+                    borderRadius: 8,
+                    backgroundColor: isSelectedDay
+                      ? defaultTheme.selectedDayBackgroundColor
+                      : "transparent",
                   }}
                 >
-                  {marked.dots.slice(0, 3).map((dot, dotIndex) => (
+                  <Text
+                    style={{
+                      fontSize: defaultTheme.textDayFontSize,
+                      fontWeight: defaultTheme.textDayFontWeight,
+                      color: isSelectedDay
+                        ? defaultTheme.selectedDayTextColor
+                        : isTodayDay
+                          ? defaultTheme.todayTextColor
+                          : isPast
+                            ? defaultTheme.textDisabledColor
+                            : defaultTheme.dayTextColor,
+                    }}
+                  >
+                    {day}
+                  </Text>
+
+                  {/* Workout Dots */}
+                  {marked && marked.dots && marked.dots.length > 0 && (
                     <View
-                      key={dotIndex}
                       style={{
-                        width: 4,
-                        height: 4,
-                        borderRadius: 2,
-                        backgroundColor: isSelectedDay
-                          ? dot.selectedDotColor ||
-                            defaultTheme.selectedDotColor
-                          : dot.color || defaultTheme.dotColor,
-                        marginHorizontal: 1,
-                      }}
-                    />
-                  ))}
-                  {marked.dots.length > 3 && (
-                    <Text
-                      style={{
-                        fontSize: 8,
-                        color: isSelectedDay
-                          ? defaultTheme.selectedDayTextColor
-                          : defaultTheme.dayTextColor,
-                        marginLeft: 2,
+                        flexDirection: "row",
+                        justifyContent: "center",
+                        marginTop: 2,
                       }}
                     >
-                      +{marked.dots.length - 3}
-                    </Text>
+                      {marked.dots.slice(0, 3).map((dot, dotIndex) => (
+                        <View
+                          key={dotIndex}
+                          style={{
+                            width: 4,
+                            height: 4,
+                            borderRadius: 2,
+                            backgroundColor: isSelectedDay
+                              ? dot.selectedDotColor ||
+                                defaultTheme.selectedDotColor
+                              : dot.color || defaultTheme.dotColor,
+                            marginHorizontal: 1,
+                          }}
+                        />
+                      ))}
+                      {marked.dots.length > 3 && (
+                        <Text
+                          style={{
+                            fontSize: 8,
+                            color: isSelectedDay
+                              ? defaultTheme.selectedDayTextColor
+                              : defaultTheme.dayTextColor,
+                            marginLeft: 2,
+                          }}
+                        >
+                          +{marked.dots.length - 3}
+                        </Text>
+                      )}
+                    </View>
                   )}
-                </View>
-              )}
-            </TouchableOpacity>
-          );
-        })}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        ))}
       </View>
     </View>
   );
