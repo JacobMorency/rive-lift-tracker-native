@@ -6,11 +6,11 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { Calendar } from "react-native-calendars";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../context/authcontext";
 import Header from "../components/header";
+import CustomCalendar from "../components/customcalendar";
 import ScheduleWorkoutModal from "../components/scheduleworkoutmodal";
 import ScheduleListItem from "../components/schedulelistitem";
 import {
@@ -30,9 +30,9 @@ export default function CalendarPage() {
   const [scheduledWorkouts, setScheduledWorkouts] = useState<
     ScheduledWorkout[]
   >([]);
-  const [calendarMarkers, setCalendarMarkers] = useState<Record<string, any>>(
-    {}
-  );
+  const [calendarMarkers, setCalendarMarkers] = useState<
+    Record<string, CalendarMarker>
+  >({});
   const [loading, setLoading] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
@@ -42,7 +42,9 @@ export default function CalendarPage() {
 
       try {
         setLoading(true);
-        const dateObj = new Date(date);
+        // Parse the date string as local time to avoid timezone issues
+        const [year, month, day] = date.split("-").map(Number);
+        const dateObj = new Date(year, month - 1, day);
         const workouts = await getScheduledWorkoutsForDate(user.id, dateObj);
         setScheduledWorkouts(workouts);
       } catch (error) {
@@ -58,17 +60,23 @@ export default function CalendarPage() {
     if (!user) return;
 
     try {
-      const currentDate = new Date(selectedDate);
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
+      // Parse the date string as local time to avoid timezone issues
+      const [year, month, day] = selectedDate.split("-").map(Number);
+      const currentDate = new Date(year, month - 1, day);
+      const yearNum = currentDate.getFullYear();
+      const monthNum = currentDate.getMonth() + 1;
 
-      const markers = await getScheduledWorkoutsForMonth(user.id, year, month);
+      const markers = await getScheduledWorkoutsForMonth(
+        user.id,
+        yearNum,
+        monthNum
+      );
 
-      // Convert markers to react-native-calendars format
-      const markedDates: Record<string, any> = {};
+      // Convert markers to custom calendar format
+      const markedDates: Record<string, CalendarMarker> = {};
       markers.forEach((marker) => {
         markedDates[marker.date] = {
-          marked: true,
+          date: marker.date,
           dots: marker.dots,
         };
       });
@@ -86,8 +94,8 @@ export default function CalendarPage() {
     }
   }, [user, selectedDate, fetchScheduledWorkouts, fetchCalendarMarkers]);
 
-  const handleDateSelect = (day: any) => {
-    setSelectedDate(day.dateString);
+  const handleDateSelect = (dateString: string) => {
+    setSelectedDate(dateString);
   };
 
   const handleScheduleCreated = () => {
@@ -101,7 +109,9 @@ export default function CalendarPage() {
   };
 
   const formatSelectedDate = (dateString: string) => {
-    const date = new Date(dateString);
+    // Parse the date string as local time to avoid timezone issues
+    const [year, month, day] = dateString.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
@@ -128,16 +138,10 @@ export default function CalendarPage() {
       >
         {/* Calendar */}
         <View className="p-4">
-          <Calendar
-            onDayPress={handleDateSelect}
-            markedDates={{
-              ...calendarMarkers,
-              [selectedDate]: {
-                ...calendarMarkers[selectedDate],
-                selected: true,
-                selectedColor: "#ff4b8c",
-              },
-            }}
+          <CustomCalendar
+            selectedDate={selectedDate}
+            onDateSelect={handleDateSelect}
+            markedDates={calendarMarkers}
             theme={{
               backgroundColor: "#1a1a1a",
               calendarBackground: "#1a1a1a",
@@ -150,23 +154,13 @@ export default function CalendarPage() {
               dotColor: "#ff4b8c",
               selectedDotColor: "#ff4b8c",
               arrowColor: "#ff4b8c",
-              disabledArrowColor: "#6b7280",
               monthTextColor: "#ffffff",
-              indicatorColor: "#ff4b8c",
               textDayFontWeight: "500",
               textMonthFontWeight: "bold",
               textDayHeaderFontWeight: "600",
               textDayFontSize: 16,
               textMonthFontSize: 18,
               textDayHeaderFontSize: 14,
-            }}
-            style={{
-              borderRadius: 12,
-              elevation: 3,
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
             }}
           />
         </View>
@@ -246,6 +240,7 @@ export default function CalendarPage() {
         isOpen={isScheduleModalOpen}
         onClose={() => setIsScheduleModalOpen(false)}
         onScheduleCreated={handleScheduleCreated}
+        selectedDate={selectedDate}
       />
     </View>
   );

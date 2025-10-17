@@ -6,8 +6,10 @@ import {
   Modal,
   ScrollView,
   Alert,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
@@ -27,6 +29,7 @@ type ScheduleWorkoutModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onScheduleCreated?: () => void;
+  selectedDate?: string; // ISO date string (YYYY-MM-DD)
 };
 
 const getRecurrenceOptions = (
@@ -73,6 +76,7 @@ export default function ScheduleWorkoutModal({
   isOpen,
   onClose,
   onScheduleCreated,
+  selectedDate,
 }: ScheduleWorkoutModalProps) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
@@ -82,7 +86,7 @@ export default function ScheduleWorkoutModal({
   );
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string>("");
   const [startDate, setStartDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
+    selectedDate || new Date().toISOString().split("T")[0]
   );
   const [endDate, setEndDate] = useState<string>("");
   const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>("once");
@@ -90,12 +94,21 @@ export default function ScheduleWorkoutModal({
   const [selectedDates, setSelectedDates] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [showRecurrenceDropdown, setShowRecurrenceDropdown] = useState(false);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   useEffect(() => {
     if (isOpen && user) {
       fetchWorkoutTemplates();
     }
   }, [isOpen, user]);
+
+  // Update startDate when selectedDate prop changes
+  useEffect(() => {
+    if (selectedDate) {
+      setStartDate(selectedDate);
+    }
+  }, [selectedDate]);
 
   // Update selected day when start date changes for weekly recurrence
   useEffect(() => {
@@ -137,6 +150,34 @@ export default function ScheduleWorkoutModal({
     if (type === "weekly" && startDate) {
       const dayOfWeek = new Date(startDate).getDay();
       setSelectedDays([dayOfWeek]);
+    }
+  };
+
+  const handleStartDateChange = (event: any, selectedDate?: Date) => {
+    setShowStartDatePicker(Platform.OS === "ios");
+    if (selectedDate) {
+      const dateString = selectedDate.toISOString().split("T")[0];
+      setStartDate(dateString);
+
+      // Update weekly recurrence day if it's set to weekly
+      if (recurrenceType === "weekly") {
+        const dayOfWeek = selectedDate.getDay();
+        setSelectedDays([dayOfWeek]);
+      }
+
+      // Update monthly date if it's set to monthly_date
+      if (recurrenceType === "monthly_date") {
+        const dateOfMonth = selectedDate.getDate();
+        setSelectedDates([dateOfMonth]);
+      }
+    }
+  };
+
+  const handleEndDateChange = (event: any, selectedDate?: Date) => {
+    setShowEndDatePicker(Platform.OS === "ios");
+    if (selectedDate) {
+      const dateString = selectedDate.toISOString().split("T")[0];
+      setEndDate(dateString);
     }
   };
 
@@ -185,6 +226,13 @@ export default function ScheduleWorkoutModal({
     setLoading(true);
 
     try {
+      // If no end date is specified for recurring schedules, default to end of current year
+      let finalEndDate = endDate;
+      if (!finalEndDate && recurrenceType !== "once") {
+        const currentYear = new Date().getFullYear();
+        finalEndDate = `${currentYear}-12-31`;
+      }
+
       const scheduleData: Omit<
         WorkoutSchedule,
         "id" | "created_at" | "updated_at"
@@ -195,7 +243,7 @@ export default function ScheduleWorkoutModal({
         recurrence_days:
           recurrenceType === "weekly" ? selectedDays : selectedDates,
         start_date: startDate,
-        end_date: endDate || null,
+        end_date: finalEndDate || null,
         is_active: true,
       };
 
@@ -219,12 +267,14 @@ export default function ScheduleWorkoutModal({
 
   const resetForm = () => {
     setSelectedWorkoutId("");
-    setStartDate(new Date().toISOString().split("T")[0]);
+    setStartDate(selectedDate || new Date().toISOString().split("T")[0]);
     setEndDate("");
     setRecurrenceType("once");
     setSelectedDays([]);
     setSelectedDates([]);
     setShowRecurrenceDropdown(false);
+    setShowStartDatePicker(false);
+    setShowEndDatePicker(false);
   };
 
   const handleClose = () => {
@@ -237,23 +287,52 @@ export default function ScheduleWorkoutModal({
       <View className="flex-row gap-3">
         <View className="flex-1">
           <Text className="text-base-content font-medium mb-2">Start Date</Text>
-          <TouchableOpacity className="bg-base-200 rounded-lg p-3 flex-row items-center justify-between">
+          <TouchableOpacity
+            className="bg-base-200 rounded-lg p-3 flex-row items-center justify-between"
+            onPress={() => setShowStartDatePicker(true)}
+          >
             <Text className="text-base-content">
               {new Date(startDate).toLocaleDateString()}
             </Text>
             <Ionicons name="calendar-outline" size={20} color="#6b7280" />
           </TouchableOpacity>
+          {showStartDatePicker && (
+            <DateTimePicker
+              value={new Date(startDate)}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={handleStartDateChange}
+              minimumDate={new Date()}
+            />
+          )}
         </View>
         <View className="flex-1">
           <Text className="text-base-content font-medium mb-2">
             End Date (Optional)
           </Text>
-          <TouchableOpacity className="bg-base-200 rounded-lg p-3 flex-row items-center justify-between">
+          <TouchableOpacity
+            className="bg-base-200 rounded-lg p-3 flex-row items-center justify-between"
+            onPress={() => setShowEndDatePicker(true)}
+          >
             <Text className="text-base-content">
               {endDate ? new Date(endDate).toLocaleDateString() : "No end date"}
             </Text>
             <Ionicons name="calendar-outline" size={20} color="#6b7280" />
           </TouchableOpacity>
+          {showEndDatePicker && (
+            <DateTimePicker
+              value={endDate ? new Date(endDate) : new Date()}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={handleEndDateChange}
+              minimumDate={new Date(startDate)}
+            />
+          )}
+          {recurrenceType !== "once" && !endDate && (
+            <Text className="text-xs text-base-content/60 mt-1">
+              Will default to end of {new Date().getFullYear()}
+            </Text>
+          )}
         </View>
       </View>
     </View>
