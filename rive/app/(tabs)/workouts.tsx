@@ -13,7 +13,9 @@ import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 import AddWorkoutModal from "../components/addworkoutmodal";
 import WorkoutDetailsModal from "../components/workoutdetailsmodal";
+import SelectWorkoutModal from "../components/selectworkoutmodal";
 import Header from "../components/header";
+import { getTodaysScheduledWorkouts } from "../lib/scheduleUtils";
 
 type WorkoutTemplate = {
   id: string;
@@ -30,6 +32,8 @@ type WorkoutTemplate = {
 export default function WorkoutsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isSelectWorkoutModalOpen, setIsSelectWorkoutModalOpen] =
+    useState(false);
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
     null
   );
@@ -99,9 +103,25 @@ export default function WorkoutsPage() {
     setIsAddModalOpen(true);
   };
 
-  const handleQuickStart = () => {
-    // Navigate to sessions page to start a new session
-    router.push("/(tabs)/sessions");
+  const handleQuickStart = async () => {
+    if (!user) return;
+
+    try {
+      // Check for today's scheduled workouts
+      const todaysScheduled = await getTodaysScheduledWorkouts(user.id);
+
+      if (todaysScheduled.length > 0) {
+        // Show modal with scheduled workouts prioritized
+        setIsSelectWorkoutModalOpen(true);
+      } else {
+        // Navigate to sessions page to start a new session
+        router.push("/(tabs)/sessions");
+      }
+    } catch (error) {
+      console.error("Error checking scheduled workouts:", error);
+      // Fallback to normal flow
+      router.push("/(tabs)/sessions");
+    }
   };
 
   const handleViewWorkoutDetails = (workoutId: string) => {
@@ -129,6 +149,36 @@ export default function WorkoutsPage() {
   const handleWorkoutDeleted = () => {
     // Refresh templates when a workout is deleted
     fetchWorkoutTemplates();
+  };
+
+  const handleWorkoutSelect = async (workoutId: string) => {
+    if (!user) return;
+
+    try {
+      // Create a new session
+      const { data, error } = await supabase
+        .from("workout_sessions")
+        .insert([
+          {
+            user_id: user.id,
+            workout_id: workoutId,
+            started_at: new Date().toISOString(),
+            completed: false,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating session:", error.message);
+        return;
+      }
+
+      // Navigate to the session detail page
+      router.push(`/session/${data.id}`);
+    } catch (error) {
+      console.error("Error creating session:", error);
+    }
   };
 
   return (
@@ -302,6 +352,12 @@ export default function WorkoutsPage() {
         workoutId={selectedWorkoutId}
         onWorkoutUpdated={handleWorkoutUpdated}
         onWorkoutDeleted={handleWorkoutDeleted}
+      />
+
+      <SelectWorkoutModal
+        isOpen={isSelectWorkoutModalOpen}
+        onClose={() => setIsSelectWorkoutModalOpen(false)}
+        onWorkoutSelect={handleWorkoutSelect}
       />
     </View>
   );
