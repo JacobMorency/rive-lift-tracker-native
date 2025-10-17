@@ -188,6 +188,15 @@ export default function WorkoutsPage() {
         subtitle={
           userData ? `Welcome back, ${userData.first_name}! 💪` : undefined
         }
+        rightComponent={
+          <TouchableOpacity
+            className="flex-row items-center gap-1"
+            onPress={() => router.push("/(tabs)/stats")}
+          >
+            <Ionicons name="analytics-outline" size={20} color="#ff4b8c" />
+            <Text className="text-primary font-medium">Stats</Text>
+          </TouchableOpacity>
+        }
       />
 
       {/* Content */}
