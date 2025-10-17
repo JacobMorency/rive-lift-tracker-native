@@ -285,7 +285,7 @@ export default function CustomCalendar({
               const globalIndex = weekIndex * 7 + dayIndex;
               const day = days[globalIndex];
 
-              if (day === null) {
+              if (day === null || day === undefined) {
                 return (
                   <View
                     key={`empty-${globalIndex}`}

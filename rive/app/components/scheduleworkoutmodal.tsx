@@ -111,6 +111,14 @@ export default function ScheduleWorkoutModal({
     }
   }, [isOpen, user]);
 
+  // Cleanup date pickers when modal is closed
+  useEffect(() => {
+    if (!isOpen) {
+      setShowStartDatePicker(false);
+      setShowEndDatePicker(false);
+    }
+  }, [isOpen]);
+
   // Update startDate when selectedDate prop changes
   useEffect(() => {
     if (selectedDate) {
@@ -165,8 +173,8 @@ export default function ScheduleWorkoutModal({
   };
 
   const handleStartDateChange = (event: any, selectedDate?: Date) => {
-    setShowStartDatePicker(Platform.OS === "ios");
-    if (selectedDate) {
+    // Only update if user actually selected a date (not dismissed)
+    if (event.type === "set" && selectedDate) {
       // Format date in local timezone to match calendar format
       const year = selectedDate.getFullYear();
       const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
@@ -186,11 +194,16 @@ export default function ScheduleWorkoutModal({
         setSelectedDates([dateOfMonth]);
       }
     }
+
+    // Always hide the picker after interaction
+    setTimeout(() => {
+      setShowStartDatePicker(false);
+    }, 100);
   };
 
   const handleEndDateChange = (event: any, selectedDate?: Date) => {
-    setShowEndDatePicker(Platform.OS === "ios");
-    if (selectedDate) {
+    // Only update if user actually selected a date (not dismissed)
+    if (event.type === "set" && selectedDate) {
       // Format date in local timezone to match calendar format
       const year = selectedDate.getFullYear();
       const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
@@ -198,6 +211,11 @@ export default function ScheduleWorkoutModal({
       const dateString = `${year}-${month}-${day}`;
       setEndDate(dateString);
     }
+
+    // Always hide the picker after interaction
+    setTimeout(() => {
+      setShowEndDatePicker(false);
+    }, 100);
   };
 
   const handleDayToggle = (day: number) => {
