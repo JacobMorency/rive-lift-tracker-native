@@ -54,6 +54,7 @@ const ExerciseTracker = ({
     right_reps: null,
   });
   const [weightIncrement, setWeightIncrement] = useState<number>(5);
+  const [weightInput, setWeightInput] = useState<string>("");
   const [showAllSets, setShowAllSets] = useState<boolean>(false);
   const [editingSetIndex, setEditingSetIndex] = useState<number | null>(null);
   const [editingSet, setEditingSet] = useState<ExerciseSet | null>(null);
@@ -93,6 +94,7 @@ const ExerciseTracker = ({
       left_reps: null,
       right_reps: null,
     });
+    setWeightInput("");
 
     // No auto-focus - users can use buttons
   };
@@ -113,10 +115,13 @@ const ExerciseTracker = ({
         left_reps: lastSet.left_reps,
         right_reps: lastSet.right_reps,
       });
+      setWeightInput(lastSet.weight !== null ? lastSet.weight.toString() : "");
 
       // No auto-focus - users can use buttons
     }
   };
+
+  // Note: weight input is updated directly by button handlers and copy/reset actions
 
   const removeSet = (index: number) => {
     const newSets = sets.filter((_, i) => i !== index);
@@ -791,6 +796,7 @@ const ExerciseTracker = ({
                           (currentSet.weight || 0) - weightIncrement;
                         if (newValue >= 0) {
                           setCurrentSet({ ...currentSet, weight: newValue });
+                          setWeightInput(newValue.toString());
                         }
                       }}
                     >
@@ -804,20 +810,22 @@ const ExerciseTracker = ({
                     </TouchableOpacity>
                     <TextInput
                       className="flex-1 text-center py-2 text-lg font-bold text-base-content"
-                      value={
-                        currentSet.weight !== null
-                          ? currentSet.weight.toString()
-                          : ""
-                      }
+                      value={weightInput}
                       onChangeText={(value) => {
-                        if (value === "" || value === "-" || value === ".") {
+                        setWeightInput(value);
+                        if (
+                          value === "" ||
+                          value === "-" ||
+                          value === "." ||
+                          /\.$/.test(value)
+                        ) {
                           setCurrentSet({ ...currentSet, weight: null });
-                        } else {
-                          const parsed = parseFloat(value);
-                          if (!isNaN(parsed)) {
-                            const rounded = Math.floor(parsed * 10) / 10;
-                            setCurrentSet({ ...currentSet, weight: rounded });
-                          }
+                          return;
+                        }
+                        const parsed = parseFloat(value);
+                        if (!isNaN(parsed)) {
+                          const rounded = Math.floor(parsed * 10) / 10;
+                          setCurrentSet({ ...currentSet, weight: rounded });
                         }
                       }}
                       placeholder="0"
@@ -828,12 +836,15 @@ const ExerciseTracker = ({
                     />
                     <TouchableOpacity
                       className="px-3 py-2"
-                      onPress={() =>
+                      onPress={() => {
+                        const newValue =
+                          (currentSet.weight || 0) + weightIncrement;
                         setCurrentSet({
                           ...currentSet,
-                          weight: (currentSet.weight || 0) + weightIncrement,
-                        })
-                      }
+                          weight: newValue,
+                        });
+                        setWeightInput(newValue.toString());
+                      }}
                     >
                       <Ionicons
                         name="add"
@@ -948,6 +959,7 @@ const ExerciseTracker = ({
                           (currentSet.weight || 0) - weightIncrement;
                         if (newValue >= 0) {
                           setCurrentSet({ ...currentSet, weight: newValue });
+                          setWeightInput(newValue.toString());
                         }
                       }}
                     >
@@ -961,20 +973,22 @@ const ExerciseTracker = ({
                     </TouchableOpacity>
                     <TextInput
                       className="flex-1 text-center py-2 text-lg font-bold text-base-content"
-                      value={
-                        currentSet.weight !== null
-                          ? currentSet.weight.toString()
-                          : ""
-                      }
+                      value={weightInput}
                       onChangeText={(value) => {
-                        if (value === "" || value === "-" || value === ".") {
+                        setWeightInput(value);
+                        if (
+                          value === "" ||
+                          value === "-" ||
+                          value === "." ||
+                          /\.$/.test(value)
+                        ) {
                           setCurrentSet({ ...currentSet, weight: null });
-                        } else {
-                          const parsed = parseFloat(value);
-                          if (!isNaN(parsed)) {
-                            const rounded = Math.floor(parsed * 10) / 10;
-                            setCurrentSet({ ...currentSet, weight: rounded });
-                          }
+                          return;
+                        }
+                        const parsed = parseFloat(value);
+                        if (!isNaN(parsed)) {
+                          const rounded = Math.floor(parsed * 10) / 10;
+                          setCurrentSet({ ...currentSet, weight: rounded });
                         }
                       }}
                       placeholder="0"
@@ -985,12 +999,15 @@ const ExerciseTracker = ({
                     />
                     <TouchableOpacity
                       className="px-3 py-2"
-                      onPress={() =>
+                      onPress={() => {
+                        const newValue =
+                          (currentSet.weight || 0) + weightIncrement;
                         setCurrentSet({
                           ...currentSet,
-                          weight: (currentSet.weight || 0) + weightIncrement,
-                        })
-                      }
+                          weight: newValue,
+                        });
+                        setWeightInput(newValue.toString());
+                      }}
                     >
                       <Ionicons
                         name="add"
