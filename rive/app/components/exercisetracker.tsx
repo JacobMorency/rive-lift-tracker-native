@@ -60,6 +60,7 @@ const ExerciseTracker = ({
   const [isComparisonExpanded, setIsComparisonExpanded] = useState(
     lastSessionSets.length > 0
   );
+  const [showPartials, setShowPartials] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
 
   // No refs needed - users will use buttons instead of keyboard navigation
@@ -228,11 +229,11 @@ const ExerciseTracker = ({
               elevation: 3,
             }}
           >
-            <TouchableOpacity
-              onPress={() => setIsComparisonExpanded(!isComparisonExpanded)}
-              className="flex-row items-center justify-between mb-4"
-            >
-              <View className="flex-row items-center">
+            <View className="flex-row items-center justify-between mb-2">
+              <TouchableOpacity
+                onPress={() => setIsComparisonExpanded(!isComparisonExpanded)}
+                className="flex-row items-center"
+              >
                 <Ionicons name="trending-up" size={16} color="#10b981" />
                 <View className="ml-2">
                   <Text className="text-sm font-semibold text-base-content">
@@ -247,20 +248,25 @@ const ExerciseTracker = ({
                       </Text>
                     )}
                 </View>
-              </View>
-              <View className="flex-row items-center">
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setIsComparisonExpanded(!isComparisonExpanded)}
+                className="p-1"
+              >
                 <Ionicons
                   name={isComparisonExpanded ? "chevron-up" : "chevron-down"}
                   size={16}
                   color="#6b7280"
                 />
-              </View>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </View>
 
             {isComparisonExpanded ? (
               <View className="gap-3">
-                {lastSessionSets.map((lastSet, index) => {
-                  const currentSet = sets[index];
+                {(() => {
+                  const targetIndex = (currentSet.set_number || 1) - 1;
+                  const lastSet = lastSessionSets[targetIndex];
+                  if (!lastSet) return null;
                   const currentWeight = currentSet?.weight || 0;
                   const currentReps = currentSet?.is_unilateral
                     ? (currentSet.left_reps || 0) + (currentSet.right_reps || 0)
@@ -287,7 +293,6 @@ const ExerciseTracker = ({
                         : "same"
                     : "neutral";
 
-                  // Calculate percentage improvements
                   const weightPercentage =
                     lastWeight > 0
                       ? Math.round(
@@ -300,10 +305,13 @@ const ExerciseTracker = ({
                       : 0;
 
                   return (
-                    <View key={index} className="bg-base-200 rounded-lg p-3">
+                    <View
+                      key={targetIndex}
+                      className="bg-base-200 rounded-lg p-2"
+                    >
                       <View className="flex-row items-center justify-between mb-2">
                         <Text className="text-sm font-semibold text-base-content">
-                          Set {index + 1}
+                          Set {targetIndex + 1}
                         </Text>
                         <View className="flex-row items-center gap-1">
                           {weightProgress === "up" && (
@@ -370,7 +378,7 @@ const ExerciseTracker = ({
                                       : "bg-base-300"
                               }`}
                             >
-                              <View>
+                              <View className="flex-row items-center gap-1">
                                 <Text
                                   className={`text-sm font-semibold ${
                                     weightProgress === "up"
@@ -411,7 +419,7 @@ const ExerciseTracker = ({
                                       : "bg-base-300"
                               }`}
                             >
-                              <View>
+                              <View className="flex-row items-center gap-1">
                                 <Text
                                   className={`text-sm font-semibold ${
                                     repsProgress === "up"
@@ -446,11 +454,11 @@ const ExerciseTracker = ({
                       </View>
                     </View>
                   );
-                })}
+                })()}
 
                 {/* Progress Summary */}
                 {sets.length > 0 && (
-                  <View className="mt-4 pt-3 border-t border-base-300">
+                  <View>
                     <View className="flex-row items-center justify-between">
                       <Text className="text-sm font-medium text-muted">
                         Overall Progress
@@ -543,23 +551,16 @@ const ExerciseTracker = ({
                 )}
               </View>
             ) : (
-              <View className="py-4">
+              <View className="py-1">
                 <View className="items-center">
                   <Ionicons
                     name="information-circle-outline"
-                    size={24}
+                    size={16}
                     color="#6b7280"
                   />
-                  <Text className="text-sm text-muted text-center mt-2">
-                    {lastSessionSets.length === 0
-                      ? "No previous session data available"
-                      : "Tap to expand comparison"}
+                  <Text className="text-xs text-muted text-center mt-1">
+                    Tap to expand
                   </Text>
-                  {lastSessionSets.length === 0 && (
-                    <Text className="text-xs text-muted text-center mt-1">
-                      Complete this exercise to start tracking progress
-                    </Text>
-                  )}
                 </View>
               </View>
             )}
@@ -568,7 +569,7 @@ const ExerciseTracker = ({
 
         {/* Current Set Input */}
         <View
-          className="bg-base-200 rounded-xl p-6 mb-6"
+          className="bg-base-200 rounded-xl p-4 mb-4"
           style={{
             shadowColor: "#000",
             shadowOffset: {
@@ -580,168 +581,257 @@ const ExerciseTracker = ({
             elevation: 8,
           }}
         >
-          <View className="mb-6">
+          <View className="mb-3 flex-row items-center justify-between">
             <Text className="text-lg font-bold text-base-content">
               Set {currentSet.set_number}
             </Text>
-            <Text className="text-sm text-muted">
-              Enter your reps and weight
-            </Text>
+            <TouchableOpacity
+              onPress={() => setShowPartials(!showPartials)}
+              className={`px-2 py-1 rounded ${showPartials ? "bg-primary" : "bg-base-300"}`}
+            >
+              <Text
+                className={`${showPartials ? "text-primary-content" : "text-base-content"} text-xs font-medium`}
+              >
+                {showPartials ? "Hide Partials" : "Show Partials"}
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          <View className="gap-4">
+          <View className="gap-3">
             {/* Reps - Conditional based on unilateral */}
             {currentSet.is_unilateral ? (
-              <View className="flex-row gap-3">
-                {/* Left Reps */}
-                <View className="flex-1">
-                  <View className="mb-2">
-                    <Text className="text-sm font-semibold text-base-content">
-                      L Reps
-                    </Text>
-                  </View>
-                  <View
-                    className={`rounded-xl flex-row items-center ${
-                      currentSet.left_reps !== null && currentSet.left_reps > 0
-                        ? "bg-primary/10 border-2 border-primary"
-                        : "bg-base-300 border-2 border-transparent"
-                    }`}
-                  >
-                    <TouchableOpacity
-                      className="px-3 py-3"
-                      onPress={() => {
-                        const newValue = (currentSet.left_reps || 0) - 1;
-                        if (newValue >= 0) {
-                          setCurrentSet({ ...currentSet, left_reps: newValue });
-                        }
-                      }}
+              <View className="gap-3">
+                <View className="flex-row gap-3">
+                  {/* Left Reps */}
+                  <View className="flex-1">
+                    <View className="mb-2">
+                      <Text className="text-sm font-semibold text-base-content">
+                        L Reps
+                      </Text>
+                    </View>
+                    <View
+                      className={`rounded-xl flex-row items-center ${
+                        (currentSet.left_reps ?? 0) > 0
+                          ? "bg-primary/10 border-2 border-primary"
+                          : "bg-base-300 border-2 border-transparent"
+                      }`}
                     >
-                      <Ionicons
-                        name="remove"
-                        size={18}
-                        color={
-                          currentSet.left_reps !== null &&
-                          currentSet.left_reps > 0
-                            ? "#ff4b8c"
-                            : "#6b7280"
-                        }
-                      />
-                    </TouchableOpacity>
-                    <TextInput
-                      className="flex-1 text-center py-3 text-base font-bold text-base-content"
-                      value={
-                        currentSet.left_reps !== null
-                          ? currentSet.left_reps.toString()
-                          : ""
-                      }
-                      onChangeText={(value) => {
-                        if (value === "" || value === "-") {
-                          setCurrentSet({ ...currentSet, left_reps: null });
-                        } else {
-                          const parsed = parseInt(value);
-                          if (!isNaN(parsed)) {
-                            setCurrentSet({ ...currentSet, left_reps: parsed });
-                          }
-                        }
-                      }}
-                      placeholder="0"
-                      placeholderTextColor="#9ca3af"
-                      keyboardType="numeric"
-                      returnKeyType="done"
-                      blurOnSubmit={true}
-                    />
-                    <TouchableOpacity
-                      className="px-3 py-3"
-                      onPress={() =>
-                        setCurrentSet({
-                          ...currentSet,
-                          left_reps: (currentSet.left_reps || 0) + 1,
-                        })
-                      }
-                    >
-                      <Ionicons
-                        name="add"
-                        size={18}
-                        color={
-                          currentSet.left_reps !== null &&
-                          currentSet.left_reps > 0
-                            ? "#ff4b8c"
-                            : "#6b7280"
-                        }
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                {/* Right Reps */}
-                <View className="flex-1">
-                  <View className="mb-2">
-                    <Text className="text-sm font-semibold text-base-content">
-                      R Reps
-                    </Text>
-                  </View>
-                  <View
-                    className={`rounded-xl flex-row items-center ${
-                      currentSet.right_reps !== null &&
-                      currentSet.right_reps > 0
-                        ? "bg-primary/10 border-2 border-primary"
-                        : "bg-base-300 border-2 border-transparent"
-                    }`}
-                  >
-                    <TouchableOpacity
-                      className="px-3 py-3"
-                      onPress={() => {
-                        const newValue = (currentSet.right_reps || 0) - 1;
-                        if (newValue >= 0) {
-                          setCurrentSet({
-                            ...currentSet,
-                            right_reps: newValue,
-                          });
-                        }
-                      }}
-                    >
-                      <Ionicons
-                        name="remove"
-                        size={18}
-                        color={
-                          currentSet.right_reps !== null &&
-                          currentSet.right_reps > 0
-                            ? "#ff4b8c"
-                            : "#6b7280"
-                        }
-                      />
-                    </TouchableOpacity>
-                    <TextInput
-                      className="flex-1 text-center py-3 text-base font-bold text-base-content"
-                      value={
-                        currentSet.right_reps !== null
-                          ? currentSet.right_reps.toString()
-                          : ""
-                      }
-                      onChangeText={(value) => {
-                        if (value === "" || value === "-") {
-                          setCurrentSet({ ...currentSet, right_reps: null });
-                        } else {
-                          const parsed = parseInt(value);
-                          if (!isNaN(parsed)) {
+                      <TouchableOpacity
+                        className="px-3 py-3"
+                        onPress={() => {
+                          const newValue = (currentSet.left_reps || 0) - 1;
+                          if (newValue >= 0) {
                             setCurrentSet({
                               ...currentSet,
-                              right_reps: parsed,
+                              left_reps: newValue,
                             });
+                          }
+                        }}
+                      >
+                        <Ionicons
+                          name="remove"
+                          size={18}
+                          color={
+                            (currentSet.left_reps ?? 0) > 0
+                              ? "#ff4b8c"
+                              : "#6b7280"
+                          }
+                        />
+                      </TouchableOpacity>
+                      <TextInput
+                        className="flex-1 text-center py-3 text-base font-bold text-base-content"
+                        value={
+                          currentSet.left_reps != null
+                            ? String(currentSet.left_reps)
+                            : ""
+                        }
+                        onChangeText={(value) => {
+                          if (value === "" || value === "-") {
+                            setCurrentSet({ ...currentSet, left_reps: null });
+                          } else {
+                            const parsed = parseInt(value);
+                            if (!isNaN(parsed)) {
+                              setCurrentSet({
+                                ...currentSet,
+                                left_reps: parsed,
+                              });
+                            }
+                          }
+                        }}
+                        placeholder="0"
+                        placeholderTextColor="#9ca3af"
+                        keyboardType="numeric"
+                        returnKeyType="done"
+                        blurOnSubmit={true}
+                      />
+                      <TouchableOpacity
+                        className="px-3 py-3"
+                        onPress={() =>
+                          setCurrentSet({
+                            ...currentSet,
+                            left_reps: (currentSet.left_reps || 0) + 1,
+                          })
+                        }
+                      >
+                        <Ionicons
+                          name="add"
+                          size={18}
+                          color={
+                            (currentSet.left_reps ?? 0) > 0
+                              ? "#ff4b8c"
+                              : "#6b7280"
+                          }
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  {/* Right Reps */}
+                  <View className="flex-1">
+                    <View className="mb-2">
+                      <Text className="text-sm font-semibold text-base-content">
+                        R Reps
+                      </Text>
+                    </View>
+                    <View
+                      className={`rounded-xl flex-row items-center ${
+                        (currentSet.right_reps ?? 0) > 0
+                          ? "bg-primary/10 border-2 border-primary"
+                          : "bg-base-300 border-2 border-transparent"
+                      }`}
+                    >
+                      <TouchableOpacity
+                        className="px-3 py-3"
+                        onPress={() => {
+                          const newValue = (currentSet.right_reps || 0) - 1;
+                          if (newValue >= 0) {
+                            setCurrentSet({
+                              ...currentSet,
+                              right_reps: newValue,
+                            });
+                          }
+                        }}
+                      >
+                        <Ionicons
+                          name="remove"
+                          size={18}
+                          color={
+                            (currentSet.right_reps ?? 0) > 0
+                              ? "#ff4b8c"
+                              : "#6b7280"
+                          }
+                        />
+                      </TouchableOpacity>
+                      <TextInput
+                        className="flex-1 text-center py-3 text-base font-bold text-base-content"
+                        value={
+                          currentSet.right_reps != null
+                            ? String(currentSet.right_reps)
+                            : ""
+                        }
+                        onChangeText={(value) => {
+                          if (value === "" || value === "-") {
+                            setCurrentSet({ ...currentSet, right_reps: null });
+                          } else {
+                            const parsed = parseInt(value);
+                            if (!isNaN(parsed)) {
+                              setCurrentSet({
+                                ...currentSet,
+                                right_reps: parsed,
+                              });
+                            }
+                          }
+                        }}
+                        placeholder="0"
+                        placeholderTextColor="#9ca3af"
+                        keyboardType="numeric"
+                        returnKeyType="done"
+                        blurOnSubmit={true}
+                      />
+                      <TouchableOpacity
+                        className="px-3 py-3"
+                        onPress={() =>
+                          setCurrentSet({
+                            ...currentSet,
+                            right_reps: (currentSet.right_reps || 0) + 1,
+                          })
+                        }
+                      >
+                        <Ionicons
+                          name="add"
+                          size={18}
+                          color={
+                            (currentSet.right_reps ?? 0) > 0
+                              ? "#ff4b8c"
+                              : "#6b7280"
+                          }
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Weight (shown for unilateral as well) */}
+                <View className="flex-1">
+                  <View className="mb-1">
+                    <Text className="text-sm font-semibold text-base-content">
+                      Weight (lbs)
+                    </Text>
+                  </View>
+                  <View
+                    className={`rounded-xl flex-row items-center ${
+                      currentSet.weight !== null
+                        ? "bg-primary/10 border-2 border-primary"
+                        : "bg-base-300 border-2 border-transparent"
+                    }`}
+                  >
+                    <TouchableOpacity
+                      className="px-3 py-2"
+                      onPress={() => {
+                        const newValue =
+                          (currentSet.weight || 0) - weightIncrement;
+                        if (newValue >= 0) {
+                          setCurrentSet({ ...currentSet, weight: newValue });
+                        }
+                      }}
+                    >
+                      <Ionicons
+                        name="remove"
+                        size={18}
+                        color={
+                          currentSet.weight !== null ? "#ff4b8c" : "#6b7280"
+                        }
+                      />
+                    </TouchableOpacity>
+                    <TextInput
+                      className="flex-1 text-center py-2 text-lg font-bold text-base-content"
+                      value={
+                        currentSet.weight !== null
+                          ? currentSet.weight.toString()
+                          : ""
+                      }
+                      onChangeText={(value) => {
+                        if (value === "" || value === "-" || value === ".") {
+                          setCurrentSet({ ...currentSet, weight: null });
+                        } else {
+                          const parsed = parseFloat(value);
+                          if (!isNaN(parsed)) {
+                            const rounded = Math.floor(parsed * 10) / 10;
+                            setCurrentSet({ ...currentSet, weight: rounded });
                           }
                         }
                       }}
                       placeholder="0"
                       placeholderTextColor="#9ca3af"
-                      keyboardType="numeric"
+                      keyboardType="decimal-pad"
                       returnKeyType="done"
                       blurOnSubmit={true}
                     />
                     <TouchableOpacity
-                      className="px-3 py-3"
+                      className="px-3 py-2"
                       onPress={() =>
                         setCurrentSet({
                           ...currentSet,
-                          right_reps: (currentSet.right_reps || 0) + 1,
+                          weight: (currentSet.weight || 0) + weightIncrement,
                         })
                       }
                     >
@@ -749,10 +839,7 @@ const ExerciseTracker = ({
                         name="add"
                         size={18}
                         color={
-                          currentSet.right_reps !== null &&
-                          currentSet.right_reps > 0
-                            ? "#ff4b8c"
-                            : "#6b7280"
+                          currentSet.weight !== null ? "#ff4b8c" : "#6b7280"
                         }
                       />
                     </TouchableOpacity>
@@ -760,51 +847,214 @@ const ExerciseTracker = ({
                 </View>
               </View>
             ) : (
-              /* Regular Reps */
+              /* Regular Reps & Weight Inline */
+              <View className="flex-row gap-3">
+                {/* Reps */}
+                <View className="flex-1">
+                  <View className="mb-1">
+                    <Text className="text-sm font-semibold text-base-content">
+                      Reps
+                    </Text>
+                  </View>
+                  <View
+                    className={`rounded-xl flex-row items-center ${
+                      currentSet.reps !== null && currentSet.reps > 0
+                        ? "bg-primary/10 border-2 border-primary"
+                        : "bg-base-300 border-2 border-transparent"
+                    }`}
+                  >
+                    <TouchableOpacity
+                      className="px-3 py-2"
+                      onPress={() => {
+                        const newValue = (currentSet.reps || 0) - 1;
+                        if (newValue >= 0) {
+                          setCurrentSet({ ...currentSet, reps: newValue });
+                        }
+                      }}
+                    >
+                      <Ionicons
+                        name="remove"
+                        size={18}
+                        color={
+                          currentSet.reps !== null && currentSet.reps > 0
+                            ? "#ff4b8c"
+                            : "#6b7280"
+                        }
+                      />
+                    </TouchableOpacity>
+                    <TextInput
+                      className="flex-1 text-center py-2 text-lg font-bold text-base-content"
+                      value={
+                        currentSet.reps !== null
+                          ? currentSet.reps.toString()
+                          : ""
+                      }
+                      onChangeText={(value) => {
+                        if (value === "" || value === "-") {
+                          setCurrentSet({ ...currentSet, reps: null });
+                        } else {
+                          const parsed = parseInt(value);
+                          if (!isNaN(parsed)) {
+                            setCurrentSet({ ...currentSet, reps: parsed });
+                          }
+                        }
+                      }}
+                      placeholder="0"
+                      placeholderTextColor="#9ca3af"
+                      keyboardType="numeric"
+                      returnKeyType="done"
+                      blurOnSubmit={true}
+                    />
+                    <TouchableOpacity
+                      className="px-3 py-2"
+                      onPress={() =>
+                        setCurrentSet({
+                          ...currentSet,
+                          reps: (currentSet.reps || 0) + 1,
+                        })
+                      }
+                    >
+                      <Ionicons
+                        name="add"
+                        size={18}
+                        color={
+                          currentSet.reps !== null && currentSet.reps > 0
+                            ? "#ff4b8c"
+                            : "#6b7280"
+                        }
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {/* Weight */}
+                <View className="flex-1">
+                  <View className="mb-1">
+                    <Text className="text-sm font-semibold text-base-content">
+                      Weight (lbs)
+                    </Text>
+                  </View>
+                  <View
+                    className={`rounded-xl flex-row items-center ${
+                      currentSet.weight !== null
+                        ? "bg-primary/10 border-2 border-primary"
+                        : "bg-base-300 border-2 border-transparent"
+                    }`}
+                  >
+                    <TouchableOpacity
+                      className="px-3 py-2"
+                      onPress={() => {
+                        const newValue =
+                          (currentSet.weight || 0) - weightIncrement;
+                        if (newValue >= 0) {
+                          setCurrentSet({ ...currentSet, weight: newValue });
+                        }
+                      }}
+                    >
+                      <Ionicons
+                        name="remove"
+                        size={18}
+                        color={
+                          currentSet.weight !== null ? "#ff4b8c" : "#6b7280"
+                        }
+                      />
+                    </TouchableOpacity>
+                    <TextInput
+                      className="flex-1 text-center py-2 text-lg font-bold text-base-content"
+                      value={
+                        currentSet.weight !== null
+                          ? currentSet.weight.toString()
+                          : ""
+                      }
+                      onChangeText={(value) => {
+                        if (value === "" || value === "-" || value === ".") {
+                          setCurrentSet({ ...currentSet, weight: null });
+                        } else {
+                          const parsed = parseFloat(value);
+                          if (!isNaN(parsed)) {
+                            const rounded = Math.floor(parsed * 10) / 10;
+                            setCurrentSet({ ...currentSet, weight: rounded });
+                          }
+                        }
+                      }}
+                      placeholder="0"
+                      placeholderTextColor="#9ca3af"
+                      keyboardType="decimal-pad"
+                      returnKeyType="done"
+                      blurOnSubmit={true}
+                    />
+                    <TouchableOpacity
+                      className="px-3 py-2"
+                      onPress={() =>
+                        setCurrentSet({
+                          ...currentSet,
+                          weight: (currentSet.weight || 0) + weightIncrement,
+                        })
+                      }
+                    >
+                      <Ionicons
+                        name="add"
+                        size={18}
+                        color={
+                          currentSet.weight !== null ? "#ff4b8c" : "#6b7280"
+                        }
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* Partial Reps (toggleable) */}
+            {showPartials && (
               <View className="flex-1">
-                <View className="mb-2">
+                <View className="mb-1">
                   <Text className="text-sm font-semibold text-base-content">
-                    Reps
+                    Partials
                   </Text>
                 </View>
                 <View
                   className={`rounded-xl flex-row items-center ${
-                    currentSet.reps !== null && currentSet.reps > 0
+                    currentSet.partialReps !== null &&
+                    currentSet.partialReps > 0
                       ? "bg-primary/10 border-2 border-primary"
                       : "bg-base-300 border-2 border-transparent"
                   }`}
                 >
                   <TouchableOpacity
-                    className="px-4 py-3"
+                    className="px-3 py-2"
                     onPress={() => {
-                      const newValue = (currentSet.reps || 0) - 1;
+                      const newValue = (currentSet.partialReps || 0) - 1;
                       if (newValue >= 0) {
-                        setCurrentSet({ ...currentSet, reps: newValue });
+                        setCurrentSet({ ...currentSet, partialReps: newValue });
                       }
                     }}
                   >
                     <Ionicons
                       name="remove"
-                      size={20}
+                      size={18}
                       color={
-                        currentSet.reps !== null && currentSet.reps > 0
+                        currentSet.partialReps !== null &&
+                        currentSet.partialReps > 0
                           ? "#ff4b8c"
                           : "#6b7280"
                       }
                     />
                   </TouchableOpacity>
                   <TextInput
-                    className="flex-1 text-center py-3 text-lg font-bold text-base-content"
+                    className="flex-1 text-center py-2 text-lg font-bold text-base-content"
                     value={
-                      currentSet.reps !== null ? currentSet.reps.toString() : ""
+                      currentSet.partialReps !== null
+                        ? currentSet.partialReps.toString()
+                        : ""
                     }
                     onChangeText={(value) => {
                       if (value === "" || value === "-") {
-                        setCurrentSet({ ...currentSet, reps: null });
+                        setCurrentSet({ ...currentSet, partialReps: null });
                       } else {
                         const parsed = parseInt(value);
                         if (!isNaN(parsed)) {
-                          setCurrentSet({ ...currentSet, reps: parsed });
+                          setCurrentSet({ ...currentSet, partialReps: parsed });
                         }
                       }
                     }}
@@ -815,19 +1065,20 @@ const ExerciseTracker = ({
                     blurOnSubmit={true}
                   />
                   <TouchableOpacity
-                    className="px-4 py-3"
+                    className="px-3 py-2"
                     onPress={() =>
                       setCurrentSet({
                         ...currentSet,
-                        reps: (currentSet.reps || 0) + 1,
+                        partialReps: (currentSet.partialReps || 0) + 1,
                       })
                     }
                   >
                     <Ionicons
                       name="add"
-                      size={20}
+                      size={18}
                       color={
-                        currentSet.reps !== null && currentSet.reps > 0
+                        currentSet.partialReps !== null &&
+                        currentSet.partialReps > 0
                           ? "#ff4b8c"
                           : "#6b7280"
                       }
@@ -836,161 +1087,10 @@ const ExerciseTracker = ({
                 </View>
               </View>
             )}
-
-            {/* Weight */}
-            <View className="flex-1">
-              <View className="mb-2">
-                <Text className="text-sm font-semibold text-base-content">
-                  Weight (lbs)
-                </Text>
-              </View>
-              <View
-                className={`rounded-xl flex-row items-center ${
-                  currentSet.weight !== null
-                    ? "bg-primary/10 border-2 border-primary"
-                    : "bg-base-300 border-2 border-transparent"
-                }`}
-              >
-                <TouchableOpacity
-                  className="px-4 py-3"
-                  onPress={() => {
-                    const newValue = (currentSet.weight || 0) - weightIncrement;
-                    if (newValue >= 0) {
-                      setCurrentSet({ ...currentSet, weight: newValue });
-                    }
-                  }}
-                >
-                  <Ionicons
-                    name="remove"
-                    size={20}
-                    color={currentSet.weight !== null ? "#ff4b8c" : "#6b7280"}
-                  />
-                </TouchableOpacity>
-                <TextInput
-                  className="flex-1 text-center py-3 text-lg font-bold text-base-content"
-                  value={
-                    currentSet.weight !== null
-                      ? currentSet.weight.toString()
-                      : ""
-                  }
-                  onChangeText={(value) => {
-                    if (value === "" || value === "-" || value === ".") {
-                      setCurrentSet({ ...currentSet, weight: null });
-                    } else {
-                      const parsed = parseFloat(value);
-                      if (!isNaN(parsed)) {
-                        const rounded = Math.floor(parsed * 10) / 10;
-                        setCurrentSet({ ...currentSet, weight: rounded });
-                      }
-                    }
-                  }}
-                  placeholder="0"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="decimal-pad"
-                  returnKeyType="done"
-                  blurOnSubmit={true}
-                />
-                <TouchableOpacity
-                  className="px-4 py-3"
-                  onPress={() =>
-                    setCurrentSet({
-                      ...currentSet,
-                      weight: (currentSet.weight || 0) + weightIncrement,
-                    })
-                  }
-                >
-                  <Ionicons
-                    name="add"
-                    size={20}
-                    color={currentSet.weight !== null ? "#ff4b8c" : "#6b7280"}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Partial Reps */}
-            <View className="flex-1">
-              <View className="mb-2">
-                <Text className="text-sm font-semibold text-base-content">
-                  Partials
-                </Text>
-              </View>
-              <View
-                className={`rounded-xl flex-row items-center ${
-                  currentSet.partialReps !== null && currentSet.partialReps > 0
-                    ? "bg-primary/10 border-2 border-primary"
-                    : "bg-base-300 border-2 border-transparent"
-                }`}
-              >
-                <TouchableOpacity
-                  className="px-4 py-3"
-                  onPress={() => {
-                    const newValue = (currentSet.partialReps || 0) - 1;
-                    if (newValue >= 0) {
-                      setCurrentSet({ ...currentSet, partialReps: newValue });
-                    }
-                  }}
-                >
-                  <Ionicons
-                    name="remove"
-                    size={20}
-                    color={
-                      currentSet.partialReps !== null &&
-                      currentSet.partialReps > 0
-                        ? "#ff4b8c"
-                        : "#6b7280"
-                    }
-                  />
-                </TouchableOpacity>
-                <TextInput
-                  className="flex-1 text-center py-3 text-lg font-bold text-base-content"
-                  value={
-                    currentSet.partialReps !== null
-                      ? currentSet.partialReps.toString()
-                      : ""
-                  }
-                  onChangeText={(value) => {
-                    if (value === "" || value === "-") {
-                      setCurrentSet({ ...currentSet, partialReps: null });
-                    } else {
-                      const parsed = parseInt(value);
-                      if (!isNaN(parsed)) {
-                        setCurrentSet({ ...currentSet, partialReps: parsed });
-                      }
-                    }
-                  }}
-                  placeholder="0"
-                  placeholderTextColor="#9ca3af"
-                  keyboardType="numeric"
-                  returnKeyType="done"
-                  blurOnSubmit={true}
-                />
-                <TouchableOpacity
-                  className="px-4 py-3"
-                  onPress={() =>
-                    setCurrentSet({
-                      ...currentSet,
-                      partialReps: (currentSet.partialReps || 0) + 1,
-                    })
-                  }
-                >
-                  <Ionicons
-                    name="add"
-                    size={20}
-                    color={
-                      currentSet.partialReps !== null &&
-                      currentSet.partialReps > 0
-                        ? "#ff4b8c"
-                        : "#6b7280"
-                    }
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
           </View>
 
           {/* Weight Increment Tabs */}
-          <View className="mt-6">
+          <View className="mt-4">
             <Text className="text-sm font-semibold text-base-content mb-3">
               Weight Increment
             </Text>
