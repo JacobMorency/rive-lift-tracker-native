@@ -62,21 +62,25 @@ export default function SetCard({
                   editingSet.is_unilateral
                     ? editingSet.left_reps === null ||
                       editingSet.right_reps === null ||
-                      editingSet.weight === null
+                      editingSet.weight === null ||
+                      editingSet.weight < 0
                     : editingSet.reps === null ||
+                        editingSet.reps === 0 ||
                         editingSet.weight === null ||
-                        editingSet.reps === 0
+                        editingSet.weight < 0
                 }
                 className={`w-8 h-8 items-center justify-center rounded-full ${
                   editingSet.is_unilateral
                     ? editingSet.left_reps === null ||
                         editingSet.right_reps === null ||
-                        editingSet.weight === null
+                        editingSet.weight === null ||
+                        editingSet.weight < 0
                       ? "bg-base-300"
                       : "bg-success"
                     : editingSet.reps === null ||
+                        editingSet.reps === 0 ||
                         editingSet.weight === null ||
-                        editingSet.reps === 0
+                        editingSet.weight < 0
                       ? "bg-base-300"
                       : "bg-success"
                 }`}

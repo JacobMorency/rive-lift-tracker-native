@@ -68,11 +68,20 @@ export default function WeightInput({
   };
 
   const handleDecrement = () => {
-    const newValue = (value || 0) - weightIncrement;
-    if (newValue >= 0) {
-      onChange(newValue);
+    // If value is null, set it to 0 (for bodyweight exercises)
+    // Otherwise, decrement by weightIncrement
+    if (value === null) {
+      onChange(0);
       if (isFormVariant && onTextChange) {
-        onTextChange(newValue.toString());
+        onTextChange("0");
+      }
+    } else {
+      const newValue = value - weightIncrement;
+      if (newValue >= 0) {
+        onChange(newValue);
+        if (isFormVariant && onTextChange) {
+          onTextChange(newValue.toString());
+        }
       }
     }
   };

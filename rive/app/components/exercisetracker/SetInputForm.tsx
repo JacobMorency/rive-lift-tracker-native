@@ -33,6 +33,25 @@ export default function SetInputForm({
   onCopyLastSet,
   hasSets,
 }: SetInputFormProps) {
+  // Check if set is complete (allow weight to be 0 for bodyweight exercises)
+  const isSetComplete = currentSet.is_unilateral
+    ? currentSet.left_reps !== null &&
+      currentSet.right_reps !== null &&
+      currentSet.weight !== null &&
+      currentSet.weight >= 0
+    : currentSet.reps !== null &&
+      currentSet.reps !== 0 &&
+      currentSet.weight !== null &&
+      currentSet.weight >= 0;
+
+  // Quick rep presets
+  const quickReps = [5, 8, 10, 12, 15];
+
+  const handleQuickRep = (reps: number) => {
+    if (!currentSet.is_unilateral) {
+      setCurrentSet({ ...currentSet, reps });
+    }
+  };
   return (
     <View
       className="bg-base-200 rounded-xl p-4 mb-4"
@@ -51,23 +70,60 @@ export default function SetInputForm({
         <Text className="text-lg font-bold text-base-content">
           Set {currentSet.set_number}
         </Text>
-        <TouchableOpacity
-          onPress={() => setShowPartials(!showPartials)}
-          className={`px-2 py-1 rounded ${
-            showPartials ? "bg-primary" : "bg-base-300"
-          }`}
-        >
-          <Text
-            className={`${
-              showPartials ? "text-primary-content" : "text-base-content"
-            } text-xs font-medium`}
+        <View className="flex-row items-center gap-2">
+          <TouchableOpacity
+            onPress={() => setShowPartials(!showPartials)}
+            className={`px-2 py-1 rounded flex-row items-center gap-1 ${
+              showPartials ? "bg-primary" : "bg-base-300"
+            }`}
           >
-            {showPartials ? "Hide Partials" : "Show Partials"}
-          </Text>
-        </TouchableOpacity>
+            <Ionicons
+              name={showPartials ? "eye-off-outline" : "eye-outline"}
+              size={14}
+              color={showPartials ? "#ffffff" : "#6b7280"}
+            />
+            <Text
+              className={`${
+                showPartials ? "text-primary-content" : "text-base-content"
+              } text-xs font-medium`}
+            >
+              {showPartials ? "Hide Partials" : "Show Partials"}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View className="gap-3">
+        {/* Quick Rep Buttons (only for regular, not unilateral) */}
+        {!currentSet.is_unilateral && (
+          <View className="mb-2">
+            <Text className="text-xs text-muted mb-1">Quick Reps</Text>
+            <View className="flex-row gap-2">
+              {quickReps.map((reps) => (
+                <TouchableOpacity
+                  key={reps}
+                  onPress={() => handleQuickRep(reps)}
+                  className={`px-3 py-2 rounded-lg border ${
+                    currentSet.reps === reps
+                      ? "bg-primary border-primary"
+                      : "bg-base-300 border-transparent"
+                  }`}
+                >
+                  <Text
+                    className={`text-sm font-semibold ${
+                      currentSet.reps === reps
+                        ? "text-primary-content"
+                        : "text-base-content"
+                    }`}
+                  >
+                    {reps}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* Reps - Conditional based on unilateral */}
         {currentSet.is_unilateral ? (
           <View className="gap-3">
@@ -124,8 +180,7 @@ export default function SetInputForm({
             </View>
             <View
               className={`rounded-xl flex-row items-center ${
-                currentSet.partialReps !== null &&
-                currentSet.partialReps > 0
+                currentSet.partialReps !== null && currentSet.partialReps > 0
                   ? "bg-primary/10 border-2 border-primary"
                   : "bg-base-300 border-2 border-transparent"
               }`}
@@ -232,86 +287,26 @@ export default function SetInputForm({
       <View className="flex-row gap-3 mt-6">
         <TouchableOpacity
           className={`flex-1 py-4 rounded-xl flex-row items-center justify-center ${
-            currentSet.is_unilateral
-              ? currentSet.left_reps === null ||
-                  currentSet.right_reps === null ||
-                  currentSet.weight === null
-                ? "bg-base-300"
-                : "bg-primary"
-              : currentSet.reps === null ||
-                  currentSet.weight === null ||
-                  currentSet.reps === 0
-                ? "bg-base-300"
-                : "bg-primary"
+            isSetComplete ? "bg-primary" : "bg-base-300"
           }`}
-          onPress={onAddSet}
-          disabled={
-            currentSet.is_unilateral
-              ? currentSet.left_reps === null ||
-                  currentSet.right_reps === null ||
-                  currentSet.weight === null
-              : currentSet.reps === null ||
-                  currentSet.weight === null ||
-                  currentSet.reps === 0
-          }
           style={{
-            shadowColor: currentSet.is_unilateral
-              ? currentSet.left_reps !== null &&
-                  currentSet.right_reps !== null &&
-                  currentSet.weight !== null
-                ? "#ff4b8c"
-                : "#000"
-              : currentSet.reps !== null &&
-                  currentSet.weight !== null &&
-                  currentSet.reps > 0
-                ? "#ff4b8c"
-                : "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: currentSet.is_unilateral
-              ? currentSet.left_reps !== null &&
-                  currentSet.right_reps !== null &&
-                  currentSet.weight !== null
-                ? 0.3
-                : 0.1
-              : currentSet.reps !== null &&
-                  currentSet.weight !== null &&
-                  currentSet.reps > 0
-                ? 0.3
-                : 0.1,
-            shadowRadius: 4,
-            elevation: 4,
+            shadowColor: isSetComplete ? "#ff4b8c" : "transparent",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: isSetComplete ? 0.3 : 0,
+            shadowRadius: 8,
+            elevation: isSetComplete ? 8 : 0,
           }}
+          onPress={onAddSet}
+          disabled={!isSetComplete}
         >
           <Ionicons
             name="add-circle"
             size={20}
-            color={
-              currentSet.is_unilateral
-                ? currentSet.left_reps === null ||
-                    currentSet.right_reps === null ||
-                    currentSet.weight === null
-                  ? "#6b7280"
-                  : "#ffffff"
-                : currentSet.reps === null ||
-                    currentSet.weight === null ||
-                    currentSet.reps === 0
-                  ? "#6b7280"
-                  : "#ffffff"
-            }
+            color={isSetComplete ? "#ffffff" : "#6b7280"}
           />
           <Text
             className={`text-center font-bold ml-2 ${
-              currentSet.is_unilateral
-                ? currentSet.left_reps === null ||
-                    currentSet.right_reps === null ||
-                    currentSet.weight === null
-                  ? "text-muted"
-                  : "text-primary-content"
-                : currentSet.reps === null ||
-                    currentSet.weight === null ||
-                    currentSet.reps === 0
-                  ? "text-muted"
-                  : "text-primary-content"
+              isSetComplete ? "text-primary-content" : "text-muted"
             }`}
           >
             Add Set
@@ -339,4 +334,3 @@ export default function SetInputForm({
     </View>
   );
 }
-

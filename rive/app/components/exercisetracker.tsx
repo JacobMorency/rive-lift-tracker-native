@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ExerciseSet as StatsExerciseSet } from "../lib/statsUtils";
 import { ExerciseSet } from "./exercisetracker/types";
@@ -50,39 +51,43 @@ const ExerciseTracker = ({
   const [showPartials, setShowPartials] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
 
-  // No refs needed - users will use buttons instead of keyboard navigation
-
   const handleAddSet = () => {
-    // Check if set is complete based on unilateral setting
+    // Check if set is complete based on unilateral setting (allow weight to be 0 for bodyweight)
     const isComplete = currentSet.is_unilateral
       ? currentSet.left_reps !== null &&
         currentSet.right_reps !== null &&
-        currentSet.weight !== null
-      : currentSet.reps !== null &&
         currentSet.weight !== null &&
-        currentSet.reps !== 0;
+        currentSet.weight >= 0
+      : currentSet.reps !== null &&
+        currentSet.reps !== 0 &&
+        currentSet.weight !== null &&
+        currentSet.weight >= 0;
 
     if (!isComplete) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Incomplete Set", "Please enter reps and weight");
       return;
     }
 
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const newSet = { ...currentSet };
     setSets([...sets, newSet]);
 
-    // Reset for next set
-    setCurrentSet({
-      reps: null,
-      weight: null,
-      partialReps: null,
-      set_number: sets.length + 2,
-      is_unilateral: currentSet.is_unilateral, // Keep the same unilateral setting
-      left_reps: null,
-      right_reps: null,
-    });
-    setWeightInput("");
+    // Auto-copy last set for next set (smart default)
+    const nextSetNumber = sets.length + 2;
+    const copiedSet = {
+      ...newSet,
+      set_number: nextSetNumber,
+      // Keep same values to reduce friction
+      reps: newSet.reps,
+      weight: newSet.weight,
+      partialReps: null, // Reset partials for new set
+      left_reps: newSet.left_reps,
+      right_reps: newSet.right_reps,
+    };
 
-    // No auto-focus - users can use buttons
+    setCurrentSet(copiedSet);
+    setWeightInput(newSet.weight !== null ? newSet.weight.toString() : "");
   };
 
   const handleComplete = () => {
@@ -121,14 +126,16 @@ const ExerciseTracker = ({
 
   const saveEditedSet = () => {
     if (editingSetIndex !== null && editingSet) {
-      // Check if set is complete based on unilateral setting
+      // Check if set is complete based on unilateral setting (allow weight to be 0 for bodyweight)
       const isComplete = editingSet.is_unilateral
         ? editingSet.left_reps !== null &&
           editingSet.right_reps !== null &&
-          editingSet.weight !== null
-        : editingSet.reps !== null &&
           editingSet.weight !== null &&
-          editingSet.reps !== 0;
+          editingSet.weight >= 0
+        : editingSet.reps !== null &&
+          editingSet.reps !== 0 &&
+          editingSet.weight !== null &&
+          editingSet.weight >= 0;
 
       if (!isComplete) {
         Alert.alert("Incomplete Set", "Please enter all required values");
