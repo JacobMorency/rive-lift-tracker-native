@@ -15,6 +15,7 @@ import {
   getTodaysScheduledWorkouts,
   ScheduledWorkout,
 } from "../lib/scheduleUtils";
+import SelectWorkoutList from "./workout/SelectWorkoutList";
 
 type SelectWorkoutModalProps = {
   isOpen: boolean;
@@ -181,165 +182,11 @@ const SelectWorkoutModal = ({
               </View>
             </View>
           ) : (
-            <View className="gap-3">
-              {/* Scheduled Workouts Section */}
-              {scheduledWorkouts.length > 0 && (
-                <View className="mb-4">
-                  <Text className="text-lg font-semibold text-base-content mb-3">
-                    Scheduled for Today
-                  </Text>
-                  {scheduledWorkouts.map((scheduledWorkout) => {
-                    const workout = workoutTemplates.find(
-                      (w) => w.id === scheduledWorkout.schedule.workout_id
-                    );
-                    if (!workout) return null;
-
-                    return (
-                      <TouchableOpacity
-                        key={`scheduled-${workout.id}`}
-                        className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-3"
-                        onPress={() => handleWorkoutSelect(workout.id)}
-                        style={{
-                          shadowColor: "#ff4b8c",
-                          shadowOffset: { width: 0, height: 2 },
-                          shadowOpacity: 0.1,
-                          shadowRadius: 4,
-                          elevation: 3,
-                        }}
-                      >
-                        <View className="flex-row items-center gap-4">
-                          <View className="w-12 h-12 bg-primary/20 rounded-xl items-center justify-center">
-                            <Ionicons
-                              name="calendar"
-                              size={24}
-                              color="#ff4b8c"
-                            />
-                          </View>
-
-                          <View className="flex-1">
-                            <View className="flex-row items-center gap-2 mb-1">
-                              <Text className="text-lg font-semibold text-base-content">
-                                {workout.name}
-                              </Text>
-                              <View className="bg-primary px-2 py-1 rounded-full">
-                                <Text className="text-xs font-medium text-primary-content">
-                                  Scheduled Today
-                                </Text>
-                              </View>
-                            </View>
-                            {workout.description && (
-                              <Text
-                                className="text-sm text-muted mt-1"
-                                numberOfLines={2}
-                              >
-                                {workout.description}
-                              </Text>
-                            )}
-                            <View className="flex-row items-center gap-3 mt-2">
-                              <View className="bg-base-300 px-2 py-1 rounded-full">
-                                <Text className="text-xs text-muted">
-                                  {workout.exercise_count} exercise
-                                  {workout.exercise_count !== 1 ? "s" : ""}
-                                </Text>
-                              </View>
-                            </View>
-                          </View>
-
-                          <View className="w-8 h-8 bg-primary/10 rounded-full items-center justify-center">
-                            <Ionicons
-                              name="chevron-forward"
-                              size={16}
-                              color="#ff4b8c"
-                            />
-                          </View>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              )}
-
-              {/* All Workout Templates Section */}
-              <View>
-                <Text className="text-lg font-semibold text-base-content mb-3">
-                  All Workout Templates
-                </Text>
-                {workoutTemplates.map((workout, index) => {
-                  // Skip if this workout is already shown in scheduled section
-                  const isScheduled = scheduledWorkouts.some(
-                    (sw) => sw.schedule.workout_id === workout.id
-                  );
-                  if (isScheduled) return null;
-
-                  return (
-                    <TouchableOpacity
-                      key={workout.id}
-                      className="bg-base-200 rounded-xl p-4 mb-3"
-                      onPress={() => handleWorkoutSelect(workout.id)}
-                      style={{
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.1,
-                        shadowRadius: 4,
-                        elevation: 3,
-                      }}
-                    >
-                      <View className="flex-row items-center gap-4">
-                        <View className="w-12 h-12 bg-primary/20 rounded-xl items-center justify-center">
-                          <Ionicons
-                            name="barbell-outline"
-                            size={24}
-                            color="#ff4b8c"
-                          />
-                        </View>
-
-                        <View className="flex-1">
-                          <Text className="text-lg font-semibold text-base-content">
-                            {workout.name}
-                          </Text>
-                          {workout.description && (
-                            <Text
-                              className="text-sm text-muted mt-1"
-                              numberOfLines={2}
-                            >
-                              {workout.description}
-                            </Text>
-                          )}
-                          <View className="flex-row items-center gap-3 mt-2">
-                            <View className="bg-base-300 px-2 py-1 rounded-full">
-                              <Text className="text-xs text-muted">
-                                {workout.exercise_count} exercise
-                                {workout.exercise_count !== 1 ? "s" : ""}
-                              </Text>
-                            </View>
-                            <View className="flex-row items-center gap-1">
-                              <Ionicons
-                                name="calendar"
-                                size={12}
-                                color="#9ca3af"
-                              />
-                              <Text className="text-xs text-muted">
-                                {new Date(
-                                  workout.created_at
-                                ).toLocaleDateString()}
-                              </Text>
-                            </View>
-                          </View>
-                        </View>
-
-                        <View className="w-8 h-8 bg-primary/10 rounded-full items-center justify-center">
-                          <Ionicons
-                            name="chevron-forward"
-                            size={16}
-                            color="#ff4b8c"
-                          />
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
+            <SelectWorkoutList
+              workoutTemplates={workoutTemplates}
+              scheduledWorkouts={scheduledWorkouts}
+              onWorkoutSelect={handleWorkoutSelect}
+            />
           )}
         </ScrollView>
       </View>

@@ -11,6 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
+import TemplateList from "./workout/TemplateList";
 
 type WorkoutTemplatesModalProps = {
   isOpen: boolean;
@@ -265,76 +266,15 @@ const WorkoutTemplatesModal = ({
               </Text>
             </View>
           ) : (
-            <View className="p-4">
-              {workoutTemplates.map((workout, index) => (
-                <View key={workout.id}>
-                  <View
-                    className="bg-base-300 rounded-lg p-4"
-                    style={{
-                      shadowColor: "#000",
-                      shadowOffset: {
-                        width: 0,
-                        height: 2,
-                      },
-                      shadowOpacity: 0.25,
-                      shadowRadius: 3.84,
-                      elevation: 5,
-                    }}
-                  >
-                    <TouchableOpacity
-                      onPress={() => {
-                        onClose();
-                        onViewWorkoutDetails?.(workout.id);
-                      }}
-                      className="flex-1"
-                    >
-                      <View className="flex-row items-center justify-between">
-                        <View className="flex-1">
-                          <Text className="text-lg font-medium text-base-content">
-                            {workout.name}
-                          </Text>
-                          {workout.description && (
-                            <Text className="text-sm text-muted mt-1">
-                              {workout.description}
-                            </Text>
-                          )}
-                          <Text className="text-xs text-muted mt-1">
-                            {workout.exercise_count} exercises
-                          </Text>
-                        </View>
-                        <View className="flex-row gap-2">
-                          <TouchableOpacity
-                            className="w-8 h-8 bg-info rounded-full items-center justify-center"
-                            onPress={() => handleEditWorkout(workout)}
-                          >
-                            <Ionicons
-                              name="settings-outline"
-                              size={16}
-                              color="#002d40"
-                            />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            className="w-8 h-8 bg-error rounded-full items-center justify-center"
-                            onPress={() =>
-                              handleDeleteWorkout(workout.id, workout.name)
-                            }
-                          >
-                            <Ionicons
-                              name="trash-outline"
-                              size={16}
-                              color="#ffffff"
-                            />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                  {index < workoutTemplates.length - 1 && (
-                    <View className="mb-3" />
-                  )}
-                </View>
-              ))}
-            </View>
+            <TemplateList
+              workoutTemplates={workoutTemplates}
+              onWorkoutPress={(workout) => {
+                onClose();
+                onViewWorkoutDetails?.(workout.id);
+              }}
+              onEditWorkout={handleEditWorkout}
+              onDeleteWorkout={handleDeleteWorkout}
+            />
           )}
         </ScrollView>
       </View>

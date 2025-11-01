@@ -1,61 +1,19 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Dimensions } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-
-const { width } = Dimensions.get("window");
-const CALENDAR_WIDTH = width - 32; // Account for padding
-const DAY_WIDTH = CALENDAR_WIDTH / 7;
-
-type CalendarMarker = {
-  date: string;
-  dots: Array<{
-    color: string;
-    selectedDotColor?: string;
-  }>;
-};
+import { View } from "react-native";
+import {
+  CalendarMarker,
+  CalendarTheme,
+} from "./calendar/types";
+import CalendarHeader from "./calendar/CalendarHeader";
+import CalendarGrid from "./calendar/CalendarGrid";
 
 type CustomCalendarProps = {
   selectedDate: string;
   onDateSelect: (date: string) => void;
   onMonthChange?: (year: number, month: number) => void;
   markedDates?: Record<string, CalendarMarker>;
-  theme?: {
-    backgroundColor?: string;
-    calendarBackground?: string;
-    textSectionTitleColor?: string;
-    selectedDayBackgroundColor?: string;
-    selectedDayTextColor?: string;
-    todayTextColor?: string;
-    dayTextColor?: string;
-    textDisabledColor?: string;
-    dotColor?: string;
-    selectedDotColor?: string;
-    arrowColor?: string;
-    monthTextColor?: string;
-    textDayFontWeight?: string;
-    textMonthFontWeight?: string;
-    textDayHeaderFontWeight?: string;
-    textDayFontSize?: number;
-    textMonthFontSize?: number;
-    textDayHeaderFontSize?: number;
-  };
+  theme?: CalendarTheme;
 };
-
-const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
 
 export default function CustomCalendar({
   selectedDate,
@@ -178,8 +136,6 @@ export default function CustomCalendar({
   };
 
   const days = getDaysInMonth(currentMonth);
-  const monthName = MONTHS[currentMonth.getMonth()];
-  const year = currentMonth.getFullYear();
 
   return (
     <View
@@ -194,197 +150,25 @@ export default function CustomCalendar({
         elevation: 3,
       }}
     >
-      {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 20,
-        }}
-      >
-        <TouchableOpacity
-          onPress={goToPreviousMonth}
-          style={{
-            padding: 8,
-            borderRadius: 8,
-          }}
-        >
-          <Ionicons
-            name="chevron-back"
-            size={24}
-            color={defaultTheme.arrowColor}
-          />
-        </TouchableOpacity>
+      <CalendarHeader
+        currentMonth={currentMonth}
+        theme={defaultTheme}
+        onPreviousMonth={goToPreviousMonth}
+        onNextMonth={goToNextMonth}
+      />
 
-        <Text
-          style={{
-            fontSize: defaultTheme.textMonthFontSize,
-            fontWeight: defaultTheme.textMonthFontWeight,
-            color: defaultTheme.monthTextColor,
-          }}
-        >
-          {monthName} {year}
-        </Text>
-
-        <TouchableOpacity
-          onPress={goToNextMonth}
-          style={{
-            padding: 8,
-            borderRadius: 8,
-          }}
-        >
-          <Ionicons
-            name="chevron-forward"
-            size={24}
-            color={defaultTheme.arrowColor}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* Days of Week Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          marginBottom: 8,
-        }}
-      >
-        {DAYS_OF_WEEK.map((day) => (
-          <View
-            key={day}
-            style={{
-              width: DAY_WIDTH,
-              alignItems: "center",
-              paddingVertical: 8,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: defaultTheme.textDayHeaderFontSize,
-                fontWeight: defaultTheme.textDayHeaderFontWeight,
-                color: defaultTheme.textSectionTitleColor,
-              }}
-            >
-              {day}
-            </Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Calendar Grid */}
-      <View>
-        {Array.from({ length: Math.ceil(days.length / 7) }, (_, weekIndex) => (
-          <View
-            key={weekIndex}
-            style={{
-              flexDirection: "row",
-              marginBottom: 4,
-            }}
-          >
-            {Array.from({ length: 7 }, (_, dayIndex) => {
-              const globalIndex = weekIndex * 7 + dayIndex;
-              const day = days[globalIndex];
-
-              if (day === null || day === undefined) {
-                return (
-                  <View
-                    key={`empty-${globalIndex}`}
-                    style={{
-                      width: DAY_WIDTH,
-                      height: DAY_WIDTH,
-                    }}
-                  />
-                );
-              }
-
-              const dateString = formatDate(
-                new Date(
-                  currentMonth.getFullYear(),
-                  currentMonth.getMonth(),
-                  day
-                )
-              );
-              const marked = markedDates[dateString];
-              const isSelectedDay = isSelected(day);
-              const isTodayDay = isToday(day);
-              const isPast = isPastDate(day);
-
-              return (
-                <TouchableOpacity
-                  key={`day-${day}-${currentMonth.getMonth()}-${currentMonth.getFullYear()}`}
-                  onPress={() => handleDatePress(day)}
-                  style={{
-                    width: DAY_WIDTH,
-                    height: DAY_WIDTH,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: 8,
-                    backgroundColor: isSelectedDay
-                      ? defaultTheme.selectedDayBackgroundColor
-                      : "transparent",
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: defaultTheme.textDayFontSize,
-                      fontWeight: defaultTheme.textDayFontWeight,
-                      color: isSelectedDay
-                        ? defaultTheme.selectedDayTextColor
-                        : isTodayDay
-                          ? defaultTheme.todayTextColor
-                          : isPast
-                            ? defaultTheme.textDisabledColor
-                            : defaultTheme.dayTextColor,
-                    }}
-                  >
-                    {day}
-                  </Text>
-
-                  {/* Workout Dots */}
-                  {marked && marked.dots && marked.dots.length > 0 && (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "center",
-                        marginTop: 2,
-                      }}
-                    >
-                      {marked.dots.slice(0, 3).map((dot, dotIndex) => (
-                        <View
-                          key={dotIndex}
-                          style={{
-                            width: 4,
-                            height: 4,
-                            borderRadius: 2,
-                            backgroundColor: isSelectedDay
-                              ? dot.selectedDotColor ||
-                                defaultTheme.selectedDotColor
-                              : dot.color || defaultTheme.dotColor,
-                            marginHorizontal: 1,
-                          }}
-                        />
-                      ))}
-                      {marked.dots.length > 3 && (
-                        <Text
-                          style={{
-                            fontSize: 8,
-                            color: isSelectedDay
-                              ? defaultTheme.selectedDayTextColor
-                              : defaultTheme.dayTextColor,
-                            marginLeft: 2,
-                          }}
-                        >
-                          +{marked.dots.length - 3}
-                        </Text>
-                      )}
-                    </View>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        ))}
-      </View>
+      <CalendarGrid
+        days={days}
+        currentMonth={currentMonth}
+        selectedDate={selectedDate}
+        markedDates={markedDates}
+        theme={defaultTheme}
+        onDatePress={handleDatePress}
+        formatDate={formatDate}
+        isToday={isToday}
+        isSelected={isSelected}
+        isPastDate={isPastDate}
+      />
     </View>
   );
 }

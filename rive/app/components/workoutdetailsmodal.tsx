@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   Modal,
   Alert,
-  TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,12 +16,9 @@ import {
   removeExerciseFromTemplate,
 } from "../lib/templateUtils";
 import ExerciseSelector from "./exerciseselector";
-
-type Exercise = {
-  id: number;
-  name: string;
-  category: string;
-};
+import { Exercise, WorkoutDetails } from "./workout/types";
+import WorkoutHeader from "./workout/WorkoutHeader";
+import WorkoutExerciseList from "./workout/WorkoutExerciseList";
 
 type WorkoutDetailsModalProps = {
   isOpen: boolean;
@@ -30,14 +26,6 @@ type WorkoutDetailsModalProps = {
   workoutId: string | null;
   onWorkoutUpdated?: () => void;
   onWorkoutDeleted?: () => void;
-};
-
-type WorkoutDetails = {
-  id: string;
-  name: string;
-  description: string | null;
-  created_at: string;
-  exercises: Exercise[];
 };
 
 const WorkoutDetailsModal = ({
@@ -303,13 +291,6 @@ const WorkoutDetailsModal = ({
     );
   };
 
-  const formatExerciseName = (name: string) => {
-    return name
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
-
   if (!isOpen) return null;
 
   // Show exercise selector if needed
@@ -339,81 +320,18 @@ const WorkoutDetailsModal = ({
       presentationStyle="fullScreen"
     >
       <View className="flex-1 bg-base-100">
-        {/* Enhanced Header */}
-        <View
-          className="bg-base-200 px-4 py-4 border-b border-base-300"
-          style={{ paddingTop: insets.top + 16 }}
-        >
-          <View className="flex-row items-center justify-between mb-3">
-            <TouchableOpacity
-              onPress={onClose}
-              className="w-10 h-10 items-center justify-center rounded-full bg-base-300"
-            >
-              <Ionicons name="close" size={20} color="#6b7280" />
-            </TouchableOpacity>
-
-            <View className="flex-1 items-center">
-              {isEditingName ? (
-                <View className="flex-row items-center gap-2">
-                  <TextInput
-                    className="text-xl font-bold text-base-content bg-base-300 px-3 py-1 rounded-lg"
-                    value={editingName}
-                    onChangeText={setEditingName}
-                    autoFocus
-                    selectTextOnFocus
-                    onSubmitEditing={handleSaveName}
-                    returnKeyType="done"
-                  />
-                  <TouchableOpacity
-                    onPress={handleSaveName}
-                    className="w-6 h-6 bg-success rounded-full items-center justify-center"
-                  >
-                    <Ionicons name="checkmark" size={14} color="#ffffff" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={handleCancelEdit}
-                    className="w-6 h-6 bg-error rounded-full items-center justify-center"
-                  >
-                    <Ionicons name="close" size={14} color="#ffffff" />
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <TouchableOpacity onPress={handleEditName}>
-                  <Text className="text-xl font-bold text-base-content">
-                    {loading
-                      ? "Loading..."
-                      : `${workoutDetails?.name || "Workout"}`}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              {workoutDetails && (
-                <Text className="text-sm text-muted mt-1">
-                  {workoutDetails.exercises.length} exercise
-                  {workoutDetails.exercises.length !== 1 ? "s" : ""}
-                </Text>
-              )}
-            </View>
-
-            <View className="flex-row items-center gap-2">
-              <TouchableOpacity
-                onPress={handleDeleteWorkout}
-                className="w-10 h-10 items-center justify-center rounded-full bg-error/20"
-              >
-                <Ionicons name="trash-outline" size={20} color="#ef4444" />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Workout Info */}
-          {workoutDetails && workoutDetails.description && (
-            <View className="bg-base-300 rounded-lg p-3">
-              <View className="flex-row items-center gap-2">
-                <Ionicons name="document-text" size={14} color="#9ca3af" />
-                <Text className="text-xs text-muted">Has description</Text>
-              </View>
-            </View>
-          )}
-        </View>
+        <WorkoutHeader
+          workoutDetails={workoutDetails}
+          loading={loading}
+          isEditingName={isEditingName}
+          editingName={editingName}
+          setEditingName={setEditingName}
+          onEditName={handleEditName}
+          onSaveName={handleSaveName}
+          onCancelEdit={handleCancelEdit}
+          onDeleteWorkout={handleDeleteWorkout}
+          onClose={onClose}
+        />
 
         {/* Content */}
         <ScrollView
@@ -445,95 +363,10 @@ const WorkoutDetailsModal = ({
               )}
 
               {/* Exercises Section */}
-              <View>
-                <View className="flex-row items-center justify-between mb-4">
-                  <Text className="text-xl font-bold text-base-content">
-                    Exercises
-                  </Text>
-                  <View className="bg-primary/10 px-3 py-1 rounded-full">
-                    <Text className="text-sm font-medium text-primary">
-                      {workoutDetails.exercises.length} total
-                    </Text>
-                  </View>
-                </View>
-
-                {workoutDetails.exercises.length === 0 ? (
-                  <View className="bg-base-200 rounded-xl p-8 items-center">
-                    <View className="w-20 h-20 bg-base-300 rounded-full items-center justify-center mb-4">
-                      <Ionicons
-                        name="barbell-outline"
-                        size={40}
-                        color="#9ca3af"
-                      />
-                    </View>
-                    <Text className="text-xl font-bold text-base-content mb-2">
-                      No Exercises Yet
-                    </Text>
-                    <Text className="text-muted text-center mb-6 max-w-xs">
-                      This workout template is empty. Add some exercises to get
-                      started!
-                    </Text>
-                    <View className="flex-row items-center gap-2">
-                      <Ionicons name="arrow-down" size={16} color="#ff4b8c" />
-                      <Text className="text-sm font-medium text-primary">
-                        Tap &quot;Add Exercises&quot; below
-                      </Text>
-                    </View>
-                  </View>
-                ) : (
-                  <View className="gap-3">
-                    {workoutDetails.exercises.map((exercise, index) => (
-                      <View
-                        key={exercise.id}
-                        className="bg-base-200 rounded-xl p-4"
-                        style={{
-                          shadowColor: "#000",
-                          shadowOffset: { width: 0, height: 2 },
-                          shadowOpacity: 0.1,
-                          shadowRadius: 4,
-                          elevation: 3,
-                        }}
-                      >
-                        <View className="flex-row items-center gap-4">
-                          <View className="w-10 h-10 bg-primary/20 rounded-xl items-center justify-center">
-                            <Ionicons
-                              name="barbell-outline"
-                              size={20}
-                              color="#ff4b8c"
-                            />
-                          </View>
-
-                          <View className="flex-1">
-                            <Text className="text-lg font-semibold text-base-content">
-                              {formatExerciseName(exercise.name)}
-                            </Text>
-                            <View className="flex-row items-center gap-2 mt-1">
-                              <View className="bg-base-300 px-2 py-1 rounded-full">
-                                <Text className="text-xs text-muted">
-                                  {exercise.category}
-                                </Text>
-                              </View>
-                            </View>
-                          </View>
-
-                          <TouchableOpacity
-                            className="w-10 h-10 bg-error/20 rounded-xl items-center justify-center"
-                            onPress={() =>
-                              handleRemoveExercise(exercise.id, exercise.name)
-                            }
-                          >
-                            <Ionicons
-                              name="trash-outline"
-                              size={18}
-                              color="#ef4444"
-                            />
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
+              <WorkoutExerciseList
+                workoutDetails={workoutDetails}
+                onRemoveExercise={handleRemoveExercise}
+              />
             </View>
           ) : (
             <View className="flex-1 justify-center items-center py-8">
