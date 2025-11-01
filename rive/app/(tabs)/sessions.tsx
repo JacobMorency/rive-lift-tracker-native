@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
+  FlatList,
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,7 +12,7 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 import SelectWorkoutModal from "../components/selectworkoutmodal";
-import SessionTabs from "../components/sessiontabs";
+import SessionList from "../components/sessions/SessionList";
 import Header from "../components/header";
 
 type Session = {
@@ -179,37 +179,32 @@ export default function SessionsPage() {
         subtitle={userData ? "Track your workout sessions" : undefined}
       />
 
-      {/* Content */}
-      <ScrollView
-        className="flex-1"
+      {/* Sessions List with FlatList */}
+      <SessionList
+        sessions={sessions}
+        onSessionSelect={handleSessionSelect}
+        ListHeaderComponent={() => (
+          <View className="px-4 py-4" style={{ paddingBottom: 20 }}>
+            <TouchableOpacity
+              className="w-full py-4 rounded-xl bg-primary flex-row items-center justify-center"
+              onPress={handleNewSession}
+              style={{
+                shadowColor: "#ff4b8c",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
+            >
+              <Ionicons name="fitness" size={24} color="#ffffff" />
+              <Text className="text-primary-content text-center font-bold ml-3 text-lg">
+                Start New Session
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
-      >
-        {/* Enhanced New Session Button */}
-        <View className="px-4 py-4">
-          <TouchableOpacity
-            className="w-full py-4 rounded-xl bg-primary flex-row items-center justify-center"
-            onPress={handleNewSession}
-            style={{
-              shadowColor: "#ff4b8c",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
-            }}
-          >
-            <Ionicons name="fitness" size={24} color="#ffffff" />
-            <Text className="text-primary-content text-center font-bold ml-3 text-lg">
-              Start New Session
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Sessions List */}
-        <SessionTabs
-          sessions={sessions}
-          onSessionSelect={handleSessionSelect}
-        />
-      </ScrollView>
+      />
 
       {/* Select Workout Modal */}
       <SelectWorkoutModal

@@ -48,8 +48,24 @@ export default function SetInputForm({
   const quickReps = [5, 8, 10, 12, 15];
 
   const handleQuickRep = (reps: number) => {
-    if (!currentSet.is_unilateral) {
+    if (currentSet.is_unilateral) {
+      // For unilateral, set both left and right reps to the same value
+      setCurrentSet({
+        ...currentSet,
+        left_reps: reps,
+        right_reps: reps,
+      });
+    } else {
       setCurrentSet({ ...currentSet, reps });
+    }
+  };
+
+  // Check if a quick rep is selected for highlighting
+  const isQuickRepSelected = (reps: number) => {
+    if (currentSet.is_unilateral) {
+      return currentSet.left_reps === reps && currentSet.right_reps === reps;
+    } else {
+      return currentSet.reps === reps;
     }
   };
   return (
@@ -94,35 +110,33 @@ export default function SetInputForm({
       </View>
 
       <View className="gap-3">
-        {/* Quick Rep Buttons (only for regular, not unilateral) */}
-        {!currentSet.is_unilateral && (
-          <View className="mb-2">
-            <Text className="text-xs text-muted mb-1">Quick Reps</Text>
-            <View className="flex-row gap-2">
-              {quickReps.map((reps) => (
-                <TouchableOpacity
-                  key={reps}
-                  onPress={() => handleQuickRep(reps)}
-                  className={`px-3 py-2 rounded-lg border ${
-                    currentSet.reps === reps
-                      ? "bg-primary border-primary"
-                      : "bg-base-300 border-transparent"
+        {/* Quick Rep Buttons */}
+        <View className="mb-2">
+          <Text className="text-xs text-muted mb-1">Quick Reps</Text>
+          <View className="flex-row gap-2">
+            {quickReps.map((reps) => (
+              <TouchableOpacity
+                key={reps}
+                onPress={() => handleQuickRep(reps)}
+                className={`px-3 py-2 rounded-lg border ${
+                  isQuickRepSelected(reps)
+                    ? "bg-primary border-primary"
+                    : "bg-base-300 border-transparent"
+                }`}
+              >
+                <Text
+                  className={`text-sm font-semibold ${
+                    isQuickRepSelected(reps)
+                      ? "text-primary-content"
+                      : "text-base-content"
                   }`}
                 >
-                  <Text
-                    className={`text-sm font-semibold ${
-                      currentSet.reps === reps
-                        ? "text-primary-content"
-                        : "text-base-content"
-                    }`}
-                  >
-                    {reps}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                  {reps}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
-        )}
+        </View>
 
         {/* Reps - Conditional based on unilateral */}
         {currentSet.is_unilateral ? (
