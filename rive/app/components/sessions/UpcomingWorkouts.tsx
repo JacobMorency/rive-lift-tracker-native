@@ -28,7 +28,7 @@ export default function UpcomingWorkouts() {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       const endDate = new Date(today);
       endDate.setDate(endDate.getDate() + 7); // Next 7 days
 
@@ -141,7 +141,7 @@ export default function UpcomingWorkouts() {
   return (
     <>
       <View
-        className="bg-base-300 rounded-xl p-4 mb-4 mx-4"
+        className="bg-base-300 rounded-xl p-4 mx-4"
         style={{
           shadowColor: "#000",
           shadowOffset: {
@@ -153,7 +153,9 @@ export default function UpcomingWorkouts() {
           elevation: 3,
         }}
       >
-        <View className={`flex-row items-center justify-between ${isExpanded ? 'mb-2' : ''}`}>
+        <View
+          className={`flex-row items-center justify-between ${isExpanded ? "mb-2" : ""}`}
+        >
           <TouchableOpacity
             onPress={() => setIsExpanded(!isExpanded)}
             className="flex-row items-center flex-1"
@@ -202,11 +204,7 @@ export default function UpcomingWorkouts() {
               </View>
             ) : upcomingWorkouts.length === 0 ? (
               <View className="py-4 items-center">
-                <Ionicons
-                  name="calendar-outline"
-                  size={24}
-                  color="#9ca3af"
-                />
+                <Ionicons name="calendar-outline" size={24} color="#9ca3af" />
                 <Text className="text-sm text-muted text-center mt-2">
                   No workouts scheduled for the next 7 days
                 </Text>
@@ -252,19 +250,13 @@ export default function UpcomingWorkouts() {
                                 handleStartSession(workout.schedule.workout_id)
                               }
                             >
-                              <Ionicons
-                                name="play"
-                                size={14}
-                                color="#ffffff"
-                              />
+                              <Ionicons name="play" size={14} color="#ffffff" />
                               <Text className="text-xs font-medium text-primary-content">
                                 Start
                               </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                              onPress={() =>
-                                handleDelete(workout.schedule.id)
-                              }
+                              onPress={() => handleDelete(workout.schedule.id)}
                               className="p-1.5"
                             >
                               <Ionicons
@@ -294,4 +286,3 @@ export default function UpcomingWorkouts() {
     </>
   );
 }
-
