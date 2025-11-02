@@ -301,31 +301,31 @@ export default function SessionDetailPage() {
       });
 
       // Merge session and template exercises
-      // Priority: session exercises (they have correct order_index), then template exercises
+      // If session has any session_exercises entries, only show those (user has customized)
+      // If session has no session_exercises entries, show template exercises (initial state)
       const exerciseMapCombined = new Map<number, Exercise>();
 
-      // First, add all session exercises (these have the correct order_index for the session)
-      sessionExercisesData?.forEach((se) => {
-        const exercise = exerciseMap.get(se.exercise_id);
-        const workoutExercise = workoutExerciseMap.get(se.exercise_id);
+      if (sessionExercisesData && sessionExercisesData.length > 0) {
+        // Session has been customized - only show exercises explicitly in session_exercises
+        sessionExercisesData.forEach((se) => {
+          const exercise = exerciseMap.get(se.exercise_id);
+          const workoutExercise = workoutExerciseMap.get(se.exercise_id);
 
-        if (exercise) {
-          exerciseMapCombined.set(se.exercise_id, {
-            id: exercise.id,
-            name: exercise.name,
-            category: exercise.category,
-            wasInOriginalTemplate: !!workoutExercise,
-            notes: workoutExercise?.notes || null,
-            workoutExerciseId: workoutExercise?.id,
-            sessionExerciseId: se.id,
-          });
-        }
-      });
-
-      // Then, add template exercises that aren't in session_exercises
-      // Use template order_index for ordering these
-      workoutExercisesData?.forEach((we) => {
-        if (!sessionExerciseMap.has(we.exercise_id)) {
+          if (exercise) {
+            exerciseMapCombined.set(se.exercise_id, {
+              id: exercise.id,
+              name: exercise.name,
+              category: exercise.category,
+              wasInOriginalTemplate: !!workoutExercise,
+              notes: workoutExercise?.notes || null,
+              workoutExerciseId: workoutExercise?.id,
+              sessionExerciseId: se.id,
+            });
+          }
+        });
+      } else {
+        // No session_exercises entries - initial state, show template exercises
+        workoutExercisesData?.forEach((we) => {
           const exercise = exerciseMap.get(we.exercise_id);
           const workoutExercise = workoutExerciseMap.get(we.exercise_id);
 
@@ -340,8 +340,8 @@ export default function SessionDetailPage() {
               sessionExerciseId: undefined,
             });
           }
-        }
-      });
+        });
+      }
 
       // Convert map to array and sort
       // For exercises with sessionExerciseId, use session order_index
@@ -882,10 +882,48 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Update local state
-      const updatedExercises = sessionData.exercises.filter(
+      // After deletion, ensure remaining template exercises have session_exercises entries
+      // This prevents them from reappearing when we fetch again
+      const remainingExercises = sessionData.exercises.filter(
         (_, index) => index !== exerciseIndex
       );
+
+      // Get current session_exercises count to see if we need to create entries
+      const { data: remainingSessionExercises } = await supabase
+        .from("session_exercises")
+        .select("exercise_id")
+        .eq("session_id", sessionData.id);
+
+      const remainingSessionExerciseIds = new Set(
+        remainingSessionExercises?.map((se) => se.exercise_id) || []
+      );
+
+      // Create session_exercises entries for remaining template exercises that don't have them
+      const exercisesToAdd = remainingExercises
+        .filter(
+          (ex) =>
+            !ex.sessionExerciseId && !remainingSessionExerciseIds.has(ex.id)
+        )
+        .map((ex, idx) => {
+          // Find the index in the original list (before removal)
+          const originalIndex = sessionData.exercises.findIndex(
+            (e) => e.id === ex.id
+          );
+          const adjustedIndex =
+            originalIndex < exerciseIndex ? originalIndex : originalIndex - 1;
+          return {
+            session_id: sessionData.id,
+            exercise_id: ex.id,
+            order_index: adjustedIndex,
+          };
+        });
+
+      if (exercisesToAdd.length > 0) {
+        await supabase.from("session_exercises").insert(exercisesToAdd);
+      }
+
+      // Update local state
+      const updatedExercises = remainingExercises;
       const updatedProgress = exerciseProgress.filter(
         (_, index) => index !== exerciseIndex
       );
@@ -906,6 +944,9 @@ export default function SessionDetailPage() {
         // Adjust current exercise index if we removed an exercise before it
         setCurrentExerciseIndex(currentExerciseIndex - 1);
       }
+
+      // Refresh to get updated sessionExerciseId values
+      await fetchSessionData();
     } catch (error) {
       console.error("Error removing exercise:", error);
       Alert.alert("Error", "Failed to remove exercise");
