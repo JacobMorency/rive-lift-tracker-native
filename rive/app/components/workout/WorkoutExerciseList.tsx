@@ -7,11 +7,13 @@ import ExerciseListItem from "./ExerciseListItem";
 type WorkoutExerciseListProps = {
   workoutDetails: WorkoutDetails;
   onRemoveExercise: (exerciseId: number, exerciseName: string) => void;
+  onNotesUpdate: (workoutExerciseId: string, notes: string) => void;
 };
 
 export default function WorkoutExerciseList({
   workoutDetails,
   onRemoveExercise,
+  onNotesUpdate,
 }: WorkoutExerciseListProps) {
   return (
     <View>
@@ -50,6 +52,7 @@ export default function WorkoutExerciseList({
               exercise={exercise}
               index={index}
               onRemove={onRemoveExercise}
+              onNotesUpdate={onNotesUpdate}
             />
           ))}
         </View>

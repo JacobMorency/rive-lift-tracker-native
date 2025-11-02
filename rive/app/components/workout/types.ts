@@ -2,6 +2,8 @@ export type Exercise = {
   id: number;
   name: string;
   category: string;
+  notes?: string | null;
+  workoutExerciseId?: string;
 };
 
 export type WorkoutDetails = {

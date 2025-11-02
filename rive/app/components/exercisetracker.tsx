@@ -8,11 +8,14 @@ import { ExerciseSet } from "./exercisetracker/types";
 import ProgressComparisonPanel from "./exercisetracker/ProgressComparisonPanel";
 import SetInputForm from "./exercisetracker/SetInputForm";
 import CompletedSetsList from "./exercisetracker/CompletedSetsList";
+import ExerciseNotes from "./exercisetracker/ExerciseNotes";
 
 type Exercise = {
   id: number;
   name: string;
   category: string;
+  notes?: string | null;
+  workoutExerciseId?: string;
 };
 
 type ExerciseTrackerProps = {
@@ -21,6 +24,7 @@ type ExerciseTrackerProps = {
   onBack: () => void;
   initialSets?: ExerciseSet[];
   lastSessionSets?: StatsExerciseSet[];
+  onNotesUpdate?: (notes: string) => void;
 };
 
 const ExerciseTracker = ({
@@ -29,6 +33,7 @@ const ExerciseTracker = ({
   onBack,
   initialSets = [],
   lastSessionSets = [],
+  onNotesUpdate,
 }: ExerciseTrackerProps) => {
   const [sets, setSets] = useState<ExerciseSet[]>(initialSets);
   const [currentSet, setCurrentSet] = useState<ExerciseSet>({
@@ -208,6 +213,13 @@ const ExerciseTracker = ({
           sets={sets}
           isExpanded={isComparisonExpanded}
           setIsExpanded={setIsComparisonExpanded}
+        />
+
+        <ExerciseNotes
+          notes={exercise.notes}
+          workoutExerciseId={exercise.workoutExerciseId}
+          onNotesUpdate={onNotesUpdate || (() => {})}
+          exerciseName={formatExerciseName(exercise.name)}
         />
 
         <SetInputForm

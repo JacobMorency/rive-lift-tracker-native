@@ -21,6 +21,8 @@ type Exercise = {
   category: string;
   wasInOriginalTemplate: boolean; // New field to track if exercise was in original session
   addedToTemplateAfter?: string; // When it was added to template
+  notes?: string | null; // Notes for this exercise in the workout template
+  workoutExerciseId?: string; // ID from workout_exercises table for updating notes
 };
 
 type SessionData = {
@@ -33,8 +35,10 @@ type SessionData = {
 };
 
 type RawWorkoutExercise = {
+  id?: string; // workout_exercises table ID
   exercise_id: number;
   order_index: number;
+  notes?: string | null;
 };
 
 type RawExercise = {
@@ -116,7 +120,7 @@ export default function SessionDetailPage() {
       const { data: workoutExercisesData, error: workoutExercisesError } =
         await supabase
           .from("workout_exercises")
-          .select("exercise_id, order_index, created_at")
+          .select("id, exercise_id, order_index, created_at, notes")
           .eq("workout_id", sessionData.workout_id)
           .order("order_index", { ascending: true });
 
@@ -193,6 +197,8 @@ export default function SessionDetailPage() {
                 category: exercise.category,
                 wasInOriginalTemplate: wasInOriginal,
                 addedToTemplateAfter: wasInOriginal ? undefined : we.created_at,
+                notes: we.notes || null,
+                workoutExerciseId: we.id,
               }
             : null;
         })
@@ -465,6 +471,53 @@ export default function SessionDetailPage() {
     }
   };
 
+  const handleNotesUpdate = async (notes: string) => {
+    if (
+      currentExerciseIndex === null ||
+      !sessionData ||
+      !sessionData.exercises[currentExerciseIndex]?.workoutExerciseId
+    ) {
+      return;
+    }
+
+    const exercise = sessionData.exercises[currentExerciseIndex];
+    const workoutExerciseId = exercise.workoutExerciseId;
+
+    if (!workoutExerciseId) {
+      console.error("No workoutExerciseId available for notes update");
+      return;
+    }
+
+    try {
+      // Update notes in workout_exercises table
+      const { error: updateError } = await supabase
+        .from("workout_exercises")
+        .update({ notes: notes.trim() || null })
+        .eq("id", workoutExerciseId);
+
+      if (updateError) {
+        console.error("Error updating exercise notes:", updateError);
+        Alert.alert("Error", "Failed to save notes");
+        return;
+      }
+
+      // Update local state to reflect the change
+      const updatedExercises = [...sessionData.exercises];
+      updatedExercises[currentExerciseIndex] = {
+        ...updatedExercises[currentExerciseIndex],
+        notes: notes.trim() || null,
+      };
+
+      setSessionData({
+        ...sessionData,
+        exercises: updatedExercises,
+      });
+    } catch (error) {
+      console.error("Error updating exercise notes:", error);
+      Alert.alert("Error", "Failed to save notes");
+    }
+  };
+
   const handleBackToExercises = () => {
     setCurrentExerciseIndex(null);
   };
@@ -597,6 +650,7 @@ export default function SessionDetailPage() {
         onBack={handleBackToExercises}
         initialSets={progress.sets}
         lastSessionSets={lastSessionSets}
+        onNotesUpdate={handleNotesUpdate}
       />
     );
   }

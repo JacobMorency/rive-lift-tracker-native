@@ -67,7 +67,7 @@ const WorkoutDetailsModal = ({
       const { data: workoutExercisesData, error: workoutExercisesError } =
         await supabase
           .from("workout_exercises")
-          .select("exercise_id, order_index")
+          .select("id, exercise_id, order_index, notes")
           .eq("workout_id", workoutId)
           .order("order_index", { ascending: true });
 
@@ -123,6 +123,8 @@ const WorkoutDetailsModal = ({
                 id: exercise.id,
                 name: exercise.name,
                 category: exercise.category,
+                notes: we.notes || null,
+                workoutExerciseId: we.id,
               }
             : null;
         })
@@ -252,6 +254,42 @@ const WorkoutDetailsModal = ({
     setEditingName("");
   };
 
+  const handleNotesUpdate = async (
+    workoutExerciseId: string,
+    notes: string
+  ) => {
+    if (!workoutExerciseId) return;
+
+    try {
+      const { error } = await supabase
+        .from("workout_exercises")
+        .update({ notes: notes.trim() || null })
+        .eq("id", workoutExerciseId);
+
+      if (error) {
+        console.error("Error updating exercise notes:", error);
+        Alert.alert("Error", "Failed to save notes");
+        return;
+      }
+
+      // Update local state
+      setWorkoutDetails((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          exercises: prev.exercises.map((ex) =>
+            ex.workoutExerciseId === workoutExerciseId
+              ? { ...ex, notes: notes.trim() || null }
+              : ex
+          ),
+        };
+      });
+    } catch (error) {
+      console.error("Error updating exercise notes:", error);
+      Alert.alert("Error", "Failed to save notes");
+    }
+  };
+
   const handleDeleteWorkout = () => {
     if (!workoutDetails) return;
 
@@ -366,6 +404,7 @@ const WorkoutDetailsModal = ({
               <WorkoutExerciseList
                 workoutDetails={workoutDetails}
                 onRemoveExercise={handleRemoveExercise}
+                onNotesUpdate={handleNotesUpdate}
               />
             </View>
           ) : (
