@@ -215,6 +215,13 @@ const WorkoutDetailsModal = ({
     setShowExerciseSelector(false);
   };
 
+  const formatExerciseName = (name: string) => {
+    return name
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   const handleEditName = () => {
     if (workoutDetails) {
       setEditingName(workoutDetails.name);

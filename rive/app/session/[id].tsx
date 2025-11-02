@@ -6,6 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -14,6 +15,8 @@ import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 import { getLastSessionData } from "../lib/statsUtils";
 import ExerciseTracker from "../components/exercisetracker";
+import ExerciseSelector from "../components/exerciseselector";
+import { Exercise as ExerciseSelectorExercise } from "../components/exercise/types";
 
 type Exercise = {
   id: number;
@@ -23,6 +26,7 @@ type Exercise = {
   addedToTemplateAfter?: string; // When it was added to template
   notes?: string | null; // Notes for this exercise in the workout template
   workoutExerciseId?: string; // ID from workout_exercises table for updating notes
+  sessionExerciseId?: string; // ID from session_exercises table for deletion tracking
 };
 
 type SessionData = {
@@ -77,6 +81,7 @@ export default function SessionDetailPage() {
     []
   );
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
   const [lastSessionSets, setLastSessionSets] = useState<any[]>([]);
   const { user } = useAuth();
   const router = useRouter();
@@ -116,13 +121,28 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Third query: Fetch workout exercises (current template)
+      // Third query: Fetch session exercises (session-specific exercises)
+      const { data: sessionExercisesData, error: sessionExercisesError } =
+        await supabase
+          .from("session_exercises")
+          .select("id, exercise_id, order_index")
+          .eq("session_id", sessionData.id)
+          .order("order_index", { ascending: true });
+
+      if (sessionExercisesError) {
+        console.error(
+          "Error fetching session exercises:",
+          sessionExercisesError.message
+        );
+        return;
+      }
+
+      // Fourth query: Fetch workout exercises (current template) for notes lookup
       const { data: workoutExercisesData, error: workoutExercisesError } =
         await supabase
           .from("workout_exercises")
-          .select("id, exercise_id, order_index, created_at, notes")
-          .eq("workout_id", sessionData.workout_id)
-          .order("order_index", { ascending: true });
+          .select("id, exercise_id, order_index, notes")
+          .eq("workout_id", sessionData.workout_id);
 
       if (workoutExercisesError) {
         console.error(
@@ -132,7 +152,126 @@ export default function SessionDetailPage() {
         return;
       }
 
-      if (!workoutExercisesData || workoutExercisesData.length === 0) {
+      // Create a map of workout exercise IDs to notes
+      const workoutExerciseMap = new Map<
+        number,
+        { id: string; notes: string | null }
+      >();
+      workoutExercisesData?.forEach((we) => {
+        workoutExerciseMap.set(we.exercise_id, {
+          id: we.id,
+          notes: we.notes || null,
+        });
+      });
+
+      // If no session exercises, check template
+      if (!sessionExercisesData || sessionExercisesData.length === 0) {
+        // If template has exercises, use those
+        if (workoutExercisesData && workoutExercisesData.length > 0) {
+          const exerciseIds = workoutExercisesData.map((we) => we.exercise_id);
+          const { data: exercisesData, error: exercisesError } = await supabase
+            .from("exercise_library")
+            .select("id, name, category")
+            .in("id", exerciseIds);
+
+          if (exercisesError) {
+            console.error("Error fetching exercises:", exercisesError.message);
+            return;
+          }
+
+          const exerciseMap = new Map<number, RawExercise>();
+          exercisesData?.forEach((exercise) => {
+            exerciseMap.set(exercise.id, exercise);
+          });
+
+          const exercises = workoutExercisesData
+            .map((we) => {
+              const exercise = exerciseMap.get(we.exercise_id);
+              const workoutExercise = workoutExerciseMap.get(we.exercise_id);
+              return exercise
+                ? {
+                    id: exercise.id,
+                    name: exercise.name,
+                    category: exercise.category,
+                    wasInOriginalTemplate: true,
+                    notes: workoutExercise?.notes || null,
+                    workoutExerciseId: workoutExercise?.id,
+                    sessionExerciseId: undefined,
+                  }
+                : null;
+            })
+            .filter(
+              (exercise): exercise is NonNullable<typeof exercise> =>
+                exercise !== null
+            )
+            .sort((a, b) => {
+              const aIndex =
+                workoutExercisesData.find((we) => we.exercise_id === a.id)
+                  ?.order_index || 0;
+              const bIndex =
+                workoutExercisesData.find((we) => we.exercise_id === b.id)
+                  ?.order_index || 0;
+              return aIndex - bIndex;
+            });
+
+          const finalSessionData = {
+            id: sessionData.id,
+            started_at: sessionData.started_at,
+            workout_id: sessionData.workout_id,
+            workout_name: workoutData.name,
+            exercises,
+            completed: sessionData.completed || false,
+          };
+          setSessionData(finalSessionData);
+          const initialProgress = exercises.map((exercise) => ({
+            exerciseId: exercise.id,
+            exerciseName: exercise.name,
+            sets: [],
+            completed: false,
+          }));
+          const loadedProgress = await loadExistingExerciseData(
+            exercises,
+            initialProgress,
+            finalSessionData
+          );
+          setExerciseProgress(loadedProgress);
+          return;
+        } else {
+          // No exercises at all
+          setSessionData({
+            id: sessionData.id,
+            started_at: sessionData.started_at,
+            workout_id: sessionData.workout_id,
+            workout_name: workoutData.name,
+            exercises: [],
+            completed: sessionData.completed || false,
+          });
+          return;
+        }
+      }
+
+      // Create a map of session exercise IDs for quick lookup
+      const sessionExerciseMap = new Map<
+        number,
+        { id: string; order_index: number }
+      >();
+      sessionExercisesData?.forEach((se) => {
+        sessionExerciseMap.set(se.exercise_id, {
+          id: se.id,
+          order_index: se.order_index,
+        });
+      });
+
+      // Get all unique exercise IDs (from both session and template)
+      const sessionExerciseIds =
+        sessionExercisesData?.map((se) => se.exercise_id) || [];
+      const templateExerciseIds =
+        workoutExercisesData?.map((we) => we.exercise_id) || [];
+      const allExerciseIds = [
+        ...new Set([...sessionExerciseIds, ...templateExerciseIds]),
+      ];
+
+      if (allExerciseIds.length === 0) {
         setSessionData({
           id: sessionData.id,
           started_at: sessionData.started_at,
@@ -144,34 +283,11 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Fourth query: Fetch exercises that were in the original session
-      const { data: originalSessionExercises, error: originalExercisesError } =
-        await supabase
-          .from("session_exercises")
-          .select("exercise_id")
-          .eq("session_id", sessionData.id);
-
-      if (originalExercisesError) {
-        console.error(
-          "Error fetching original session exercises:",
-          originalExercisesError.message
-        );
-        return;
-      }
-
-      // Create a set of original exercise IDs for quick lookup
-      const originalExerciseIds = new Set(
-        originalSessionExercises?.map((se) => se.exercise_id) || []
-      );
-
-      // Get unique exercise IDs from current template
-      const exerciseIds = workoutExercisesData.map((we) => we.exercise_id);
-
-      // Fifth query: Fetch exercise details
+      // Fifth query: Fetch exercise details for all exercises
       const { data: exercisesData, error: exercisesError } = await supabase
         .from("exercise_library")
         .select("id, name, category")
-        .in("id", exerciseIds);
+        .in("id", allExerciseIds);
 
       if (exercisesError) {
         console.error("Error fetching exercises:", exercisesError.message);
@@ -184,28 +300,80 @@ export default function SessionDetailPage() {
         exerciseMap.set(exercise.id, exercise);
       });
 
-      // Transform the exercises data with hybrid approach
-      const exercises = workoutExercisesData
-        .map((we: RawWorkoutExercise & { created_at: string }) => {
-          const exercise = exerciseMap.get(we.exercise_id);
-          const wasInOriginal = originalExerciseIds.has(we.exercise_id);
+      // Merge session and template exercises
+      // Priority: session exercises (they have correct order_index), then template exercises
+      const exerciseMapCombined = new Map<number, Exercise>();
 
-          return exercise
-            ? {
-                id: exercise.id,
-                name: exercise.name,
-                category: exercise.category,
-                wasInOriginalTemplate: wasInOriginal,
-                addedToTemplateAfter: wasInOriginal ? undefined : we.created_at,
-                notes: we.notes || null,
-                workoutExerciseId: we.id,
-              }
-            : null;
-        })
-        .filter(
-          (exercise): exercise is NonNullable<typeof exercise> =>
-            exercise !== null
-        );
+      // First, add all session exercises (these have the correct order_index for the session)
+      sessionExercisesData?.forEach((se) => {
+        const exercise = exerciseMap.get(se.exercise_id);
+        const workoutExercise = workoutExerciseMap.get(se.exercise_id);
+
+        if (exercise) {
+          exerciseMapCombined.set(se.exercise_id, {
+            id: exercise.id,
+            name: exercise.name,
+            category: exercise.category,
+            wasInOriginalTemplate: !!workoutExercise,
+            notes: workoutExercise?.notes || null,
+            workoutExerciseId: workoutExercise?.id,
+            sessionExerciseId: se.id,
+          });
+        }
+      });
+
+      // Then, add template exercises that aren't in session_exercises
+      // Use template order_index for ordering these
+      workoutExercisesData?.forEach((we) => {
+        if (!sessionExerciseMap.has(we.exercise_id)) {
+          const exercise = exerciseMap.get(we.exercise_id);
+          const workoutExercise = workoutExerciseMap.get(we.exercise_id);
+
+          if (exercise) {
+            exerciseMapCombined.set(we.exercise_id, {
+              id: exercise.id,
+              name: exercise.name,
+              category: exercise.category,
+              wasInOriginalTemplate: true,
+              notes: workoutExercise?.notes || null,
+              workoutExerciseId: workoutExercise?.id,
+              sessionExerciseId: undefined,
+            });
+          }
+        }
+      });
+
+      // Convert map to array and sort
+      // For exercises with sessionExerciseId, use session order_index
+      // For exercises without sessionExerciseId (template-only), use template order_index
+      const exercises = Array.from(exerciseMapCombined.values()).sort(
+        (a, b) => {
+          const aSession = sessionExerciseMap.get(a.id);
+          const bSession = sessionExerciseMap.get(b.id);
+
+          // If both have session entries, sort by session order_index
+          if (aSession && bSession) {
+            return aSession.order_index - bSession.order_index;
+          }
+
+          // If only one has session entry, session one comes first
+          if (aSession && !bSession) {
+            return -1;
+          }
+          if (!aSession && bSession) {
+            return 1;
+          }
+
+          // If neither has session entry, use template order_index
+          const aTemplate = workoutExercisesData?.find(
+            (we) => we.exercise_id === a.id
+          );
+          const bTemplate = workoutExercisesData?.find(
+            (we) => we.exercise_id === b.id
+          );
+          return (aTemplate?.order_index || 0) - (bTemplate?.order_index || 0);
+        }
+      );
 
       // Initialize exercise progress
       const initialProgress = exercises.map((exercise) => ({
@@ -518,6 +686,232 @@ export default function SessionDetailPage() {
     }
   };
 
+  const handleAddExercise = async (
+    selectedExercises: ExerciseSelectorExercise[]
+  ) => {
+    if (!sessionData || !user || selectedExercises.length === 0) return;
+
+    setShowAddExerciseModal(false);
+
+    // Show alert asking if user wants to save to template
+    Alert.alert(
+      "Save to Workout Template?",
+      "Do you want to add these exercises to the workout template as well, or just this session?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Session Only",
+          onPress: async () => {
+            await addExercisesToSession(selectedExercises, false);
+          },
+        },
+        {
+          text: "Template + Session",
+          onPress: async () => {
+            await addExercisesToSession(selectedExercises, true);
+          },
+        },
+      ]
+    );
+  };
+
+  const addExercisesToSession = async (
+    selectedExercises: ExerciseSelectorExercise[],
+    saveToTemplate: boolean
+  ) => {
+    if (!sessionData || !user) return;
+
+    try {
+      const currentExerciseCount = sessionData.exercises.length;
+      const startOrderIndex = currentExerciseCount;
+
+      // First, add to template if requested
+      if (saveToTemplate) {
+        for (let i = 0; i < selectedExercises.length; i++) {
+          const exercise = selectedExercises[i];
+          const orderIndex = startOrderIndex + i;
+
+          // Check if exercise already exists in template
+          const { data: existing } = await supabase
+            .from("workout_exercises")
+            .select("id")
+            .eq("workout_id", sessionData.workout_id)
+            .eq("exercise_id", exercise.id)
+            .single();
+
+          if (!existing) {
+            await supabase.from("workout_exercises").insert({
+              workout_id: sessionData.workout_id,
+              exercise_id: exercise.id,
+              order_index: orderIndex,
+            });
+          }
+        }
+      }
+
+      // Add to session_exercises
+      const sessionExercisesToInsert = selectedExercises.map(
+        (exercise, index) => ({
+          session_id: sessionData.id,
+          exercise_id: exercise.id,
+          order_index: startOrderIndex + index,
+        })
+      );
+
+      const { error: insertError } = await supabase
+        .from("session_exercises")
+        .insert(sessionExercisesToInsert);
+
+      if (insertError) {
+        console.error("Error adding exercises to session:", insertError);
+        Alert.alert("Error", "Failed to add exercises");
+        return;
+      }
+
+      // Refresh session data
+      await fetchSessionData();
+    } catch (error) {
+      console.error("Error adding exercises:", error);
+      Alert.alert("Error", "Failed to add exercises");
+    }
+  };
+
+  const handleRemoveExercise = async (exerciseIndex: number) => {
+    if (
+      !sessionData ||
+      exerciseIndex < 0 ||
+      exerciseIndex >= sessionData.exercises.length
+    )
+      return;
+
+    const exercise = sessionData.exercises[exerciseIndex];
+    const progress = exerciseProgress[exerciseIndex];
+    const setCount = progress?.sets.length || 0;
+
+    // Show confirmation if exercise has sets
+    if (setCount > 0) {
+      Alert.alert(
+        "Remove Exercise?",
+        `This exercise has ${setCount} set${setCount !== 1 ? "s" : ""}. Deleting it will remove all sets. Continue?`,
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: async () => {
+              await removeExerciseFromSession(exerciseIndex, exercise);
+            },
+          },
+        ]
+      );
+    } else {
+      await removeExerciseFromSession(exerciseIndex, exercise);
+    }
+  };
+
+  const removeExerciseFromSession = async (
+    exerciseIndex: number,
+    exercise: Exercise
+  ) => {
+    if (!sessionData) return;
+
+    // If exercise doesn't have sessionExerciseId, it means it's only in template
+    // Create a session_exercise entry first, then delete it (to ensure consistency)
+    let sessionExerciseId = exercise.sessionExerciseId;
+
+    if (!sessionExerciseId) {
+      // Check if it already exists
+      const { data: existing } = await supabase
+        .from("session_exercises")
+        .select("id")
+        .eq("session_id", sessionData.id)
+        .eq("exercise_id", exercise.id)
+        .single();
+
+      if (existing) {
+        sessionExerciseId = existing.id;
+      } else {
+        // Create it first with current order_index
+        const { data: inserted, error: insertError } = await supabase
+          .from("session_exercises")
+          .insert({
+            session_id: sessionData.id,
+            exercise_id: exercise.id,
+            order_index: exerciseIndex,
+          })
+          .select()
+          .single();
+
+        if (insertError || !inserted) {
+          console.error("Error creating session exercise:", insertError);
+          Alert.alert("Error", "Failed to remove exercise");
+          return;
+        }
+
+        sessionExerciseId = inserted.id;
+      }
+    }
+
+    try {
+      // Delete sets first (if any)
+      const { data: sessionExerciseData } = await supabase
+        .from("session_exercises")
+        .select("id")
+        .eq("id", sessionExerciseId)
+        .single();
+
+      if (sessionExerciseData) {
+        await supabase
+          .from("exercise_sets")
+          .delete()
+          .eq("session_exercise_id", sessionExerciseData.id);
+      }
+
+      // Delete from session_exercises
+      const { error: deleteError } = await supabase
+        .from("session_exercises")
+        .delete()
+        .eq("id", sessionExerciseId);
+
+      if (deleteError) {
+        console.error("Error removing exercise from session:", deleteError);
+        Alert.alert("Error", "Failed to remove exercise");
+        return;
+      }
+
+      // Update local state
+      const updatedExercises = sessionData.exercises.filter(
+        (_, index) => index !== exerciseIndex
+      );
+      const updatedProgress = exerciseProgress.filter(
+        (_, index) => index !== exerciseIndex
+      );
+
+      setSessionData({
+        ...sessionData,
+        exercises: updatedExercises,
+      });
+      setExerciseProgress(updatedProgress);
+
+      // If currently tracking this exercise, go back to list
+      if (currentExerciseIndex === exerciseIndex) {
+        setCurrentExerciseIndex(null);
+      } else if (
+        currentExerciseIndex !== null &&
+        currentExerciseIndex > exerciseIndex
+      ) {
+        // Adjust current exercise index if we removed an exercise before it
+        setCurrentExerciseIndex(currentExerciseIndex - 1);
+      }
+    } catch (error) {
+      console.error("Error removing exercise:", error);
+      Alert.alert("Error", "Failed to remove exercise");
+    }
+  };
+
   const handleBackToExercises = () => {
     setCurrentExerciseIndex(null);
   };
@@ -749,9 +1143,18 @@ export default function SessionDetailPage() {
         </View>
 
         <View className="mb-4">
-          <Text className="text-lg font-semibold text-base-content mb-2">
-            Exercises ({sessionData.exercises.length})
-          </Text>
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="text-lg font-semibold text-base-content">
+              Exercises ({sessionData.exercises.length})
+            </Text>
+            <TouchableOpacity
+              onPress={() => setShowAddExerciseModal(true)}
+              className="flex-row items-center px-3 py-1.5 bg-primary rounded-lg"
+            >
+              <Ionicons name="add" size={18} color="#ffffff" />
+              <Text className="text-white font-medium ml-1">Add Exercise</Text>
+            </TouchableOpacity>
+          </View>
           <Text className="text-muted text-sm">
             Tap an exercise to start tracking your sets
           </Text>
@@ -843,61 +1246,32 @@ export default function SessionDetailPage() {
                           <Text className="text-sm text-muted">
                             {exercise.category}
                           </Text>
-                          <View className="flex-row items-center gap-3">
-                            {setCount > 0 && (
-                              <View className="flex-row items-center">
-                                <Ionicons
-                                  name="list-outline"
-                                  size={14}
-                                  color="#6b7280"
-                                />
-                                <Text className="text-sm text-muted ml-1">
-                                  {setCount} set{setCount !== 1 ? "s" : ""}
-                                </Text>
-                              </View>
-                            )}
-                            {progress?.completed && (
-                              <View className="flex-row items-center">
-                                <Ionicons
-                                  name={
-                                    progress.volumeTrend === "up"
-                                      ? "arrow-up"
-                                      : progress.volumeTrend === "down"
-                                        ? "arrow-down"
-                                        : "remove"
-                                  }
-                                  size={14}
-                                  color={
-                                    progress.volumeTrend === "up"
-                                      ? "#10b981"
-                                      : progress.volumeTrend === "down"
-                                        ? "#ef4444"
-                                        : "#6b7280"
-                                  }
-                                />
-                                {typeof progress.volumePercentage ===
-                                  "number" && (
-                                  <Text
-                                    className={`text-sm font-medium ml-1 ${
-                                      progress.volumeTrend === "up"
-                                        ? "text-success"
-                                        : progress.volumeTrend === "down"
-                                          ? "text-error"
-                                          : "text-muted"
-                                    }`}
-                                  >
-                                    {progress.volumeTrend === "up" ? "+" : ""}
-                                    {Math.abs(
-                                      progress.volumePercentage || 0
-                                    ).toFixed(0)}
-                                    %
-                                  </Text>
-                                )}
-                              </View>
-                            )}
-                          </View>
+                          {setCount > 0 && (
+                            <View className="flex-row items-center">
+                              <Ionicons
+                                name="list-outline"
+                                size={14}
+                                color="#6b7280"
+                              />
+                              <Text className="text-sm text-muted ml-1">
+                                {setCount} set{setCount !== 1 ? "s" : ""}
+                              </Text>
+                            </View>
+                          )}
                         </View>
                       </View>
+
+                      {/* Delete Button */}
+                      <TouchableOpacity
+                        onPress={() => handleRemoveExercise(index)}
+                        className="mr-2 p-2"
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={18}
+                          color="#ef4444"
+                        />
+                      </TouchableOpacity>
 
                       {/* Chevron */}
                       <View className="ml-2">
@@ -918,6 +1292,28 @@ export default function SessionDetailPage() {
           </View>
         )}
       </ScrollView>
+
+      {/* Add Exercise Modal */}
+      <Modal
+        visible={showAddExerciseModal}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setShowAddExerciseModal(false)}
+      >
+        <ExerciseSelector
+          onExerciseSelect={handleAddExercise}
+          onClose={() => setShowAddExerciseModal(false)}
+          existingExercises={sessionData?.exercises.map((ex) => ({
+            id: ex.id,
+            name: ex.name,
+            category: ex.category,
+          }))}
+          title="Add Exercises to Session"
+          confirmText="Add"
+          showCloseButton={true}
+          workoutName={sessionData?.workout_name}
+        />
+      </Modal>
     </View>
   );
 }

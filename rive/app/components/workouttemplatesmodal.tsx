@@ -269,9 +269,9 @@ const WorkoutTemplatesModal = ({
             <TemplateList
               workoutTemplates={workoutTemplates}
               onWorkoutPress={(workout) => {
-                onClose();
-                onViewWorkoutDetails?.(workout.id);
-              }}
+                        onClose();
+                        onViewWorkoutDetails?.(workout.id);
+                      }}
               onEditWorkout={handleEditWorkout}
               onDeleteWorkout={handleDeleteWorkout}
             />
