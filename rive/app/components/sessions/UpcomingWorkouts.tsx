@@ -134,14 +134,10 @@ export default function UpcomingWorkouts() {
 
   const sortedDates = Object.keys(groupedWorkouts).sort();
 
-  if (upcomingWorkouts.length === 0 && !loading) {
-    return null; // Don't show section if no upcoming workouts
-  }
-
   return (
     <>
       <View
-        className="bg-base-300 rounded-xl p-4 mx-4"
+        className="bg-base-300 rounded-xl p-4 mx-4 mb-2"
         style={{
           shadowColor: "#000",
           shadowOffset: {
@@ -154,11 +150,12 @@ export default function UpcomingWorkouts() {
         }}
       >
         <View
-          className={`flex-row items-center justify-between ${isExpanded ? "mb-2" : ""}`}
+          className={`flex-row items-center justify-between ${isExpanded && upcomingWorkouts.length > 0 ? "mb-2" : ""}`}
         >
           <TouchableOpacity
             onPress={() => setIsExpanded(!isExpanded)}
             className="flex-row items-center flex-1"
+            disabled={upcomingWorkouts.length === 0 && !loading}
           >
             <Ionicons name="calendar" size={16} color="#ff4b8c" />
             <View className="ml-2">
@@ -169,6 +166,11 @@ export default function UpcomingWorkouts() {
                 <Text className="text-xs text-muted">
                   {upcomingWorkouts.length} workout
                   {upcomingWorkouts.length !== 1 ? "s" : ""} scheduled
+                </Text>
+              )}
+              {upcomingWorkouts.length === 0 && !loading && (
+                <Text className="text-xs text-muted">
+                  No workouts scheduled
                 </Text>
               )}
             </View>
@@ -183,20 +185,22 @@ export default function UpcomingWorkouts() {
                 Schedule
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setIsExpanded(!isExpanded)}
-              className="p-1"
-            >
-              <Ionicons
-                name={isExpanded ? "chevron-up" : "chevron-down"}
-                size={16}
-                color="#6b7280"
-              />
-            </TouchableOpacity>
+            {upcomingWorkouts.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setIsExpanded(!isExpanded)}
+                className="p-1"
+              >
+                <Ionicons
+                  name={isExpanded ? "chevron-up" : "chevron-down"}
+                  size={16}
+                  color="#6b7280"
+                />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
-        {isExpanded && (
+        {(isExpanded || (upcomingWorkouts.length === 0 && !loading)) && (
           <View className="mt-3">
             {loading ? (
               <View className="py-4 items-center">

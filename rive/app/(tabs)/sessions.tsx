@@ -275,7 +275,8 @@ export default function SessionsPage() {
             </View>
 
             {/* Upcoming Workouts */}
-            <UpcomingWorkouts />
+            {/* Feature flag: Set to true to show upcoming workouts */}
+            {false && <UpcomingWorkouts />}
 
             {/* Session Filters */}
             <SessionFilters
