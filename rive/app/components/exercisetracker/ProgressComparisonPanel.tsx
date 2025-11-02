@@ -9,16 +9,12 @@ type ProgressComparisonPanelProps = {
   lastSessionSets: StatsExerciseSet[];
   currentSet: ExerciseSet;
   sets: ExerciseSet[];
-  isExpanded: boolean;
-  setIsExpanded: (expanded: boolean) => void;
 };
 
 export default function ProgressComparisonPanel({
   lastSessionSets,
   currentSet,
   sets,
-  isExpanded,
-  setIsExpanded,
 }: ProgressComparisonPanelProps) {
   const [showAllSets, setShowAllSets] = useState<boolean>(false);
   
@@ -58,37 +54,21 @@ export default function ProgressComparisonPanel({
         elevation: 3,
       }}
     >
-      <View className="flex-row items-center justify-between mb-2">
-        <TouchableOpacity
-          onPress={() => setIsExpanded(!isExpanded)}
-          className="flex-row items-center"
-        >
+      <View className="flex-row items-center justify-between mb-3">
+        <View className="flex-row items-center">
           <Ionicons name="trending-up" size={16} color="#10b981" />
-          <View className="ml-2">
-            <Text className="text-sm font-semibold text-base-content">
-              Compare to Last Session
-            </Text>
-            {lastSessionSets.length > 0 && lastSessionSets[0].created_at && (
-              <Text className="text-xs text-muted">
-                {new Date(lastSessionSets[0].created_at).toLocaleDateString()}
-              </Text>
-            )}
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setIsExpanded(!isExpanded)}
-          className="p-1"
-        >
-          <Ionicons
-            name={isExpanded ? "chevron-up" : "chevron-down"}
-            size={16}
-            color="#6b7280"
-          />
-        </TouchableOpacity>
+          <Text className="text-sm font-semibold text-base-content ml-2">
+            Compare to Last Session
+          </Text>
+        </View>
+        {lastSessionSets.length > 0 && lastSessionSets[0].created_at && (
+          <Text className="text-xs text-muted">
+            {new Date(lastSessionSets[0].created_at).toLocaleDateString()}
+          </Text>
+        )}
       </View>
 
-      {isExpanded ? (
-        <View className="gap-3">
+      <View className="gap-3">
           {needsScrolling ? (
             <ScrollView
               style={{ maxHeight: 320 }}
@@ -241,21 +221,7 @@ export default function ProgressComparisonPanel({
               </View>
             </View>
           )}
-        </View>
-      ) : (
-        <View className="py-1">
-          <View className="items-center">
-            <Ionicons
-              name="information-circle-outline"
-              size={16}
-              color="#6b7280"
-            />
-            <Text className="text-xs text-muted text-center mt-1">
-              Tap to expand
-            </Text>
-          </View>
-        </View>
-      )}
+      </View>
     </View>
   );
 }

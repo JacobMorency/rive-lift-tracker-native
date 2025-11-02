@@ -50,9 +50,6 @@ const ExerciseTracker = ({
   const [showAllSets, setShowAllSets] = useState<boolean>(false);
   const [editingSetIndex, setEditingSetIndex] = useState<number | null>(null);
   const [editingSet, setEditingSet] = useState<ExerciseSet | null>(null);
-  const [isComparisonExpanded, setIsComparisonExpanded] = useState(
-    lastSessionSets.length > 0
-  );
   const [showPartials, setShowPartials] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
 
@@ -211,8 +208,6 @@ const ExerciseTracker = ({
           lastSessionSets={lastSessionSets}
           currentSet={currentSet}
           sets={sets}
-          isExpanded={isComparisonExpanded}
-          setIsExpanded={setIsComparisonExpanded}
         />
 
         <ExerciseNotes
