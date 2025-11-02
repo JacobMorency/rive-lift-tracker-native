@@ -12,6 +12,7 @@ import SessionFilters, {
   StatusFilter,
   SortOrder,
 } from "../components/sessions/SessionFilters";
+import UpcomingWorkouts from "../components/sessions/UpcomingWorkouts";
 import Header from "../components/header";
 
 type Session = {
@@ -272,6 +273,9 @@ export default function SessionsPage() {
                 Session List
               </Text>
             </View>
+
+            {/* Upcoming Workouts */}
+            <UpcomingWorkouts />
 
             {/* Session Filters */}
             <SessionFilters

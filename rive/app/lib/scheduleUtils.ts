@@ -326,3 +326,77 @@ export async function getTodaysScheduledWorkouts(
   const today = new Date();
   return getScheduledWorkoutsForDate(userId, today);
 }
+
+/**
+ * Get scheduled workouts for a date range
+ * Returns workouts grouped by date
+ */
+export type ScheduledWorkoutWithDate = ScheduledWorkout & {
+  scheduledDate: string; // YYYY-MM-DD format
+};
+
+export async function getScheduledWorkoutsForDateRange(
+  userId: string,
+  startDate: Date,
+  endDate: Date
+): Promise<ScheduledWorkoutWithDate[]> {
+  try {
+    const { data: schedules, error } = await supabase
+      .from("workout_schedules")
+      .select(
+        `
+        *,
+        workouts!inner(
+          name,
+          description
+        )
+      `
+      )
+      .eq("user_id", userId)
+      .eq("is_active", true);
+
+    if (error) {
+      console.error("Error fetching schedules:", error);
+      return [];
+    }
+
+    if (!schedules) return [];
+
+    const results: ScheduledWorkoutWithDate[] = [];
+    const currentDate = new Date(startDate);
+    currentDate.setHours(0, 0, 0, 0);
+    
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    // Check each date in the range
+    while (currentDate <= end) {
+      const dateString = `${currentDate.getFullYear()}-${String(
+        currentDate.getMonth() + 1
+      ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
+
+      // Filter schedules that match this date
+      const matchingSchedules = schedules.filter((schedule) =>
+        checkRecurrenceMatch(schedule as WorkoutSchedule, currentDate)
+      );
+
+      // Add each matching schedule to results
+      matchingSchedules.forEach((schedule) => {
+        results.push({
+          schedule: schedule as WorkoutSchedule,
+          workout_name: schedule.workouts.name,
+          workout_description: schedule.workouts.description,
+          scheduledDate: dateString,
+        });
+      });
+
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return results;
+  } catch (error) {
+    console.error("Error getting scheduled workouts for date range:", error);
+    return [];
+  }
+}

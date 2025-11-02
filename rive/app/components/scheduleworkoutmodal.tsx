@@ -66,9 +66,10 @@ export default function ScheduleWorkoutModal({
     }
   }, [isOpen, user]);
 
-  // Cleanup date pickers when modal is closed
+  // Cleanup date pickers when modal is closed - do this synchronously
   useEffect(() => {
     if (!isOpen) {
+      // Close pickers immediately to prevent lifecycle issues
       setShowStartDatePicker(false);
       setShowEndDatePicker(false);
     }
@@ -111,6 +112,9 @@ export default function ScheduleWorkoutModal({
   };
 
   const handleStartDateChange = (event: any, selectedDate?: Date) => {
+    // Hide picker immediately to prevent lifecycle issues
+    setShowStartDatePicker(false);
+
     // Only update if user actually selected a date (not dismissed)
     if (event.type === "set" && selectedDate) {
       // Format date in local timezone to match calendar format
@@ -132,14 +136,12 @@ export default function ScheduleWorkoutModal({
         setSelectedDates([dateOfMonth]);
       }
     }
-
-    // Always hide the picker after interaction
-    setTimeout(() => {
-      setShowStartDatePicker(false);
-    }, 100);
   };
 
   const handleEndDateChange = (event: any, selectedDate?: Date) => {
+    // Hide picker immediately to prevent lifecycle issues
+    setShowEndDatePicker(false);
+
     // Only update if user actually selected a date (not dismissed)
     if (event.type === "set" && selectedDate) {
       // Format date in local timezone to match calendar format
@@ -149,11 +151,6 @@ export default function ScheduleWorkoutModal({
       const dateString = `${year}-${month}-${day}`;
       setEndDate(dateString);
     }
-
-    // Always hide the picker after interaction
-    setTimeout(() => {
-      setShowEndDatePicker(false);
-    }, 100);
   };
 
   const handleRecurrenceTypeChange = (type: RecurrenceType) => {

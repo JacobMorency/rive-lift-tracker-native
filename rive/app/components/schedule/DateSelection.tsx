@@ -42,11 +42,22 @@ export default function DateSelection({
             </Text>
             <Ionicons name="calendar-outline" size={20} color="#6b7280" />
           </TouchableOpacity>
-          {showStartDatePicker && (
+          {showStartDatePicker && Platform.OS === "ios" && (
+            <View key="start-date-picker">
+              <DateTimePicker
+                value={new Date(startDate)}
+                mode="date"
+                display="default"
+                onChange={onStartDateChange}
+                minimumDate={new Date()}
+              />
+            </View>
+          )}
+          {showStartDatePicker && Platform.OS === "android" && (
             <DateTimePicker
               value={new Date(startDate)}
               mode="date"
-              display={Platform.OS === "ios" ? "spinner" : "default"}
+              display="default"
               onChange={onStartDateChange}
               minimumDate={new Date()}
             />
@@ -69,11 +80,22 @@ export default function DateSelection({
             </Text>
             <Ionicons name="calendar-outline" size={20} color="#6b7280" />
           </TouchableOpacity>
-          {showEndDatePicker && (
+          {showEndDatePicker && Platform.OS === "ios" && (
+            <View key="end-date-picker">
+              <DateTimePicker
+                value={endDate ? new Date(endDate) : new Date()}
+                mode="date"
+                display="default"
+                onChange={onEndDateChange}
+                minimumDate={new Date(startDate)}
+              />
+            </View>
+          )}
+          {showEndDatePicker && Platform.OS === "android" && (
             <DateTimePicker
               value={endDate ? new Date(endDate) : new Date()}
               mode="date"
-              display={Platform.OS === "ios" ? "spinner" : "default"}
+              display="default"
               onChange={onEndDateChange}
               minimumDate={new Date(startDate)}
             />
