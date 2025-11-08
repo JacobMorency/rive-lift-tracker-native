@@ -13,6 +13,7 @@ import SessionFilters, {
   SortOrder,
 } from "../components/sessions/SessionFilters";
 import UpcomingWorkouts from "../components/sessions/UpcomingWorkouts";
+import NextScheduledWorkout from "../components/sessions/NextScheduledWorkout";
 import Header from "../components/header";
 
 type Session = {
@@ -267,6 +268,11 @@ export default function SessionsPage() {
         onSessionSelect={handleSessionSelect}
         ListHeaderComponent={() => (
           <>
+            {/* Next Scheduled Workout */}
+            <View className="px-4 pt-4">
+              <NextScheduledWorkout />
+            </View>
+
             {/* Session List Title */}
             <View className="px-4 pt-4 pb-2 flex-row items-center justify-between">
               <Text className="text-2xl font-bold text-base-content">
@@ -278,7 +284,7 @@ export default function SessionsPage() {
               >
                 <Ionicons name="calendar-outline" size={16} color="#ff4b8c" />
                 <Text className="text-sm font-medium text-primary">
-                  View Full Schedule
+                  View Schedule
                 </Text>
               </TouchableOpacity>
             </View>
