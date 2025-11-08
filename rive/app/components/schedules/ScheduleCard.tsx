@@ -1,14 +1,23 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { WorkoutSchedule, ScheduledWorkout } from "../../lib/scheduleUtils";
 
 type ScheduleCardProps = {
   scheduledWorkout: ScheduledWorkout;
+  onEdit?: (scheduledWorkout: ScheduledWorkout) => void;
+  onDelete?: (scheduleId: string) => void;
+};
+
+// Helper function to parse YYYY-MM-DD date string as local date (not UTC)
+// This prevents timezone issues where dates can appear a day behind
+const parseLocalDate = (dateString: string): Date => {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
 };
 
 const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
+  const date = parseLocalDate(dateString);
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -34,16 +43,16 @@ const formatRecurrence = (schedule: WorkoutSchedule): string => {
     }
 
     case "monthly": {
-      const date = new Date(schedule.start_date);
+      const date = parseLocalDate(schedule.start_date);
       const dayOfMonth = date.getDate();
       const suffix =
         dayOfMonth === 1 || dayOfMonth === 21 || dayOfMonth === 31
           ? "st"
           : dayOfMonth === 2 || dayOfMonth === 22
-          ? "nd"
-          : dayOfMonth === 3 || dayOfMonth === 23
-          ? "rd"
-          : "th";
+            ? "nd"
+            : dayOfMonth === 3 || dayOfMonth === 23
+              ? "rd"
+              : "th";
       return `Monthly on the ${dayOfMonth}${suffix}`;
     }
 
@@ -55,10 +64,10 @@ const formatRecurrence = (schedule: WorkoutSchedule): string => {
             d === 1 || d === 21 || d === 31
               ? "st"
               : d === 2 || d === 22
-              ? "nd"
-              : d === 3 || d === 23
-              ? "rd"
-              : "th";
+                ? "nd"
+                : d === 3 || d === 23
+                  ? "rd"
+                  : "th";
           return `${d}${suffix}`;
         })
         .join(", ");
@@ -72,16 +81,20 @@ const formatRecurrence = (schedule: WorkoutSchedule): string => {
 
 const formatDateRange = (schedule: WorkoutSchedule): string => {
   const startDate = formatDate(schedule.start_date);
-  
+
   if (!schedule.end_date) {
     return `${startDate} - Ongoing`;
   }
-  
+
   const endDate = formatDate(schedule.end_date);
   return `${startDate} - ${endDate}`;
 };
 
-export default function ScheduleCard({ scheduledWorkout }: ScheduleCardProps) {
+export default function ScheduleCard({
+  scheduledWorkout,
+  onEdit,
+  onDelete,
+}: ScheduleCardProps) {
   const { schedule, workout_name, workout_description } = scheduledWorkout;
 
   return (
@@ -109,18 +122,38 @@ export default function ScheduleCard({ scheduledWorkout }: ScheduleCardProps) {
             </Text>
           )}
         </View>
-        <View
-          className={`px-2 py-1 rounded-full ${
-            schedule.is_active ? "bg-success/10" : "bg-base-300"
-          }`}
-        >
-          <Text
-            className={`text-xs font-medium ${
-              schedule.is_active ? "text-success" : "text-muted"
+        <View className="flex-row items-center gap-2">
+          <View
+            className={`px-2 py-1 rounded-full ${
+              schedule.is_active ? "bg-success/10" : "bg-base-300"
             }`}
           >
-            {schedule.is_active ? "Active" : "Inactive"}
-          </Text>
+            <Text
+              className={`text-xs font-medium ${
+                schedule.is_active ? "text-success" : "text-muted"
+              }`}
+            >
+              {schedule.is_active ? "Active" : "Inactive"}
+            </Text>
+          </View>
+          {onEdit && (
+            <TouchableOpacity
+              onPress={() => onEdit(scheduledWorkout)}
+              className="p-2"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="pencil-outline" size={20} color="#ff4b8c" />
+            </TouchableOpacity>
+          )}
+          {onDelete && (
+            <TouchableOpacity
+              onPress={() => onDelete(schedule.id)}
+              className="p-2"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="trash-outline" size={20} color="#ef4444" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -142,5 +175,3 @@ export default function ScheduleCard({ scheduledWorkout }: ScheduleCardProps) {
     </View>
   );
 }
-
-

@@ -15,6 +15,13 @@ type DateSelectionProps = {
   onEndDateChange: (event: any, selectedDate?: Date) => void;
 };
 
+// Helper function to parse YYYY-MM-DD date string as local date (not UTC)
+// This prevents timezone issues where dates can appear a day behind
+const parseLocalDate = (dateString: string): Date => {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
+
 export default function DateSelection({
   startDate,
   endDate,
@@ -36,16 +43,14 @@ export default function DateSelection({
             onPress={onStartDatePress}
           >
             <Text className="text-base-content">
-              {new Date(
-                new Date(startDate).getTime() + 24 * 60 * 60 * 1000
-              ).toLocaleDateString()}
+              {parseLocalDate(startDate).toLocaleDateString()}
             </Text>
             <Ionicons name="calendar-outline" size={20} color="#6b7280" />
           </TouchableOpacity>
           {showStartDatePicker && Platform.OS === "ios" && (
             <View key="start-date-picker">
               <DateTimePicker
-                value={new Date(startDate)}
+                value={parseLocalDate(startDate)}
                 mode="date"
                 display="default"
                 onChange={onStartDateChange}
@@ -55,7 +60,7 @@ export default function DateSelection({
           )}
           {showStartDatePicker && Platform.OS === "android" && (
             <DateTimePicker
-              value={new Date(startDate)}
+              value={parseLocalDate(startDate)}
               mode="date"
               display="default"
               onChange={onStartDateChange}
@@ -73,9 +78,7 @@ export default function DateSelection({
           >
             <Text className="text-base-content">
               {endDate
-                ? new Date(
-                    new Date(endDate).getTime() + 24 * 60 * 60 * 1000
-                  ).toLocaleDateString()
+                ? parseLocalDate(endDate).toLocaleDateString()
                 : "No end date"}
             </Text>
             <Ionicons name="calendar-outline" size={20} color="#6b7280" />
@@ -83,21 +86,21 @@ export default function DateSelection({
           {showEndDatePicker && Platform.OS === "ios" && (
             <View key="end-date-picker">
               <DateTimePicker
-                value={endDate ? new Date(endDate) : new Date()}
+                value={endDate ? parseLocalDate(endDate) : new Date()}
                 mode="date"
                 display="default"
                 onChange={onEndDateChange}
-                minimumDate={new Date(startDate)}
+                minimumDate={parseLocalDate(startDate)}
               />
             </View>
           )}
           {showEndDatePicker && Platform.OS === "android" && (
             <DateTimePicker
-              value={endDate ? new Date(endDate) : new Date()}
+              value={endDate ? parseLocalDate(endDate) : new Date()}
               mode="date"
               display="default"
               onChange={onEndDateChange}
-              minimumDate={new Date(startDate)}
+              minimumDate={parseLocalDate(startDate)}
             />
           )}
           {recurrenceType !== "once" && !endDate && (

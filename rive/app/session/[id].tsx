@@ -364,12 +364,12 @@ export default function SessionDetailPage() {
           // Get order_index for each exercise (prefer session, fallback to template)
           const aOrderIndex = aSession
             ? aSession.order_index
-            : workoutExercisesData?.find((we) => we.exercise_id === a.id)
-                ?.order_index ?? 9999;
+            : (workoutExercisesData?.find((we) => we.exercise_id === a.id)
+                ?.order_index ?? 9999);
           const bOrderIndex = bSession
             ? bSession.order_index
-            : workoutExercisesData?.find((we) => we.exercise_id === b.id)
-                ?.order_index ?? 9999;
+            : (workoutExercisesData?.find((we) => we.exercise_id === b.id)
+                ?.order_index ?? 9999);
 
           return aOrderIndex - bOrderIndex;
         }

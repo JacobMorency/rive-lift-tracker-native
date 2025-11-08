@@ -5,12 +5,13 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/authcontext";
-import { getUserSchedules, ScheduledWorkout } from "../lib/scheduleUtils";
+import { getUserSchedules, ScheduledWorkout, deleteSchedule } from "../lib/scheduleUtils";
 import ScheduleCard from "../components/schedules/ScheduleCard";
 import ScheduleWorkoutModal from "../components/scheduleworkoutmodal";
 import Header from "../components/header";
@@ -22,6 +23,7 @@ export default function SchedulePage() {
   const [schedules, setSchedules] = useState<ScheduledWorkout[]>([]);
   const [loading, setLoading] = useState(true);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<ScheduledWorkout | null>(null);
 
   const fetchSchedules = useCallback(async () => {
     if (!user) return;
@@ -45,6 +47,39 @@ export default function SchedulePage() {
 
   const handleScheduleCreated = () => {
     fetchSchedules();
+    setEditingSchedule(null);
+  };
+
+  const handleEdit = (scheduledWorkout: ScheduledWorkout) => {
+    setEditingSchedule(scheduledWorkout);
+    setIsScheduleModalOpen(true);
+  };
+
+  const handleDelete = (scheduleId: string) => {
+    Alert.alert(
+      "Delete Schedule",
+      "Are you sure you want to delete this workout schedule?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            const success = await deleteSchedule(scheduleId);
+            if (success) {
+              fetchSchedules();
+            } else {
+              Alert.alert("Error", "Failed to delete schedule");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleCloseModal = () => {
+    setIsScheduleModalOpen(false);
+    setEditingSchedule(null);
   };
 
   const activeSchedules = schedules.filter((s) => s.schedule.is_active);
@@ -140,6 +175,8 @@ export default function SchedulePage() {
                   <ScheduleCard
                     key={scheduledWorkout.schedule.id}
                     scheduledWorkout={scheduledWorkout}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
                   />
                 ))}
               </View>
@@ -156,6 +193,8 @@ export default function SchedulePage() {
                   <ScheduleCard
                     key={scheduledWorkout.schedule.id}
                     scheduledWorkout={scheduledWorkout}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
                   />
                 ))}
               </View>
@@ -167,8 +206,9 @@ export default function SchedulePage() {
       {/* Schedule Workout Modal */}
       <ScheduleWorkoutModal
         isOpen={isScheduleModalOpen}
-        onClose={() => setIsScheduleModalOpen(false)}
+        onClose={handleCloseModal}
         onScheduleCreated={handleScheduleCreated}
+        editingSchedule={editingSchedule}
       />
     </View>
   );

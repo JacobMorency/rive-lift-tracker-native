@@ -14,17 +14,21 @@ import {
   WorkoutSchedule,
   RecurrenceType,
   createSchedule,
+  updateSchedule,
+  ScheduledWorkout,
 } from "../lib/scheduleUtils";
 import WorkoutSelector from "./schedule/WorkoutSelector";
 import DateSelection from "./schedule/DateSelection";
 import RecurrenceSelector from "./schedule/RecurrenceSelector";
 import RecurrenceOptions from "./schedule/RecurrenceOptions";
+import { WorkoutTemplate } from "./schedule/types";
 
 type ScheduleWorkoutModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onScheduleCreated?: () => void;
   selectedDate?: string; // ISO date string (YYYY-MM-DD)
+  editingSchedule?: ScheduledWorkout | null; // Schedule to edit
 };
 
 export default function ScheduleWorkoutModal({
@@ -32,6 +36,7 @@ export default function ScheduleWorkoutModal({
   onClose,
   onScheduleCreated,
   selectedDate,
+  editingSchedule,
 }: ScheduleWorkoutModalProps) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
@@ -66,6 +71,26 @@ export default function ScheduleWorkoutModal({
     }
   }, [isOpen, user]);
 
+  // Populate form when editing
+  useEffect(() => {
+    if (isOpen && editingSchedule) {
+      const { schedule } = editingSchedule;
+      setSelectedWorkoutId(schedule.workout_id);
+      setStartDate(schedule.start_date);
+      setEndDate(schedule.end_date || "");
+      setRecurrenceType(schedule.recurrence_type);
+      setSelectedDays(
+        schedule.recurrence_type === "weekly" ? schedule.recurrence_days : []
+      );
+      setSelectedDates(
+        schedule.recurrence_type === "monthly_date" ? schedule.recurrence_days : []
+      );
+    } else if (isOpen && !editingSchedule) {
+      // Reset form when creating new schedule
+      resetForm();
+    }
+  }, [isOpen, editingSchedule]);
+
   // Cleanup date pickers when modal is closed - do this synchronously
   useEffect(() => {
     if (!isOpen) {
@@ -85,7 +110,10 @@ export default function ScheduleWorkoutModal({
   // Update selected day when start date changes for weekly recurrence
   useEffect(() => {
     if (recurrenceType === "weekly" && startDate) {
-      const dayOfWeek = new Date(startDate).getDay();
+      // Parse the date string as local time to avoid timezone issues
+      const [year, month, day] = startDate.split("-").map(Number);
+      const dateObj = new Date(year, month - 1, day);
+      const dayOfWeek = dateObj.getDay();
       setSelectedDays([dayOfWeek]);
     }
   }, [startDate, recurrenceType]);
@@ -222,22 +250,39 @@ export default function ScheduleWorkoutModal({
         finalEndDate = `${currentYear}-12-31`;
       }
 
-      const scheduleData: Omit<
+      const scheduleData: Partial<Omit<
         WorkoutSchedule,
         "id" | "created_at" | "updated_at"
-      > = {
-        user_id: user.id,
+      >> = {
         workout_id: selectedWorkoutId,
         recurrence_type: recurrenceType,
         recurrence_days:
           recurrenceType === "weekly" ? selectedDays : selectedDates,
         start_date: startDate,
         end_date: finalEndDate || null,
-        is_active: true,
+        is_active: editingSchedule?.schedule.is_active ?? true,
       };
 
-      const result = await createSchedule(scheduleData);
-
+      let result;
+      if (editingSchedule) {
+        // Update existing schedule
+        result = await updateSchedule(editingSchedule.schedule.id, scheduleData);
+        if (result) {
+          Alert.alert("Success", "Schedule updated successfully!");
+          onScheduleCreated?.();
+          onClose();
+          resetForm();
+        } else {
+          Alert.alert("Error", "Failed to update schedule");
+        }
+      } else {
+        // Create new schedule
+        const newScheduleData = {
+          ...scheduleData,
+          user_id: user.id,
+        } as Omit<WorkoutSchedule, "id" | "created_at" | "updated_at">;
+        
+        result = await createSchedule(newScheduleData);
       if (result) {
         Alert.alert("Success", "Workout scheduled successfully!");
         onScheduleCreated?.();
@@ -245,10 +290,11 @@ export default function ScheduleWorkoutModal({
         resetForm();
       } else {
         Alert.alert("Error", "Failed to create schedule");
+        }
       }
     } catch (error) {
-      console.error("Error creating schedule:", error);
-      Alert.alert("Error", "Failed to create schedule");
+      console.error(`Error ${editingSchedule ? "updating" : "creating"} schedule:`, error);
+      Alert.alert("Error", `Failed to ${editingSchedule ? "update" : "create"} schedule`);
     } finally {
       setLoading(false);
     }
@@ -290,7 +336,7 @@ export default function ScheduleWorkoutModal({
             <Text className="text-primary font-medium">Cancel</Text>
           </TouchableOpacity>
           <Text className="text-lg font-semibold text-base-content">
-            Schedule Workout
+            {editingSchedule ? "Edit Schedule" : "Schedule Workout"}
           </Text>
           <TouchableOpacity onPress={handleSave} disabled={loading}>
             <Text className="text-primary font-medium">Save</Text>

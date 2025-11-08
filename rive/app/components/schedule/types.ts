@@ -20,12 +20,19 @@ export const DAYS_OF_WEEK = [
   { value: 6, label: "Saturday", short: "Sa" },
 ];
 
+// Helper function to parse YYYY-MM-DD date string as local date (not UTC)
+// This prevents timezone issues where dates can appear a day behind
+const parseLocalDate = (dateString: string): Date => {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+};
+
 export const getRecurrenceOptions = (
   startDate: string
 ): { type: RecurrenceType; label: string }[] => {
   const getWeeklyLabel = () => {
     if (!startDate) return "Weekly";
-    const dayOfWeek = new Date(startDate).getDay();
+    const dayOfWeek = parseLocalDate(startDate).getDay();
     const dayName =
       DAYS_OF_WEEK.find((day) => day.value === dayOfWeek)?.label || "Unknown";
     return `Weekly on ${dayName}`;
