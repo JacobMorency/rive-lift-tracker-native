@@ -268,10 +268,19 @@ export default function SessionsPage() {
         ListHeaderComponent={() => (
           <>
             {/* Session List Title */}
-            <View className="px-4 pt-4 pb-2">
+            <View className="px-4 pt-4 pb-2 flex-row items-center justify-between">
               <Text className="text-2xl font-bold text-base-content">
                 Session List
               </Text>
+              <TouchableOpacity
+                onPress={() => router.push("/schedule")}
+                className="flex-row items-center gap-1 px-3 py-1.5 bg-base-300 rounded-lg"
+              >
+                <Ionicons name="calendar-outline" size={16} color="#ff4b8c" />
+                <Text className="text-sm font-medium text-primary">
+                  View Full Schedule
+                </Text>
+              </TouchableOpacity>
             </View>
 
             {/* Upcoming Workouts */}

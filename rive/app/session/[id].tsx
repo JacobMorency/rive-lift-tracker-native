@@ -301,77 +301,77 @@ export default function SessionDetailPage() {
       });
 
       // Merge session and template exercises
-      // If session has any session_exercises entries, only show those (user has customized)
-      // If session has no session_exercises entries, show template exercises (initial state)
+      // Always start with ALL template exercises (to preserve exercises that haven't been started yet)
+      // Then add any session-specific exercises (user-added exercises not in template)
+      // Use session_exercises entries to track progress and custom ordering
       const exerciseMapCombined = new Map<number, Exercise>();
 
+      // First, add all template exercises (these are the base exercises)
+      workoutExercisesData?.forEach((we) => {
+        const exercise = exerciseMap.get(we.exercise_id);
+        const workoutExercise = workoutExerciseMap.get(we.exercise_id);
+
+        if (exercise) {
+          // Check if this exercise has a session_exercises entry
+          const sessionExercise = sessionExercisesData?.find(
+            (se) => se.exercise_id === we.exercise_id
+          );
+
+          exerciseMapCombined.set(we.exercise_id, {
+            id: exercise.id,
+            name: exercise.name,
+            category: exercise.category,
+            wasInOriginalTemplate: true,
+            notes: workoutExercise?.notes || null,
+            workoutExerciseId: workoutExercise?.id,
+            sessionExerciseId: sessionExercise?.id, // Use session ID if it exists
+          });
+        }
+      });
+
+      // Then, add any session exercises that aren't in the template (user-added exercises)
       if (sessionExercisesData && sessionExercisesData.length > 0) {
-        // Session has been customized - only show exercises explicitly in session_exercises
         sessionExercisesData.forEach((se) => {
-          const exercise = exerciseMap.get(se.exercise_id);
-          const workoutExercise = workoutExerciseMap.get(se.exercise_id);
+          // Only add if it's not already in the map (i.e., not in template)
+          if (!exerciseMapCombined.has(se.exercise_id)) {
+            const exercise = exerciseMap.get(se.exercise_id);
+            const workoutExercise = workoutExerciseMap.get(se.exercise_id);
 
-          if (exercise) {
-            exerciseMapCombined.set(se.exercise_id, {
-              id: exercise.id,
-              name: exercise.name,
-              category: exercise.category,
-              wasInOriginalTemplate: !!workoutExercise,
-              notes: workoutExercise?.notes || null,
-              workoutExerciseId: workoutExercise?.id,
-              sessionExerciseId: se.id,
-            });
-          }
-        });
-      } else {
-        // No session_exercises entries - initial state, show template exercises
-        workoutExercisesData?.forEach((we) => {
-          const exercise = exerciseMap.get(we.exercise_id);
-          const workoutExercise = workoutExerciseMap.get(we.exercise_id);
-
-          if (exercise) {
-            exerciseMapCombined.set(we.exercise_id, {
-              id: exercise.id,
-              name: exercise.name,
-              category: exercise.category,
-              wasInOriginalTemplate: true,
-              notes: workoutExercise?.notes || null,
-              workoutExerciseId: workoutExercise?.id,
-              sessionExerciseId: undefined,
-            });
+            if (exercise) {
+              exerciseMapCombined.set(se.exercise_id, {
+                id: exercise.id,
+                name: exercise.name,
+                category: exercise.category,
+                wasInOriginalTemplate: !!workoutExercise,
+                notes: workoutExercise?.notes || null,
+                workoutExerciseId: workoutExercise?.id,
+                sessionExerciseId: se.id,
+              });
+            }
           }
         });
       }
 
       // Convert map to array and sort
-      // For exercises with sessionExerciseId, use session order_index
-      // For exercises without sessionExerciseId (template-only), use template order_index
+      // Use session order_index if available (for exercises that have been started)
+      // Otherwise use template order_index (for exercises not started yet)
+      // This preserves the original template order while respecting any custom ordering
       const exercises = Array.from(exerciseMapCombined.values()).sort(
         (a, b) => {
           const aSession = sessionExerciseMap.get(a.id);
           const bSession = sessionExerciseMap.get(b.id);
 
-          // If both have session entries, sort by session order_index
-          if (aSession && bSession) {
-            return aSession.order_index - bSession.order_index;
-          }
+          // Get order_index for each exercise (prefer session, fallback to template)
+          const aOrderIndex = aSession
+            ? aSession.order_index
+            : workoutExercisesData?.find((we) => we.exercise_id === a.id)
+                ?.order_index ?? 9999;
+          const bOrderIndex = bSession
+            ? bSession.order_index
+            : workoutExercisesData?.find((we) => we.exercise_id === b.id)
+                ?.order_index ?? 9999;
 
-          // If only one has session entry, session one comes first
-          if (aSession && !bSession) {
-            return -1;
-          }
-          if (!aSession && bSession) {
-            return 1;
-          }
-
-          // If neither has session entry, use template order_index
-          const aTemplate = workoutExercisesData?.find(
-            (we) => we.exercise_id === a.id
-          );
-          const bTemplate = workoutExercisesData?.find(
-            (we) => we.exercise_id === b.id
-          );
-          return (aTemplate?.order_index || 0) - (bTemplate?.order_index || 0);
+          return aOrderIndex - bOrderIndex;
         }
       );
 
