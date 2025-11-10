@@ -2,13 +2,38 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { ScheduledWorkoutWithDate } from "../../lib/scheduleUtils";
 
 type QuickActionsProps = {
-  onStartSession: () => void;
+  onStartSession: (workoutId?: string) => void;
+  scheduledWorkout?: ScheduledWorkoutWithDate | null;
 };
 
-export default function QuickActions({ onStartSession }: QuickActionsProps) {
+export default function QuickActions({
+  onStartSession,
+  scheduledWorkout,
+}: QuickActionsProps) {
   const router = useRouter();
+
+  const formatDate = (dateString: string): string => {
+    const [year, month, day] = dateString.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (date.getTime() === today.getTime()) {
+      return "Today";
+    } else if (date.getTime() === tomorrow.getTime()) {
+      return "Tomorrow";
+    } else {
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+    }
+  };
 
   return (
     <View className="mb-6">
@@ -16,33 +41,64 @@ export default function QuickActions({ onStartSession }: QuickActionsProps) {
         Quick Actions
       </Text>
       <View className="gap-3">
-        {/* Primary Action - Start Session */}
-        <TouchableOpacity
-          className="bg-primary rounded-xl p-5"
-          onPress={onStartSession}
-          style={{
-            shadowColor: "#ff4b8c",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 8,
-          }}
-        >
-          <View className="flex-row items-center gap-4">
-            <View className="w-12 h-12 bg-primary-content/20 rounded-xl items-center justify-center">
-              <Ionicons name="play-circle" size={24} color="#ffffff" />
+        {/* Primary Action - Start Session or Scheduled Workout */}
+        {scheduledWorkout ? (
+          <TouchableOpacity
+            className="bg-primary rounded-xl p-5"
+            onPress={() =>
+              onStartSession(scheduledWorkout.schedule.workout_id)
+            }
+            style={{
+              shadowColor: "#ff4b8c",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <View className="flex-row items-center gap-4">
+              <View className="w-12 h-12 bg-primary-content/20 rounded-xl items-center justify-center">
+                <Ionicons name="play-circle" size={24} color="#ffffff" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-primary-content font-bold text-lg">
+                  Start {scheduledWorkout.workout_name}
+                </Text>
+                <Text className="text-primary-content/80 text-sm mt-0.5">
+                  {formatDate(scheduledWorkout.scheduledDate)}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#ffffff" />
             </View>
-            <View className="flex-1">
-              <Text className="text-primary-content font-bold text-lg">
-                Start Session
-              </Text>
-              <Text className="text-primary-content/80 text-sm mt-0.5">
-                Begin a new workout
-              </Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            className="bg-primary rounded-xl p-5"
+            onPress={() => onStartSession()}
+            style={{
+              shadowColor: "#ff4b8c",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <View className="flex-row items-center gap-4">
+              <View className="w-12 h-12 bg-primary-content/20 rounded-xl items-center justify-center">
+                <Ionicons name="play-circle" size={24} color="#ffffff" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-primary-content font-bold text-lg">
+                  Start Session
+                </Text>
+                <Text className="text-primary-content/80 text-sm mt-0.5">
+                  Begin a new workout
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#ffffff" />
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#ffffff" />
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
+        )}
 
         {/* Secondary Actions Grid */}
         <View className="flex-row gap-3">
