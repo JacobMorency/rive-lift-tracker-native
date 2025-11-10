@@ -82,13 +82,8 @@ export default function ExerciseSelectionModal({
         // Always allow removing exercises
         return prev.filter((id) => id !== exerciseId);
       } else {
-        // Check if user is at the limit (3 exercises)
-        if (prev.length >= 3) {
-          // Don't add if at limit
-          return prev;
-        } else {
-          return [...prev, exerciseId];
-        }
+        // No limit - allow adding any exercise
+        return [...prev, exerciseId];
       }
     });
   };
@@ -140,15 +135,10 @@ export default function ExerciseSelectionModal({
 
         {/* Selected Count */}
         <View className="px-4 pb-2">
-          <View className="flex-row items-center justify-between">
-            <Text className="text-sm text-muted">
-              {tempSelectedExercises.length} exercise
-              {tempSelectedExercises.length !== 1 ? "s" : ""} selected
-            </Text>
-            <Text className="text-sm text-muted">
-              {tempSelectedExercises.length}/3 limit
-            </Text>
-          </View>
+          <Text className="text-sm text-muted">
+            {tempSelectedExercises.length} exercise
+            {tempSelectedExercises.length !== 1 ? "s" : ""} selected
+          </Text>
         </View>
 
         {/* Exercise List */}
@@ -167,9 +157,7 @@ export default function ExerciseSelectionModal({
                   className={`flex-row items-center justify-between p-4 rounded-lg border ${
                     tempSelectedExercises.includes(exercise.id)
                       ? "bg-primary/10 border-primary"
-                      : tempSelectedExercises.length >= 3
-                        ? "bg-base-200 border-base-300 opacity-50"
-                        : "bg-base-200 border-base-300"
+                      : "bg-base-200 border-base-300"
                   }`}
                 >
                   <View className="flex-1">
@@ -200,22 +188,12 @@ export default function ExerciseSelectionModal({
                     className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
                       tempSelectedExercises.includes(exercise.id)
                         ? "bg-primary border-primary"
-                        : tempSelectedExercises.length >= 3
-                          ? "border-base-300"
-                          : "border-base-400"
+                        : "border-base-400"
                     }`}
                   >
                     {tempSelectedExercises.includes(exercise.id) && (
                       <Ionicons name="checkmark" size={16} color="#ffffff" />
                     )}
-                    {!tempSelectedExercises.includes(exercise.id) &&
-                      tempSelectedExercises.length >= 3 && (
-                        <Ionicons
-                          name="lock-closed"
-                          size={12}
-                          color="#9ca3af"
-                        />
-                      )}
                   </View>
                 </TouchableOpacity>
               ))}
@@ -235,16 +213,6 @@ export default function ExerciseSelectionModal({
           )}
         </ScrollView>
 
-        {/* Bottom Info */}
-        <View className="p-4 border-t border-base-300">
-          <View className="flex-row items-center gap-2">
-            <Ionicons name="information-circle" size={16} color="#6b7280" />
-            <Text className="text-sm text-muted flex-1">
-              Select up to 3 exercises to track for personal records. Upgrade to
-              track more exercises.
-            </Text>
-          </View>
-        </View>
       </View>
     </Modal>
   );

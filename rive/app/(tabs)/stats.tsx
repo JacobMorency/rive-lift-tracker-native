@@ -6,10 +6,9 @@ import { DateRange } from "../lib/statsUtils";
 import Header from "../components/header";
 import DateRangePicker from "../components/daterangepicker";
 import OverviewTab from "../components/stats/overviewtab";
-import ExercisesTab from "../components/stats/exercisestab";
 import PRsTab from "../components/stats/prstab";
 
-type TabType = "overview" | "exercises" | "prs";
+type TabType = "overview" | "prs";
 
 export default function StatsPage() {
   const { userData } = useAuth();
@@ -19,7 +18,6 @@ export default function StatsPage() {
 
   const tabs = [
     { id: "overview" as TabType, label: "Overview" },
-    { id: "exercises" as TabType, label: "Exercises" },
     { id: "prs" as TabType, label: "PRs" },
   ];
 
@@ -27,8 +25,6 @@ export default function StatsPage() {
     switch (selectedTab) {
       case "overview":
         return <OverviewTab dateRange={dateRange} />;
-      case "exercises":
-        return <ExercisesTab dateRange={dateRange} />;
       case "prs":
         return <PRsTab dateRange={dateRange} />;
       default:

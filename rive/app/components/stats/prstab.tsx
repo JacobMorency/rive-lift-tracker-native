@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -14,7 +14,9 @@ import {
   getTrackedExercises,
   saveTrackedExercises,
   getTrackedPRData,
+  getExerciseProgressData,
   TrackedPR,
+  ExerciseProgressData,
 } from "../../lib/statsUtils";
 import ExerciseSelectionModal from "./exerciseselectionmodal";
 
@@ -28,6 +30,12 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
 
   const [trackedExercises, setTrackedExercises] = useState<number[]>([]);
   const [trackedPRs, setTrackedPRs] = useState<TrackedPR[]>([]);
+  const [exerciseProgressData, setExerciseProgressData] = useState<
+    Map<number, ExerciseProgressData>
+  >(new Map());
+  const [loadingProgress, setLoadingProgress] = useState<Set<number>>(
+    new Set()
+  );
   const [loading, setLoading] = useState(true);
   const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
   const [expandedExercise, setExpandedExercise] = useState<number | null>(null);
@@ -46,6 +54,41 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
       setLoading(false);
     }
   }, [user?.id, trackedExercises, dateRange]);
+
+  const fetchExerciseProgress = useCallback(
+    async (exerciseId: number) => {
+      if (!user?.id) return;
+
+      setLoadingProgress((prev) => new Set(prev).add(exerciseId));
+      try {
+        const progressData = await getExerciseProgressData(
+          user.id,
+          exerciseId,
+          dateRange
+        );
+        setExerciseProgressData((prev) => {
+          const newMap = new Map(prev);
+          newMap.set(exerciseId, progressData);
+          return newMap;
+        });
+      } catch (error) {
+        console.error(`Error fetching progress for exercise ${exerciseId}:`, error);
+      } finally {
+        setLoadingProgress((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(exerciseId);
+          return newSet;
+        });
+      }
+    },
+    [user?.id, dateRange]
+  );
+
+  useEffect(() => {
+    if (expandedExercise && !exerciseProgressData.has(expandedExercise)) {
+      fetchExerciseProgress(expandedExercise);
+    }
+  }, [expandedExercise, exerciseProgressData, fetchExerciseProgress]);
 
   const fetchTrackedExercises = async () => {
     if (!user?.id) return;
@@ -138,15 +181,10 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
         </View>
 
         <View className="bg-base-300 rounded-lg p-4">
-          <View className="flex-row items-center justify-between mb-2">
-            <View className="flex-row items-center gap-2">
-              <Ionicons name="list" size={16} color="#ff4b8c" />
-              <Text className="text-sm font-medium text-muted">
-                Currently Tracking
-              </Text>
-            </View>
-            <Text className="text-sm text-muted">
-              {trackedExercises.length}/3 limit
+          <View className="flex-row items-center gap-2 mb-2">
+            <Ionicons name="list" size={16} color="#ff4b8c" />
+            <Text className="text-sm font-medium text-muted">
+              Currently Tracking
             </Text>
           </View>
           <Text className="text-2xl font-bold text-base-content">
@@ -245,52 +283,245 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                 ) : null}
               </View>
 
-              {/* PR History (Expandable) */}
-              {expandedExercise === pr.exerciseId &&
-                pr.prHistory.length > 0 && (
-                  <View className="mt-4 pt-4 border-t border-base-200">
-                    <Text className="text-sm font-medium text-muted mb-3">
-                      PR History ({pr.prHistory.length} achievements)
-                    </Text>
-                    <View className="gap-2">
-                      {pr.prHistory.slice(0, 5).map((entry, index) => (
-                        <View
-                          key={index}
-                          className="flex-row items-center justify-between"
-                        >
-                          <View className="flex-row items-center gap-2">
-                            <Ionicons
-                              name={getPRTypeIcon(entry.type)}
-                              size={14}
-                              color={getPRTypeColor(entry.type)}
-                            />
-                            <Text className="text-sm text-base-content capitalize">
-                              {entry.type} PR:
-                            </Text>
+              {/* PR History and Progress Charts (Expandable) */}
+              {expandedExercise === pr.exerciseId && (
+                <View className="mt-4 pt-4 border-t border-base-200">
+                  {/* PR History */}
+                  {pr.prHistory.length > 0 && (
+                    <View className="mb-4">
+                      <Text className="text-sm font-medium text-muted mb-3">
+                        PR History ({pr.prHistory.length} achievements)
+                      </Text>
+                      <View className="gap-2">
+                        {pr.prHistory.slice(0, 5).map((entry, index) => (
+                          <View
+                            key={index}
+                            className="flex-row items-center justify-between"
+                          >
+                            <View className="flex-row items-center gap-2">
+                              <Ionicons
+                                name={getPRTypeIcon(entry.type)}
+                                size={14}
+                                color={getPRTypeColor(entry.type)}
+                              />
+                              <Text className="text-sm text-base-content capitalize">
+                                {entry.type} PR:
+                              </Text>
+                            </View>
+                            <View className="items-end">
+                              <Text
+                                className="text-sm font-semibold"
+                                style={{ color: getPRTypeColor(entry.type) }}
+                              >
+                                {entry.type === "weight"
+                                  ? `${entry.value} lbs × ${entry.reps} reps`
+                                  : `${entry.value} reps × ${entry.weight} lbs`}
+                              </Text>
+                              <Text className="text-xs text-muted">
+                                {formatDate(entry.date)}
+                              </Text>
+                            </View>
                           </View>
-                          <View className="items-end">
-                            <Text
-                              className="text-sm font-semibold"
-                              style={{ color: getPRTypeColor(entry.type) }}
-                            >
-                              {entry.type === "weight"
-                                ? `${entry.value} lbs × ${entry.reps} reps`
-                                : `${entry.value} reps × ${entry.weight} lbs`}
-                            </Text>
-                            <Text className="text-xs text-muted">
-                              {formatDate(entry.date)}
-                            </Text>
+                        ))}
+                        {pr.prHistory.length > 5 && (
+                          <Text className="text-xs text-muted text-center mt-2">
+                            +{pr.prHistory.length - 5} more achievements
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Progress Charts */}
+                  {loadingProgress.has(pr.exerciseId) ? (
+                    <View className="items-center py-4">
+                      <ActivityIndicator size="small" color="#ff4b8c" />
+                      <Text className="text-xs text-muted mt-2">
+                        Loading progress...
+                      </Text>
+                    </View>
+                  ) : exerciseProgressData.has(pr.exerciseId) ? (
+                    (() => {
+                      const progress = exerciseProgressData.get(pr.exerciseId)!;
+                      const dataPoints = progress.dataPoints;
+                      if (dataPoints.length === 0) {
+                        return (
+                          <Text className="text-sm text-muted text-center py-4">
+                            No progress data available for this date range
+                          </Text>
+                        );
+                      }
+
+                      const volumes = dataPoints.map((dp) => dp.volume);
+                      const weights = dataPoints.map((dp) => dp.maxWeight);
+                      const avgVolume =
+                        volumes.reduce((sum, v) => sum + v, 0) / volumes.length;
+                      const maxVolume = Math.max(...volumes);
+                      const currentMaxWeight = Math.max(...weights);
+                      const avgMaxWeight =
+                        weights.reduce((sum, w) => sum + w, 0) / weights.length;
+
+                      return (
+                        <View className="gap-4">
+                          {/* Volume Progression Summary */}
+                          <View className="bg-base-200 rounded-lg p-4">
+                            <View className="flex-row items-center gap-2 mb-3">
+                              <Ionicons name="trending-up" size={16} color="#10b981" />
+                              <Text className="text-base font-semibold text-base-content">
+                                Volume Progression
+                              </Text>
+                            </View>
+                            <View className="gap-2">
+                              <View className="flex-row justify-between items-center">
+                                <Text className="text-sm text-muted">
+                                  Average Volume:
+                                </Text>
+                                <Text className="text-base font-bold text-primary">
+                                  {Math.round(avgVolume).toLocaleString()} lbs
+                                </Text>
+                              </View>
+                              <View className="flex-row justify-between items-center">
+                                <Text className="text-sm text-muted">
+                                  Highest Volume:
+                                </Text>
+                                <Text className="text-base font-bold text-success">
+                                  {Math.round(maxVolume).toLocaleString()} lbs
+                                </Text>
+                              </View>
+                              <View className="flex-row justify-between items-center">
+                                <Text className="text-sm text-muted">
+                                  Total Sessions:
+                                </Text>
+                                <Text className="text-base font-bold text-primary">
+                                  {dataPoints.length}
+                                </Text>
+                              </View>
+                              {progress.progression.volumePercentage !== 0 && (
+                                <View className="flex-row justify-between items-center mt-1 pt-2 border-t border-base-300">
+                                  <Text className="text-sm text-muted">
+                                    Volume Change:
+                                  </Text>
+                                  <View className="flex-row items-center gap-1">
+                                    <Ionicons
+                                      name={
+                                        progress.progression.trend === "up"
+                                          ? "trending-up"
+                                          : progress.progression.trend === "down"
+                                            ? "trending-down"
+                                            : "remove"
+                                      }
+                                      size={14}
+                                      color={
+                                        progress.progression.trend === "up"
+                                          ? "#10b981"
+                                          : progress.progression.trend === "down"
+                                            ? "#ef4444"
+                                            : "#9ca3af"
+                                      }
+                                    />
+                                    <Text
+                                      className="text-sm font-semibold"
+                                      style={{
+                                        color:
+                                          progress.progression.trend === "up"
+                                            ? "#10b981"
+                                            : progress.progression.trend === "down"
+                                              ? "#ef4444"
+                                              : "#9ca3af",
+                                      }}
+                                    >
+                                      {progress.progression.volumePercentage > 0
+                                        ? "+"
+                                        : ""}
+                                      {progress.progression.volumePercentage.toFixed(
+                                        0
+                                      )}
+                                      %
+                                    </Text>
+                                  </View>
+                                </View>
+                              )}
+                            </View>
+                          </View>
+
+                          {/* Weight Progression Summary */}
+                          <View className="bg-base-200 rounded-lg p-4">
+                            <View className="flex-row items-center gap-2 mb-3">
+                              <Ionicons name="barbell" size={16} color="#ff4b8c" />
+                              <Text className="text-base font-semibold text-base-content">
+                                Max Weight Progression
+                              </Text>
+                            </View>
+                            <View className="gap-2">
+                              <View className="flex-row justify-between items-center">
+                                <Text className="text-sm text-muted">
+                                  Current Max:
+                                </Text>
+                                <Text className="text-base font-bold text-primary">
+                                  {Math.round(currentMaxWeight)} lbs
+                                </Text>
+                              </View>
+                              <View className="flex-row justify-between items-center">
+                                <Text className="text-sm text-muted">
+                                  Average Max:
+                                </Text>
+                                <Text className="text-base font-bold text-primary">
+                                  {Math.round(avgMaxWeight)} lbs
+                                </Text>
+                              </View>
+                              {progress.progression.weightPercentage !== 0 && (
+                                <View className="flex-row justify-between items-center mt-1 pt-2 border-t border-base-300">
+                                  <Text className="text-sm text-muted">
+                                    Weight Change:
+                                  </Text>
+                                  <View className="flex-row items-center gap-1">
+                                    <Ionicons
+                                      name={
+                                        progress.progression.weightPercentage > 0
+                                          ? "trending-up"
+                                          : progress.progression.weightPercentage < 0
+                                            ? "trending-down"
+                                            : "remove"
+                                      }
+                                      size={14}
+                                      color={
+                                        progress.progression.weightPercentage > 0
+                                          ? "#10b981"
+                                          : progress.progression.weightPercentage < 0
+                                            ? "#ef4444"
+                                            : "#9ca3af"
+                                      }
+                                    />
+                                    <Text
+                                      className="text-sm font-semibold"
+                                      style={{
+                                        color:
+                                          progress.progression.weightPercentage > 0
+                                            ? "#10b981"
+                                            : progress.progression.weightPercentage < 0
+                                              ? "#ef4444"
+                                              : "#9ca3af",
+                                      }}
+                                    >
+                                      {progress.progression.weightPercentage > 0
+                                        ? "+"
+                                        : ""}
+                                      {progress.progression.weightPercentage.toFixed(
+                                        0
+                                      )}
+                                      %
+                                    </Text>
+                                  </View>
+                                </View>
+                              )}
+                            </View>
                           </View>
                         </View>
-                      ))}
-                      {pr.prHistory.length > 5 && (
-                        <Text className="text-xs text-muted text-center mt-2">
-                          +{pr.prHistory.length - 5} more achievements
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                )}
+                      );
+                    })()
+                  ) : null}
+                </View>
+              )}
             </View>
           ))}
         </View>
@@ -304,8 +535,8 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
               No PRs Tracked Yet
             </Text>
             <Text className="text-center text-muted mb-6 max-w-xs">
-              Select up to 3 exercises to start tracking your personal records
-              and see your progress over time.
+              Select exercises to start tracking your personal records and see
+              your progress over time.
             </Text>
             <TouchableOpacity
               onPress={() => setIsSelectionModalOpen(true)}
