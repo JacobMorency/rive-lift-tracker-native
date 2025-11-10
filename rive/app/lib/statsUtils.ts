@@ -408,10 +408,14 @@ const calculatePersonalRecords = async (
   const muscleGroupMap = await getExercisesWithMuscleGroups(exerciseIds);
 
   // Create exercise lookup map
-  const exerciseMap = new Map<number, { name: string; primaryMuscleGroup?: string }>();
+  const exerciseMap = new Map<
+    number,
+    { name: string; primaryMuscleGroup?: string }
+  >();
   exercises?.forEach((exercise) => {
     const muscleGroups = muscleGroupMap.get(exercise.id) || [];
-    const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+    const primaryMuscleGroup =
+      muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
     exerciseMap.set(exercise.id, {
       name: exercise.name,
       primaryMuscleGroup,
@@ -509,7 +513,10 @@ const getRecentSessionStats = async (
       left_reps,
       right_reps,
       created_at,
-      session_exercises!inner(session_id)
+      session_exercises!inner(
+        session_id,
+        exercise_id
+      )
     `
     )
     .in("session_exercises.session_id", sessionIds);
@@ -530,12 +537,16 @@ const getRecentSessionStats = async (
 
   exerciseSets?.forEach((set) => {
     const sessionId = set.session_exercises.session_id;
+    const exerciseId = set.session_exercises.exercise_id;
     if (!sessionStatsMap.has(sessionId)) {
       sessionStatsMap.set(sessionId, { sets: [], exercises: new Set() });
     }
     const stats = sessionStatsMap.get(sessionId)!;
     stats.sets.push(set);
-    // Note: We'd need to get exercise_id from session_exercises to track unique exercises
+    // Track unique exercises
+    if (exerciseId) {
+      stats.exercises.add(exerciseId);
+    }
   });
 
   return sessions.map((session) => {
@@ -916,10 +927,11 @@ export async function getVolumeByMuscleGroup(
     ];
 
     // Fetch muscle groups for all exercises
-    const { data: exerciseMuscleGroups, error: muscleGroupsError } = await supabase
-      .from("exercise_muscle_groups")
-      .select(
-        `
+    const { data: exerciseMuscleGroups, error: muscleGroupsError } =
+      await supabase
+        .from("exercise_muscle_groups")
+        .select(
+          `
         exercise_id,
         is_primary,
         muscle_groups (
@@ -927,12 +939,15 @@ export async function getVolumeByMuscleGroup(
           name
         )
       `
-      )
-      .in("exercise_id", exerciseIds)
-      .order("is_primary", { ascending: false });
+        )
+        .in("exercise_id", exerciseIds)
+        .order("is_primary", { ascending: false });
 
     if (muscleGroupsError) {
-      console.error("Error fetching exercise muscle groups:", muscleGroupsError);
+      console.error(
+        "Error fetching exercise muscle groups:",
+        muscleGroupsError
+      );
       return [];
     }
 
@@ -953,7 +968,8 @@ export async function getVolumeByMuscleGroup(
 
     exerciseSets?.forEach((set: any) => {
       const muscleGroup =
-        exerciseMuscleGroupMap.get(set.session_exercises.exercise_id) || "Other";
+        exerciseMuscleGroupMap.get(set.session_exercises.exercise_id) ||
+        "Other";
       const weight = set.weight || 0;
       const reps = set.is_unilateral
         ? (set.left_reps || 0) + (set.right_reps || 0)
@@ -1312,10 +1328,7 @@ export async function getMostUsedExercises(
     }
 
     // Count usage by exercise
-    const exerciseUsage = new Map<
-      number,
-      { name: string; count: number }
-    >();
+    const exerciseUsage = new Map<number, { name: string; count: number }>();
 
     exerciseSets?.forEach((set: any) => {
       const exercise = set.session_exercises.exercise_library;
@@ -1344,7 +1357,9 @@ export async function getMostUsedExercises(
             dateRange
           );
           const muscleGroups = muscleGroupMap.get(id) || [];
-          const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+          const primaryMuscleGroup =
+            muscleGroups.find((mg) => mg.is_primary)?.name ||
+            muscleGroups[0]?.name;
 
           return {
             id,
@@ -1358,7 +1373,9 @@ export async function getMostUsedExercises(
         } catch (error) {
           console.error(`Error getting progression for exercise ${id}:`, error);
           const muscleGroups = muscleGroupMap.get(id) || [];
-          const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+          const primaryMuscleGroup =
+            muscleGroups.find((mg) => mg.is_primary)?.name ||
+            muscleGroups[0]?.name;
 
           return {
             id,
@@ -1523,7 +1540,8 @@ export async function getTrackedPRData(
       // Get muscle groups for this exercise
       const { getExerciseMuscleGroups } = await import("./muscleGroupUtils");
       const muscleGroups = await getExerciseMuscleGroups(exerciseId);
-      const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+      const primaryMuscleGroup =
+        muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
 
       // Get all sets for this exercise
       let query = supabase
