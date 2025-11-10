@@ -88,9 +88,11 @@ export default function ExerciseListItem({
               {formatExerciseName(exercise.name)}
             </Text>
             <View className="flex-row items-center gap-2 mt-1">
-              <View className="bg-base-300 px-2 py-1 rounded-full">
-                <Text className="text-xs text-muted">{exercise.category}</Text>
-              </View>
+              {exercise.primaryMuscleGroup && (
+                <View className="bg-base-300 px-2 py-1 rounded-full">
+                  <Text className="text-xs text-muted">{exercise.primaryMuscleGroup}</Text>
+                </View>
+              )}
             </View>
             {hasNotes && (
               <TouchableOpacity

@@ -19,7 +19,7 @@ type WorkoutTemplate = {
   exercises: {
     id: number;
     name: string;
-    category: string;
+    primaryMuscleGroup?: string;
   }[];
 };
 
@@ -71,6 +71,21 @@ export default function TemplatesSection({
         return;
       }
 
+      // Get all exercise IDs from all templates
+      const allExerciseIds = [
+        ...new Set(
+          data
+            ?.flatMap((workout) =>
+              workout.workout_exercises?.map((we: any) => we.exercise_library?.id) || []
+            )
+            .filter((id): id is number => id !== undefined) || []
+        ),
+      ];
+
+      // Fetch muscle groups for all exercises
+      const { getExercisesWithMuscleGroups } = await import("../../lib/muscleGroupUtils");
+      const muscleGroupMap = await getExercisesWithMuscleGroups(allExerciseIds);
+
       const templates =
         data?.map((workout) => ({
           id: workout.id,
@@ -78,8 +93,17 @@ export default function TemplatesSection({
           description: workout.description,
           created_at: workout.created_at,
           exercises:
-            workout.workout_exercises?.map((we: any) => we.exercise_library) ||
-            [],
+            workout.workout_exercises?.map((we: any) => {
+              const exercise = we.exercise_library;
+              if (!exercise) return null;
+              const muscleGroups = muscleGroupMap.get(exercise.id) || [];
+              const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+              return {
+                id: exercise.id,
+                name: exercise.name,
+                primaryMuscleGroup,
+              };
+            }).filter((ex: any) => ex !== null) || [],
         })) || [];
 
       setWorkoutTemplates(templates);

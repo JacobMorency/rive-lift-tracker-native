@@ -1,4 +1,5 @@
 import { supabase } from "./supabaseClient";
+import { MuscleGroup } from "./muscleGroupUtils";
 
 export type Timeframe = "week" | "month" | "year" | "all";
 
@@ -74,7 +75,7 @@ export type ExerciseSet = {
 export type PersonalRecord = {
   exercise_id: number;
   exercise_name: string;
-  category: string;
+  primaryMuscleGroup?: string; // Replaces category
   max_weight: number;
   max_reps: number;
   max_volume: number;
@@ -104,7 +105,8 @@ export type UserStats = {
 export type TrackedPR = {
   exerciseId: number;
   exerciseName: string;
-  category: string;
+  muscleGroups?: MuscleGroup[];
+  primaryMuscleGroup?: string; // Replaces category for display
   maxWeight: number;
   maxWeightReps: number;
   maxWeightDate: string;
@@ -393,7 +395,7 @@ const calculatePersonalRecords = async (
   // Fetch exercise details
   const { data: exercises, error: exercisesError } = await supabase
     .from("exercise_library")
-    .select("id, name, category")
+    .select("id, name")
     .in("id", exerciseIds);
 
   if (exercisesError) {
@@ -401,12 +403,18 @@ const calculatePersonalRecords = async (
     return [];
   }
 
+  // Fetch muscle groups for all exercises
+  const { getExercisesWithMuscleGroups } = await import("./muscleGroupUtils");
+  const muscleGroupMap = await getExercisesWithMuscleGroups(exerciseIds);
+
   // Create exercise lookup map
-  const exerciseMap = new Map<number, { name: string; category: string }>();
+  const exerciseMap = new Map<number, { name: string; primaryMuscleGroup?: string }>();
   exercises?.forEach((exercise) => {
+    const muscleGroups = muscleGroupMap.get(exercise.id) || [];
+    const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
     exerciseMap.set(exercise.id, {
       name: exercise.name,
-      category: exercise.category,
+      primaryMuscleGroup,
     });
   });
 
@@ -414,7 +422,7 @@ const calculatePersonalRecords = async (
     number,
     {
       exercise_name: string;
-      category: string;
+      primaryMuscleGroup?: string;
       max_weight: number;
       max_reps: number;
       max_volume: number;
@@ -433,7 +441,7 @@ const calculatePersonalRecords = async (
     if (!prMap.has(exerciseId)) {
       prMap.set(exerciseId, {
         exercise_name: exerciseInfo.name,
-        category: exerciseInfo.category,
+        primaryMuscleGroup: exerciseInfo.primaryMuscleGroup,
         max_weight: 0,
         max_reps: 0,
         max_volume: 0,
@@ -467,7 +475,13 @@ const calculatePersonalRecords = async (
   return Array.from(prMap.entries())
     .map(([exercise_id, data]) => ({
       exercise_id,
-      ...data,
+      exercise_name: data.exercise_name,
+      primaryMuscleGroup: data.primaryMuscleGroup,
+      max_weight: data.max_weight,
+      max_reps: data.max_reps,
+      max_volume: data.max_volume,
+      date_achieved: data.date_achieved,
+      session_id: data.session_id,
     }))
     .sort((a, b) => b.max_weight - a.max_weight);
 };
@@ -894,34 +908,52 @@ export async function getVolumeByMuscleGroup(
       return [];
     }
 
-    // Get exercise categories
+    // Get exercise muscle groups from junction table
     const exerciseIds = [
       ...new Set(
         exerciseSets?.map((set: any) => set.session_exercises.exercise_id) || []
       ),
     ];
-    const { data: exercises, error: exercisesError } = await supabase
-      .from("exercise_library")
-      .select("id, category")
-      .in("id", exerciseIds);
 
-    if (exercisesError) {
-      console.error("Error fetching exercises:", exercisesError);
+    // Fetch muscle groups for all exercises
+    const { data: exerciseMuscleGroups, error: muscleGroupsError } = await supabase
+      .from("exercise_muscle_groups")
+      .select(
+        `
+        exercise_id,
+        is_primary,
+        muscle_groups (
+          id,
+          name
+        )
+      `
+      )
+      .in("exercise_id", exerciseIds)
+      .order("is_primary", { ascending: false });
+
+    if (muscleGroupsError) {
+      console.error("Error fetching exercise muscle groups:", muscleGroupsError);
       return [];
     }
 
-    // Create exercise to category mapping
-    const exerciseCategoryMap = new Map<number, string>();
-    exercises?.forEach((exercise) => {
-      exerciseCategoryMap.set(exercise.id, exercise.category);
+    // Create exercise to muscle groups mapping
+    // For exercises with multiple muscle groups, we'll use the primary one for volume calculation
+    const exerciseMuscleGroupMap = new Map<number, string>();
+    exerciseMuscleGroups?.forEach((item: any) => {
+      const exerciseId = item.exercise_id;
+      const muscleGroupName = item.muscle_groups?.name;
+      // Only set if not already set (prioritize primary)
+      if (muscleGroupName && !exerciseMuscleGroupMap.has(exerciseId)) {
+        exerciseMuscleGroupMap.set(exerciseId, muscleGroupName);
+      }
     });
 
     // Calculate volume by muscle group
     const muscleGroupVolume = new Map<string, number>();
 
     exerciseSets?.forEach((set: any) => {
-      const category =
-        exerciseCategoryMap.get(set.session_exercises.exercise_id) || "Other";
+      const muscleGroup =
+        exerciseMuscleGroupMap.get(set.session_exercises.exercise_id) || "Other";
       const weight = set.weight || 0;
       const reps = set.is_unilateral
         ? (set.left_reps || 0) + (set.right_reps || 0)
@@ -929,8 +961,8 @@ export async function getVolumeByMuscleGroup(
       const volume = weight * reps;
 
       muscleGroupVolume.set(
-        category,
-        (muscleGroupVolume.get(category) || 0) + volume
+        muscleGroup,
+        (muscleGroupVolume.get(muscleGroup) || 0) + volume
       );
     });
 
@@ -1236,7 +1268,8 @@ export async function getMostUsedExercises(
   Array<{
     id: number;
     name: string;
-    category: string;
+    muscleGroups?: MuscleGroup[];
+    primaryMuscleGroup?: string; // Replaces category
     usageCount: number;
     progressionTrend: "up" | "down" | "stable";
     progressionPercentage: number;
@@ -1254,8 +1287,7 @@ export async function getMostUsedExercises(
           exercise_id,
           exercise_library!inner(
             id,
-            name,
-            category
+            name
           ),
           workout_sessions!inner(
             user_id
@@ -1282,7 +1314,7 @@ export async function getMostUsedExercises(
     // Count usage by exercise
     const exerciseUsage = new Map<
       number,
-      { name: string; category: string; count: number }
+      { name: string; count: number }
     >();
 
     exerciseSets?.forEach((set: any) => {
@@ -1290,13 +1322,17 @@ export async function getMostUsedExercises(
       if (exercise) {
         const current = exerciseUsage.get(exercise.id) || {
           name: exercise.name,
-          category: exercise.category,
           count: 0,
         };
         current.count += 1;
         exerciseUsage.set(exercise.id, current);
       }
     });
+
+    // Get muscle groups for all exercises
+    const exerciseIds = Array.from(exerciseUsage.keys());
+    const { getExercisesWithMuscleGroups } = await import("./muscleGroupUtils");
+    const muscleGroupMap = await getExercisesWithMuscleGroups(exerciseIds);
 
     // Get progression data for each exercise
     const exercisesWithProgression = await Promise.all(
@@ -1307,20 +1343,28 @@ export async function getMostUsedExercises(
             id,
             dateRange
           );
+          const muscleGroups = muscleGroupMap.get(id) || [];
+          const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+
           return {
             id,
             name: data.name,
-            category: data.category,
+            muscleGroups,
+            primaryMuscleGroup,
             usageCount: data.count,
             progressionTrend: progressionData.progression.trend,
             progressionPercentage: progressionData.progression.volumePercentage,
           };
         } catch (error) {
           console.error(`Error getting progression for exercise ${id}:`, error);
+          const muscleGroups = muscleGroupMap.get(id) || [];
+          const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+
           return {
             id,
             name: data.name,
-            category: data.category,
+            muscleGroups,
+            primaryMuscleGroup,
             usageCount: data.count,
             progressionTrend: "stable" as const,
             progressionPercentage: 0,
@@ -1470,11 +1514,16 @@ export async function getTrackedPRData(
       // Get exercise details
       const { data: exercise, error: exerciseError } = await supabase
         .from("exercise_library")
-        .select("name, category")
+        .select("name")
         .eq("id", exerciseId)
         .maybeSingle();
 
       if (exerciseError || !exercise) continue;
+
+      // Get muscle groups for this exercise
+      const { getExerciseMuscleGroups } = await import("./muscleGroupUtils");
+      const muscleGroups = await getExerciseMuscleGroups(exerciseId);
+      const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
 
       // Get all sets for this exercise
       let query = supabase
@@ -1564,7 +1613,8 @@ export async function getTrackedPRData(
       trackedPRs.push({
         exerciseId,
         exerciseName: exercise.name,
-        category: exercise.category,
+        muscleGroups,
+        primaryMuscleGroup,
         maxWeight,
         maxWeightReps,
         maxWeightDate,

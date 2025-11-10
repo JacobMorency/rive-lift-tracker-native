@@ -8,7 +8,7 @@ type QuickInsightsProps = {
   topExercises: Array<{
     id: number;
     name: string;
-    category: string;
+    primaryMuscleGroup?: string;
     usageCount: number;
   }>;
   topMuscleGroup: {

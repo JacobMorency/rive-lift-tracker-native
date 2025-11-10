@@ -12,10 +12,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/authcontext";
 import { getMostUsedExercises } from "../../lib/statsUtils";
 
+import { MuscleGroup } from "../../lib/muscleGroupUtils";
+
 type Exercise = {
   id: number;
   name: string;
-  category: string;
+  muscleGroups?: MuscleGroup[];
+  primaryMuscleGroup?: string; // Replaces category
   usageCount: number;
 };
 
@@ -55,7 +58,7 @@ export default function ExerciseSelectionModal({
       const filtered = availableExercises.filter(
         (exercise) =>
           exercise.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          exercise.category.toLowerCase().includes(searchQuery.toLowerCase())
+          (exercise.primaryMuscleGroup?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
       );
       setFilteredExercises(filtered);
     }
@@ -99,7 +102,7 @@ export default function ExerciseSelectionModal({
     onClose();
   };
 
-  const getCategoryColor = (category: string) => {
+  const getMuscleGroupColor = (muscleGroup: string) => {
     return "#ff4b8c"; // All badges use primary color
   };
 
@@ -165,20 +168,22 @@ export default function ExerciseSelectionModal({
                       <Text className="text-base font-semibold text-base-content">
                         {exercise.name}
                       </Text>
-                      <View
-                        className="px-2 py-1 rounded-full"
-                        style={{
-                          backgroundColor:
-                            getCategoryColor(exercise.category) + "20",
-                        }}
-                      >
-                        <Text
-                          className="text-xs font-medium"
-                          style={{ color: getCategoryColor(exercise.category) }}
+                      {exercise.primaryMuscleGroup && (
+                        <View
+                          className="px-2 py-1 rounded-full"
+                          style={{
+                            backgroundColor:
+                              getMuscleGroupColor(exercise.primaryMuscleGroup) + "20",
+                          }}
                         >
-                          {exercise.category}
-                        </Text>
-                      </View>
+                          <Text
+                            className="text-xs font-medium"
+                            style={{ color: getMuscleGroupColor(exercise.primaryMuscleGroup) }}
+                          >
+                            {exercise.primaryMuscleGroup}
+                          </Text>
+                        </View>
+                      )}
                     </View>
                     <Text className="text-sm text-muted">
                       Used {exercise.usageCount} times

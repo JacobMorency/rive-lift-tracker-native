@@ -49,27 +49,70 @@ const ExerciseSelector = ({
   ): Promise<void> => {
     setLoading(true);
     try {
-      let query = supabase
-        .from("exercise_library")
-        .select("*")
-        .order("name", { ascending: true });
+      // First, get exercise IDs filtered by muscle group if filter is set
+      let exerciseIds: number[] | null = null;
 
-      if (filter === "Arms") {
-        query = query.in("category", ["Biceps", "Triceps", "Shoulders"]);
-      } else if (filter) {
-        query = query.eq("category", filter);
+      if (filter) {
+        const { getExercisesByMuscleGroups } = await import("../lib/muscleGroupUtils");
+        
+        if (filter === "Arms") {
+          // Arms filter includes Biceps, Triceps, and Shoulders
+          exerciseIds = await getExercisesByMuscleGroups(["Biceps", "Triceps", "Shoulders"]);
+        } else {
+          // Single muscle group filter
+          exerciseIds = await getExercisesByMuscleGroups([filter]);
+        }
       }
 
-      const { data, error } = await query
-        .ilike("name", `%${searchTerm}%`)
-        .range(0, 50);
+      // Build query
+      let query = supabase
+        .from("exercise_library")
+        .select("id, name")
+        .order("name", { ascending: true });
+
+      // Apply muscle group filter if set
+      if (exerciseIds && exerciseIds.length > 0) {
+        query = query.in("id", exerciseIds);
+      } else if (exerciseIds && exerciseIds.length === 0) {
+        // No exercises match the filter
+        setExerciseOptions([]);
+        setLoading(false);
+        return;
+      }
+
+      // Apply search term
+      if (searchTerm) {
+        query = query.ilike("name", `%${searchTerm}%`);
+      }
+
+      const { data, error } = await query.range(0, 50);
 
       if (error) {
         console.error("Error fetching exercises:", error.message);
         return;
       }
 
-      setExerciseOptions(data || []);
+      // Fetch muscle groups for the exercises
+      if (data && data.length > 0) {
+        const { getExercisesWithMuscleGroups } = await import("../lib/muscleGroupUtils");
+        const exerciseIds = data.map((ex) => ex.id);
+        const muscleGroupMap = await getExercisesWithMuscleGroups(exerciseIds);
+
+        // Combine exercise data with muscle groups
+        const exercisesWithMuscleGroups = data.map((exercise) => {
+          const muscleGroups = muscleGroupMap.get(exercise.id) || [];
+          const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+          return {
+            ...exercise,
+            muscleGroups,
+            primaryMuscleGroup,
+          };
+        });
+
+        setExerciseOptions(exercisesWithMuscleGroups);
+      } else {
+        setExerciseOptions([]);
+      }
     } catch (err) {
       console.error("Unexpected error:", err);
     } finally {

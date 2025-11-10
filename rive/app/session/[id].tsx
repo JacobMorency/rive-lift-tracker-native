@@ -18,10 +18,13 @@ import ExerciseTracker from "../components/exercisetracker";
 import ExerciseSelector from "../components/exerciseselector";
 import { Exercise as ExerciseSelectorExercise } from "../components/exercise/types";
 
+import { MuscleGroup } from "../lib/muscleGroupUtils";
+
 type Exercise = {
   id: number;
   name: string;
-  category: string;
+  muscleGroups?: MuscleGroup[];
+  primaryMuscleGroup?: string; // Replaces category
   wasInOriginalTemplate: boolean; // New field to track if exercise was in original session
   addedToTemplateAfter?: string; // When it was added to template
   notes?: string | null; // Notes for this exercise in the workout template
@@ -48,7 +51,8 @@ type RawWorkoutExercise = {
 type RawExercise = {
   id: number;
   name: string;
-  category: string;
+  muscleGroups?: MuscleGroup[];
+  primaryMuscleGroup?: string; // Replaces category
 };
 
 type ExerciseProgress = {
@@ -171,7 +175,7 @@ export default function SessionDetailPage() {
           const exerciseIds = workoutExercisesData.map((we) => we.exercise_id);
           const { data: exercisesData, error: exercisesError } = await supabase
             .from("exercise_library")
-            .select("id, name, category")
+            .select("id, name")
             .in("id", exerciseIds);
 
           if (exercisesError) {
@@ -179,9 +183,19 @@ export default function SessionDetailPage() {
             return;
           }
 
+          // Fetch muscle groups for all exercises
+          const { getExercisesWithMuscleGroups } = await import("../lib/muscleGroupUtils");
+          const muscleGroupMap = await getExercisesWithMuscleGroups(exerciseIds);
+
           const exerciseMap = new Map<number, RawExercise>();
           exercisesData?.forEach((exercise) => {
-            exerciseMap.set(exercise.id, exercise);
+            const muscleGroups = muscleGroupMap.get(exercise.id) || [];
+            const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+            exerciseMap.set(exercise.id, {
+              ...exercise,
+              muscleGroups,
+              primaryMuscleGroup,
+            });
           });
 
           const exercises = workoutExercisesData
@@ -192,7 +206,8 @@ export default function SessionDetailPage() {
                 ? {
                     id: exercise.id,
                     name: exercise.name,
-                    category: exercise.category,
+                    muscleGroups: exercise.muscleGroups,
+                    primaryMuscleGroup: exercise.primaryMuscleGroup,
                     wasInOriginalTemplate: true,
                     notes: workoutExercise?.notes || null,
                     workoutExerciseId: workoutExercise?.id,
@@ -286,7 +301,7 @@ export default function SessionDetailPage() {
       // Fifth query: Fetch exercise details for all exercises
       const { data: exercisesData, error: exercisesError } = await supabase
         .from("exercise_library")
-        .select("id, name, category")
+        .select("id, name")
         .in("id", allExerciseIds);
 
       if (exercisesError) {
@@ -294,10 +309,20 @@ export default function SessionDetailPage() {
         return;
       }
 
+      // Fetch muscle groups for all exercises
+      const { getExercisesWithMuscleGroups } = await import("../lib/muscleGroupUtils");
+      const muscleGroupMap = await getExercisesWithMuscleGroups(allExerciseIds);
+
       // Create a map of exercise IDs to exercise details
       const exerciseMap = new Map<number, RawExercise>();
       exercisesData?.forEach((exercise) => {
-        exerciseMap.set(exercise.id, exercise);
+        const muscleGroups = muscleGroupMap.get(exercise.id) || [];
+        const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+        exerciseMap.set(exercise.id, {
+          ...exercise,
+          muscleGroups,
+          primaryMuscleGroup,
+        });
       });
 
       // Merge session and template exercises
@@ -320,7 +345,8 @@ export default function SessionDetailPage() {
           exerciseMapCombined.set(we.exercise_id, {
             id: exercise.id,
             name: exercise.name,
-            category: exercise.category,
+            muscleGroups: exercise.muscleGroups,
+            primaryMuscleGroup: exercise.primaryMuscleGroup,
             wasInOriginalTemplate: true,
             notes: workoutExercise?.notes || null,
             workoutExerciseId: workoutExercise?.id,
@@ -341,7 +367,8 @@ export default function SessionDetailPage() {
               exerciseMapCombined.set(se.exercise_id, {
                 id: exercise.id,
                 name: exercise.name,
-                category: exercise.category,
+                muscleGroups: exercise.muscleGroups,
+                primaryMuscleGroup: exercise.primaryMuscleGroup,
                 wasInOriginalTemplate: !!workoutExercise,
                 notes: workoutExercise?.notes || null,
                 workoutExerciseId: workoutExercise?.id,
@@ -1221,9 +1248,9 @@ export default function SessionDetailPage() {
               const setCount = progress?.sets.length || 0;
               const hasStarted = setCount > 0;
 
-              // Get exercise icon based on category
-              const getExerciseIcon = (category: string): "barbell-outline" => {
-                // Use dumbbell icon for all exercise categories
+              // Get exercise icon (muscle group agnostic)
+              const getExerciseIcon = (): "barbell-outline" => {
+                // Use dumbbell icon for all exercises
                 return "barbell-outline";
               };
 
@@ -1263,7 +1290,7 @@ export default function SessionDetailPage() {
                         }`}
                       >
                         <Ionicons
-                          name={getExerciseIcon(exercise.category)}
+                          name={getExerciseIcon()}
                           size={24}
                           color={
                             isCompleted
@@ -1285,7 +1312,7 @@ export default function SessionDetailPage() {
 
                         <View className="flex-row items-center justify-between">
                           <Text className="text-sm text-muted">
-                            {exercise.category}
+                            {exercise.primaryMuscleGroup || "Exercise"}
                           </Text>
                           {setCount > 0 && (
                             <View className="flex-row items-center">
@@ -1347,7 +1374,7 @@ export default function SessionDetailPage() {
           existingExercises={sessionData?.exercises.map((ex) => ({
             id: ex.id,
             name: ex.name,
-            category: ex.category,
+            primaryMuscleGroup: ex.primaryMuscleGroup,
           }))}
           title="Add Exercises to Session"
           confirmText="Add"

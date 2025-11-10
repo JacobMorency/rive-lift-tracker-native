@@ -182,7 +182,9 @@ const ExerciseTracker = ({
           <Text className="text-lg font-semibold text-base-content">
             {formatExerciseName(exercise.name)}
           </Text>
-          <Text className="text-sm text-muted">{exercise.category}</Text>
+          {exercise.primaryMuscleGroup && (
+            <Text className="text-sm text-muted">{exercise.primaryMuscleGroup}</Text>
+          )}
         </View>
 
         <TouchableOpacity

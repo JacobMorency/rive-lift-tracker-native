@@ -170,7 +170,7 @@ export default function ExerciseSelector({
                   const q = searchQuery.toLowerCase();
                   return (
                     e.name.toLowerCase().includes(q) ||
-                    e.category.toLowerCase().includes(q)
+                    (e.primaryMuscleGroup?.toLowerCase().includes(q) ?? false)
                   );
                 })
                 .sort((a, b) => b.usageCount - a.usageCount)
@@ -192,11 +192,13 @@ export default function ExerciseSelector({
                           {exercise.name}
                         </Text>
                         <View className="flex-row items-center gap-2 mt-1">
-                          <View className="px-2 py-0.5 rounded-full bg-primary/10">
-                            <Text className="text-xs text-primary">
-                              {exercise.category}
-                            </Text>
-                          </View>
+                          {exercise.primaryMuscleGroup && (
+                            <View className="px-2 py-0.5 rounded-full bg-primary/10">
+                              <Text className="text-xs text-primary">
+                                {exercise.primaryMuscleGroup}
+                              </Text>
+                            </View>
+                          )}
                           <Text className="text-xs text-muted">
                             {exercise.usageCount} uses
                           </Text>

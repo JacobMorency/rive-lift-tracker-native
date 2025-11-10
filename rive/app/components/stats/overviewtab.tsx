@@ -32,7 +32,8 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
     Array<{
       id: number;
       name: string;
-      category: string;
+      muscleGroups?: import("../../lib/muscleGroupUtils").MuscleGroup[];
+      primaryMuscleGroup?: string; // Replaces category
       usageCount: number;
       progressionTrend: "up" | "down" | "stable";
       progressionPercentage: number;
@@ -286,12 +287,14 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
                         backgroundColor: "#ff4b8c20",
                       }}
                     >
-                      <Text
-                        className="text-xs font-medium"
-                        style={{ color: "#ff4b8c" }}
-                      >
-                        {exercise.category}
-                      </Text>
+                      {exercise.primaryMuscleGroup && (
+                        <Text
+                          className="text-xs font-medium"
+                          style={{ color: "#ff4b8c" }}
+                        >
+                          {exercise.primaryMuscleGroup}
+                        </Text>
+                      )}
                     </View>
                     {exercise.progressionPercentage !== 0 && (
                       <Text

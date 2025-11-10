@@ -152,7 +152,7 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
     }
   };
 
-  const getCategoryColor = (category: string) => {
+  const getMuscleGroupColor = (muscleGroup: string) => {
     return "#ff4b8c"; // All badges use primary color
   };
 
@@ -218,19 +218,21 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                     <Text className="text-lg font-semibold text-base-content">
                       {pr.exerciseName}
                     </Text>
-                    <View
-                      className="px-2 py-1 rounded-full"
-                      style={{
-                        backgroundColor: getCategoryColor(pr.category) + "20",
-                      }}
-                    >
-                      <Text
-                        className="text-xs font-medium"
-                        style={{ color: getCategoryColor(pr.category) }}
+                    {pr.primaryMuscleGroup && (
+                      <View
+                        className="px-2 py-1 rounded-full"
+                        style={{
+                          backgroundColor: getMuscleGroupColor(pr.primaryMuscleGroup) + "20",
+                        }}
                       >
-                        {pr.category}
-                      </Text>
-                    </View>
+                        <Text
+                          className="text-xs font-medium"
+                          style={{ color: getMuscleGroupColor(pr.primaryMuscleGroup) }}
+                        >
+                          {pr.primaryMuscleGroup}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 </View>
                 <Ionicons

@@ -98,7 +98,7 @@ const WorkoutDetailsModal = ({
       // Fetch exercise details
       const { data: exercisesData, error: exercisesError } = await supabase
         .from("exercise_library")
-        .select("id, name, category")
+        .select("id, name")
         .in("id", exerciseIds);
 
       if (exercisesError) {
@@ -108,10 +108,20 @@ const WorkoutDetailsModal = ({
 
       console.log("Exercises data:", exercisesData);
 
+      // Fetch muscle groups for all exercises
+      const { getExercisesWithMuscleGroups } = await import("../lib/muscleGroupUtils");
+      const muscleGroupMap = await getExercisesWithMuscleGroups(exerciseIds);
+
       // Create a map of exercise IDs to exercise details
       const exerciseMap = new Map();
       exercisesData?.forEach((exercise) => {
-        exerciseMap.set(exercise.id, exercise);
+        const muscleGroups = muscleGroupMap.get(exercise.id) || [];
+        const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+        exerciseMap.set(exercise.id, {
+          ...exercise,
+          muscleGroups,
+          primaryMuscleGroup,
+        });
       });
 
       // Transform the exercises data
@@ -122,7 +132,8 @@ const WorkoutDetailsModal = ({
             ? {
                 id: exercise.id,
                 name: exercise.name,
-                category: exercise.category,
+                muscleGroups: exercise.muscleGroups,
+                primaryMuscleGroup: exercise.primaryMuscleGroup,
                 notes: we.notes || null,
                 workoutExerciseId: we.id,
               }

@@ -32,7 +32,8 @@ export default function ExercisesTab({ dateRange }: ExercisesTabProps) {
     {
       id: number;
       name: string;
-      category: string;
+      muscleGroups?: import("../../lib/muscleGroupUtils").MuscleGroup[];
+      primaryMuscleGroup?: string; // Replaces category
       usageCount: number;
       progressionTrend: "up" | "down" | "stable";
       progressionPercentage: number;

@@ -1,7 +1,10 @@
+import { MuscleGroup } from "../../lib/muscleGroupUtils";
+
 export type Exercise = {
   id: number;
   name: string;
-  category: string;
+  muscleGroups?: MuscleGroup[];
+  primaryMuscleGroup?: string; // For backward compatibility and display
   notes?: string | null;
   workoutExerciseId?: string;
 };
