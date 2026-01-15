@@ -40,11 +40,11 @@ const WorkoutCard = ({
 
   return (
     <TouchableOpacity
-      className="p-4 rounded-lg"
+      className={`p-4 rounded-lg ${isPrimary ? "" : "bg-gray-100 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-700"}`}
       style={{
-        backgroundColor: isPrimary ? "#ff4b8c" : "#333333",
-        borderWidth: isPrimary ? 0 : 1,
-        borderColor: isPrimary ? "transparent" : "#333333",
+        backgroundColor: isPrimary ? "#ff4b8c" : undefined,
+        borderWidth: isPrimary ? 0 : undefined,
+        borderColor: isPrimary ? "transparent" : undefined,
         shadowColor: "#000",
         shadowOffset: {
           width: 0,
@@ -62,16 +62,14 @@ const WorkoutCard = ({
           <Text
             className="text-lg font-semibold"
             style={{
-              color: isPrimary ? "#ffffff" : "#fefbee",
+              color: isPrimary ? "#ffffff" : undefined,
             }}
+            className={isPrimary ? "text-white" : "text-zinc-900 dark:text-white"}
           >
             {title}
           </Text>
           <Text
-            className="text-sm mt-1"
-            style={{
-              color: isPrimary ? "rgba(255, 255, 255, 0.8)" : "#9ca3af",
-            }}
+            className={`text-sm mt-1 ${isPrimary ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`}
           >
             {description}
           </Text>

@@ -26,11 +26,11 @@ export default function RepsInput({
   const isFormVariant = variant === "form";
   const containerClassName = isFormVariant
     ? "rounded-xl flex-row items-center"
-    : "flex-row items-center bg-base-200 rounded-lg";
+    : "flex-row items-center bg-gray-50 dark:bg-zinc-800 rounded-lg";
   const buttonClassName = isFormVariant ? "px-3 py-3" : "px-2 py-2";
   const inputClassName = isFormVariant
-    ? "flex-1 text-center py-3 text-base font-bold text-base-content"
-    : "flex-1 text-center py-2 text-sm font-bold text-base-content";
+    ? "flex-1 text-center py-3 text-base font-bold text-zinc-900 dark:text-white"
+    : "flex-1 text-center py-2 text-sm font-bold text-zinc-900 dark:text-white";
   const iconSize = isFormVariant ? 18 : 14;
 
   if (isUnilateral) {
@@ -43,8 +43,8 @@ export default function RepsInput({
               <Text
                 className={
                   isFormVariant
-                    ? "text-sm font-semibold text-base-content"
-                    : "text-xs text-muted"
+                    ? "text-sm font-semibold text-zinc-900 dark:text-white"
+                    : "text-xs text-gray-500 dark:text-gray-400"
                 }
               >
                 L Reps
@@ -54,8 +54,8 @@ export default function RepsInput({
               className={`${containerClassName} ${
                 isFormVariant
                   ? (leftValue ?? 0) > 0
-                    ? "bg-primary/10 border-2 border-primary"
-                    : "bg-base-300 border-2 border-transparent"
+                    ? "bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10 border-2 border-[#ff4b8c] dark:border-[#ff6fa1]"
+                    : "bg-gray-100 dark:bg-zinc-700 border-2 border-transparent"
                   : ""
               }`}
             >
@@ -131,8 +131,8 @@ export default function RepsInput({
               <Text
                 className={
                   isFormVariant
-                    ? "text-sm font-semibold text-base-content"
-                    : "text-xs text-muted"
+                    ? "text-sm font-semibold text-zinc-900 dark:text-white"
+                    : "text-xs text-gray-500 dark:text-gray-400"
                 }
               >
                 R Reps
@@ -142,8 +142,8 @@ export default function RepsInput({
               className={`${containerClassName} ${
                 isFormVariant
                   ? (rightValue ?? 0) > 0
-                    ? "bg-primary/10 border-2 border-primary"
-                    : "bg-base-300 border-2 border-transparent"
+                    ? "bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10 border-2 border-[#ff4b8c] dark:border-[#ff6fa1]"
+                    : "bg-gray-100 dark:bg-zinc-700 border-2 border-transparent"
                   : ""
               }`}
             >
@@ -225,8 +225,8 @@ export default function RepsInput({
         <Text
           className={
             isFormVariant
-              ? "text-sm font-semibold text-base-content"
-              : "text-xs text-muted"
+              ? "text-sm font-semibold text-zinc-900 dark:text-white"
+              : "text-xs text-gray-500 dark:text-gray-400"
           }
         >
           Reps
@@ -236,8 +236,8 @@ export default function RepsInput({
         className={`${containerClassName} ${
           isFormVariant
             ? value !== null && value > 0
-              ? "bg-primary/10 border-2 border-primary"
-              : "bg-base-300 border-2 border-transparent"
+              ? "bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10 border-2 border-[#ff4b8c] dark:border-[#ff6fa1]"
+              : "bg-gray-100 dark:bg-zinc-700 border-2 border-transparent"
             : ""
         }`}
       >
@@ -267,8 +267,8 @@ export default function RepsInput({
         <TextInput
           className={
             isFormVariant
-              ? "flex-1 text-center py-2 text-lg font-bold text-base-content"
-              : "flex-1 text-center py-2 text-base font-bold text-base-content"
+              ? "flex-1 text-center py-2 text-lg font-bold text-zinc-900 dark:text-white"
+              : "flex-1 text-center py-2 text-base font-bold text-zinc-900 dark:text-white"
           }
           value={value != null ? value.toString() : ""}
           onChangeText={(textValue) => {

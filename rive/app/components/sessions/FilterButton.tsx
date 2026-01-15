@@ -23,7 +23,7 @@ export default function FilterButton({
     <TouchableOpacity
       className={`px-4 py-3 rounded-xl flex-row items-center ${
         flex ? "flex-1 justify-center" : ""
-      } gap-2 ${isSelected ? "bg-primary" : "bg-base-300"}`}
+      } gap-2 ${isSelected ? "bg-primary" : "bg-gray-100 dark:bg-zinc-700"}`}
       onPress={onPress}
       style={{
         shadowColor: isSelected ? "#ff4b8c" : "transparent",
@@ -42,7 +42,7 @@ export default function FilterButton({
       )}
       <Text
         className={`text-sm font-medium ${
-          isSelected ? "text-primary-content" : "text-base-content"
+          isSelected ? "text-white" : "text-zinc-900 dark:text-white"
         }`}
       >
         {label}

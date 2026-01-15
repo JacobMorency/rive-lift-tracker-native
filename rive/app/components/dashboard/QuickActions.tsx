@@ -37,14 +37,14 @@ export default function QuickActions({
 
   return (
     <View className="mb-6">
-      <Text className="text-lg font-semibold text-base-content mb-3">
+      <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">
         Quick Actions
       </Text>
       <View className="gap-3">
         {/* Primary Action - Start Session or Scheduled Workout */}
         {scheduledWorkout ? (
           <TouchableOpacity
-            className="bg-primary rounded-xl p-5"
+            className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-xl p-5"
             onPress={() =>
               onStartSession(scheduledWorkout.schedule.workout_id)
             }
@@ -57,14 +57,14 @@ export default function QuickActions({
             }}
           >
             <View className="flex-row items-center gap-4">
-              <View className="w-12 h-12 bg-primary-content/20 rounded-xl items-center justify-center">
+              <View className="w-12 h-12 bg-white/20 rounded-xl items-center justify-center">
                 <Ionicons name="play-circle" size={24} color="#ffffff" />
               </View>
               <View className="flex-1">
-                <Text className="text-primary-content font-bold text-lg">
+                <Text className="text-white font-bold text-lg">
                   Start {scheduledWorkout.workout_name}
                 </Text>
-                <Text className="text-primary-content/80 text-sm mt-0.5">
+                <Text className="text-white/80 text-sm mt-0.5">
                   {formatDate(scheduledWorkout.scheduledDate)}
                 </Text>
               </View>
@@ -73,7 +73,7 @@ export default function QuickActions({
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            className="bg-primary rounded-xl p-5"
+            className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-xl p-5"
             onPress={() => onStartSession()}
             style={{
               shadowColor: "#ff4b8c",
@@ -84,14 +84,14 @@ export default function QuickActions({
             }}
           >
             <View className="flex-row items-center gap-4">
-              <View className="w-12 h-12 bg-primary-content/20 rounded-xl items-center justify-center">
+              <View className="w-12 h-12 bg-white/20 rounded-xl items-center justify-center">
                 <Ionicons name="play-circle" size={24} color="#ffffff" />
               </View>
               <View className="flex-1">
-                <Text className="text-primary-content font-bold text-lg">
+                <Text className="text-white font-bold text-lg">
                   Start Session
                 </Text>
-                <Text className="text-primary-content/80 text-sm mt-0.5">
+                <Text className="text-white/80 text-sm mt-0.5">
                   Begin a new workout
                 </Text>
               </View>
@@ -103,7 +103,7 @@ export default function QuickActions({
         {/* Secondary Actions Grid */}
         <View className="flex-row gap-3">
           <TouchableOpacity
-            className="flex-1 bg-base-200 rounded-xl p-4"
+            className="flex-1 bg-gray-50 dark:bg-zinc-800 rounded-xl p-4"
             onPress={() => router.push("/schedule")}
             style={{
               shadowColor: "#000",
@@ -114,17 +114,17 @@ export default function QuickActions({
             }}
           >
             <View className="items-center">
-              <View className="w-10 h-10 bg-primary/20 rounded-lg items-center justify-center mb-2">
+              <View className="w-10 h-10 bg-[#ff4b8c]/20 dark:bg-[#ff6fa1]/20 rounded-lg items-center justify-center mb-2">
                 <Ionicons name="calendar-outline" size={20} color="#ff4b8c" />
               </View>
-              <Text className="text-sm font-semibold text-base-content text-center">
+              <Text className="text-sm font-semibold text-zinc-900 dark:text-white text-center">
                 Schedule
               </Text>
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="flex-1 bg-base-200 rounded-xl p-4"
+            className="flex-1 bg-gray-50 dark:bg-zinc-800 rounded-xl p-4"
             onPress={() => router.push("/(tabs)/stats")}
             style={{
               shadowColor: "#000",
@@ -135,17 +135,17 @@ export default function QuickActions({
             }}
           >
             <View className="items-center">
-              <View className="w-10 h-10 bg-primary/20 rounded-lg items-center justify-center mb-2">
+              <View className="w-10 h-10 bg-[#ff4b8c]/20 dark:bg-[#ff6fa1]/20 rounded-lg items-center justify-center mb-2">
                 <Ionicons name="analytics-outline" size={20} color="#ff4b8c" />
               </View>
-              <Text className="text-sm font-semibold text-base-content text-center">
+              <Text className="text-sm font-semibold text-zinc-900 dark:text-white text-center">
                 Stats
               </Text>
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="flex-1 bg-base-200 rounded-xl p-4"
+            className="flex-1 bg-gray-50 dark:bg-zinc-800 rounded-xl p-4"
             onPress={() => router.push("/(tabs)/sessions")}
             style={{
               shadowColor: "#000",
@@ -156,10 +156,10 @@ export default function QuickActions({
             }}
           >
             <View className="items-center">
-              <View className="w-10 h-10 bg-primary/20 rounded-lg items-center justify-center mb-2">
+              <View className="w-10 h-10 bg-[#ff4b8c]/20 dark:bg-[#ff6fa1]/20 rounded-lg items-center justify-center mb-2">
                 <Ionicons name="barbell-outline" size={20} color="#ff4b8c" />
               </View>
-              <Text className="text-sm font-semibold text-base-content text-center">
+              <Text className="text-sm font-semibold text-zinc-900 dark:text-white text-center">
                 Sessions
               </Text>
             </View>

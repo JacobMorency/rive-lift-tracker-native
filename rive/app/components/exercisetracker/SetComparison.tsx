@@ -59,9 +59,9 @@ export default function SetComparison({
       : 0;
 
   return (
-    <View className="bg-base-200 rounded-lg p-2">
+    <View className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2">
       <View className="flex-row items-center justify-between mb-2">
-        <Text className="text-sm font-semibold text-base-content">
+        <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
           Set {setIndex + 1}
         </Text>
         <View className="flex-row items-center gap-1">
@@ -83,15 +83,15 @@ export default function SetComparison({
       <View className="flex-row items-center justify-between">
         {/* Last Session */}
         <View className="flex-1">
-          <Text className="text-xs text-muted mb-1">Last Session</Text>
+          <Text className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Session</Text>
           <View className="flex-row items-center gap-2">
-            <View className="bg-base-300 px-2 py-1 rounded">
-              <Text className="text-sm font-semibold text-base-content">
+            <View className="bg-gray-100 dark:bg-zinc-700 px-2 py-1 rounded">
+              <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
                 {lastWeight} lbs
               </Text>
             </View>
-            <View className="bg-base-300 px-2 py-1 rounded">
-              <Text className="text-sm font-semibold text-base-content">
+            <View className="bg-gray-100 dark:bg-zinc-700 px-2 py-1 rounded">
+              <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
                 {lastReps} reps
               </Text>
             </View>
@@ -100,7 +100,7 @@ export default function SetComparison({
 
         {/* Current Session */}
         <View className="flex-1 items-end">
-          <Text className="text-xs text-muted mb-1">Current</Text>
+          <Text className="text-xs text-gray-500 dark:text-gray-400 mb-1">Current</Text>
           <View className="flex-row items-center gap-2">
             <View
               className={`px-2 py-1 rounded ${
@@ -109,8 +109,8 @@ export default function SetComparison({
                   : weightProgress === "down"
                     ? "bg-error/20"
                     : weightProgress === "neutral"
-                      ? "bg-base-300/50"
-                      : "bg-base-300"
+                      ? "bg-gray-100 dark:bg-zinc-700/50"
+                      : "bg-gray-100 dark:bg-zinc-700"
               }`}
             >
               <View className="flex-row items-center gap-1">
@@ -121,8 +121,8 @@ export default function SetComparison({
                       : weightProgress === "down"
                         ? "text-error"
                         : weightProgress === "neutral"
-                          ? "text-muted"
-                          : "text-base-content"
+                          ? "text-gray-500 dark:text-gray-400"
+                          : "text-zinc-900 dark:text-white"
                   }`}
                 >
                   {currentWeight || "--"} lbs
@@ -134,7 +134,7 @@ export default function SetComparison({
                         ? "text-success"
                         : weightProgress === "down"
                           ? "text-error"
-                          : "text-muted"
+                          : "text-gray-500 dark:text-gray-400"
                     }`}
                   >
                     {weightPercentage > 0 ? "+" : ""}
@@ -150,8 +150,8 @@ export default function SetComparison({
                   : repsProgress === "down"
                     ? "bg-error/20"
                     : repsProgress === "neutral"
-                      ? "bg-base-300/50"
-                      : "bg-base-300"
+                      ? "bg-gray-100 dark:bg-zinc-700/50"
+                      : "bg-gray-100 dark:bg-zinc-700"
               }`}
             >
               <View className="flex-row items-center gap-1">
@@ -162,8 +162,8 @@ export default function SetComparison({
                       : repsProgress === "down"
                         ? "text-error"
                         : repsProgress === "neutral"
-                          ? "text-muted"
-                          : "text-base-content"
+                          ? "text-gray-500 dark:text-gray-400"
+                          : "text-zinc-900 dark:text-white"
                   }`}
                 >
                   {currentReps || "--"} reps
@@ -175,7 +175,7 @@ export default function SetComparison({
                         ? "text-success"
                         : repsProgress === "down"
                           ? "text-error"
-                          : "text-muted"
+                          : "text-gray-500 dark:text-gray-400"
                     }`}
                   >
                     {repsPercentage > 0 ? "+" : ""}

@@ -17,13 +17,13 @@ export default function Header({
 
   return (
     <View
-      className="bg-base-200 px-4 border-b border-base-300"
+      className="bg-gray-50 dark:bg-zinc-800 px-4 border-b border-gray-200 dark:border-zinc-700"
       style={{ paddingTop: insets.top + 16, paddingBottom: 20 }}
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-1">
-          <Text className="text-2xl font-bold text-base-content">{title}</Text>
-          {subtitle && <Text className="text-muted mt-1">{subtitle}</Text>}
+          <Text className="text-2xl font-bold text-zinc-900 dark:text-white">{title}</Text>
+          {subtitle && <Text className="text-gray-500 dark:text-gray-400 mt-1">{subtitle}</Text>}
         </View>
         {rightComponent && <View className="ml-4">{rightComponent}</View>}
       </View>

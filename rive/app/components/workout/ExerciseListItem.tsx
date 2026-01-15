@@ -69,7 +69,7 @@ export default function ExerciseListItem({
   return (
     <>
       <View
-        className="bg-base-200 rounded-xl p-4"
+        className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
@@ -79,18 +79,18 @@ export default function ExerciseListItem({
         }}
       >
         <View className="flex-row items-center gap-4">
-          <View className="w-10 h-10 bg-primary/20 rounded-xl items-center justify-center">
+          <View className="w-10 h-10 bg-[#ff4b8c]/20 dark:bg-[#ff6fa1]/20 rounded-xl items-center justify-center">
             <Ionicons name="barbell-outline" size={20} color="#ff4b8c" />
           </View>
 
           <View className="flex-1">
-            <Text className="text-lg font-semibold text-base-content">
+            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
               {formatExerciseName(exercise.name)}
             </Text>
             <View className="flex-row items-center gap-2 mt-1">
               {exercise.primaryMuscleGroup && (
-                <View className="bg-base-300 px-2 py-1 rounded-full">
-                  <Text className="text-xs text-muted">{exercise.primaryMuscleGroup}</Text>
+                <View className="bg-gray-100 dark:bg-zinc-700 px-2 py-1 rounded-full">
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">{exercise.primaryMuscleGroup}</Text>
                 </View>
               )}
             </View>
@@ -105,7 +105,7 @@ export default function ExerciseListItem({
                   size={14}
                   color="#ff4b8c"
                 />
-                <Text className="text-xs text-muted flex-1" numberOfLines={1}>
+                <Text className="text-xs text-gray-500 dark:text-gray-400 flex-1" numberOfLines={1}>
                   {exercise.notes}
                 </Text>
               </TouchableOpacity>
@@ -117,7 +117,7 @@ export default function ExerciseListItem({
                 activeOpacity={0.7}
               >
                 <Ionicons name="add-circle-outline" size={14} color="#6b7280" />
-                <Text className="text-xs text-muted">Add notes</Text>
+                <Text className="text-xs text-gray-500 dark:text-gray-400">Add notes</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -137,10 +137,10 @@ export default function ExerciseListItem({
         presentationStyle="pageSheet"
         onRequestClose={() => setIsModalOpen(false)}
       >
-        <View className="flex-1 bg-base-100" style={{ paddingTop: insets.top }}>
+        <View className="flex-1 bg-white dark:bg-zinc-900" style={{ paddingTop: insets.top }}>
           {/* Header */}
-          <View className="flex-row items-center justify-between p-4 border-b border-base-300">
-            <Text className="text-lg font-semibold text-base-content">
+          <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-700">
+            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
               Notes - {formatExerciseName(exercise.name)}
             </Text>
             <TouchableOpacity
@@ -155,7 +155,7 @@ export default function ExerciseListItem({
             {isEditing ? (
               <View className="gap-4">
                 <TextInput
-                  className="bg-base-200 rounded-lg p-3 text-base-content"
+                  className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 text-zinc-900 dark:text-white"
                   placeholder={`Add notes for ${formatExerciseName(exercise.name)}...`}
                   placeholderTextColor="#9ca3af"
                   value={editedNotes}
@@ -170,9 +170,9 @@ export default function ExerciseListItem({
                 <View className="flex-row items-center justify-end gap-2">
                   <TouchableOpacity
                     onPress={handleCancel}
-                    className="px-4 py-2 rounded-lg bg-base-200"
+                    className="px-4 py-2 rounded-lg bg-gray-50 dark:bg-zinc-800"
                   >
-                    <Text className="text-sm font-medium text-base-content">
+                    <Text className="text-sm font-medium text-zinc-900 dark:text-white">
                       Cancel
                     </Text>
                   </TouchableOpacity>
@@ -180,7 +180,7 @@ export default function ExerciseListItem({
                     onPress={handleSave}
                     className="px-4 py-2 rounded-lg bg-primary"
                   >
-                    <Text className="text-sm font-medium text-primary-content">
+                    <Text className="text-sm font-medium text-white">
                       Save
                     </Text>
                   </TouchableOpacity>
@@ -190,12 +190,12 @@ export default function ExerciseListItem({
               <View className="gap-4">
                 {hasNotes ? (
                   <>
-                    <Text className="text-base text-base-content leading-6">
+                    <Text className="text-base text-zinc-900 dark:text-white leading-6">
                       {exercise.notes}
                     </Text>
                     <TouchableOpacity
                       onPress={handleEdit}
-                      className="flex-row items-center gap-2 py-3 rounded-lg bg-base-200"
+                      className="flex-row items-center gap-2 py-3 rounded-lg bg-gray-50 dark:bg-zinc-800"
                     >
                       <Ionicons
                         name="pencil-outline"
@@ -207,7 +207,7 @@ export default function ExerciseListItem({
                   </>
                 ) : (
                   <>
-                    <Text className="text-sm text-muted text-center">
+                    <Text className="text-sm text-gray-500 dark:text-gray-400 text-center">
                       No notes yet. Add notes to remember setup details, form
                       cues, or other reminders for this exercise.
                     </Text>
@@ -220,7 +220,7 @@ export default function ExerciseListItem({
                         size={18}
                         color="#ffffff"
                       />
-                      <Text className="text-primary-content font-medium">
+                      <Text className="text-white font-medium">
                         Add Notes
                       </Text>
                     </TouchableOpacity>

@@ -42,7 +42,7 @@ export default function ProgressComparisonPanel({
 
   return (
     <View
-      className="bg-base-300 rounded-xl p-4 mb-4"
+      className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-4 mb-4"
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -57,12 +57,12 @@ export default function ProgressComparisonPanel({
       <View className="flex-row items-center justify-between mb-3">
         <View className="flex-row items-center">
           <Ionicons name="trending-up" size={16} color="#10b981" />
-          <Text className="text-sm font-semibold text-base-content ml-2">
+          <Text className="text-sm font-semibold text-zinc-900 dark:text-white ml-2">
             Compare to Last Session
           </Text>
         </View>
         {lastSessionSets.length > 0 && lastSessionSets[0].created_at && (
-          <Text className="text-xs text-muted">
+          <Text className="text-xs text-gray-500 dark:text-gray-400">
             {new Date(lastSessionSets[0].created_at).toLocaleDateString()}
           </Text>
         )}
@@ -120,7 +120,7 @@ export default function ProgressComparisonPanel({
           {hasMoreSets && (
             <TouchableOpacity
               onPress={() => setShowAllSets(!showAllSets)}
-              className="flex-row items-center justify-center gap-1 py-2 rounded-lg bg-base-200"
+              className="flex-row items-center justify-center gap-1 py-2 rounded-lg bg-gray-50 dark:bg-zinc-800"
             >
               <Ionicons
                 name={showAllSets ? "remove-circle-outline" : "add-circle-outline"}
@@ -137,7 +137,7 @@ export default function ProgressComparisonPanel({
           {sets.length > 0 && (
             <View>
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm font-medium text-muted">
+                <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Overall Progress
                 </Text>
                 <View className="flex-row items-center gap-2">
@@ -178,7 +178,7 @@ export default function ProgressComparisonPanel({
                     return (
                       <>
                         <View className="flex-row items-center gap-1">
-                          <Text className="text-xs text-muted">Volume:</Text>
+                          <Text className="text-xs text-gray-500 dark:text-gray-400">Volume:</Text>
                           <Text
                             className={`text-sm font-semibold ${
                               volumeProgress === "up"
@@ -186,8 +186,8 @@ export default function ProgressComparisonPanel({
                                 : volumeProgress === "down"
                                   ? "text-error"
                                   : volumeProgress === "neutral"
-                                    ? "text-muted"
-                                    : "text-base-content"
+                                    ? "text-gray-500 dark:text-gray-400"
+                                    : "text-zinc-900 dark:text-white"
                             }`}
                           >
                             {totalCurrentVolume.toLocaleString()} lbs

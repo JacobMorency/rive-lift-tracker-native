@@ -137,7 +137,7 @@ export default function UpcomingWorkouts() {
   return (
     <>
       <View
-        className="bg-base-300 rounded-xl p-4 mx-4 mb-2"
+        className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-4 mx-4 mb-2"
         style={{
           shadowColor: "#000",
           shadowOffset: {
@@ -159,17 +159,17 @@ export default function UpcomingWorkouts() {
           >
             <Ionicons name="calendar" size={16} color="#ff4b8c" />
             <View className="ml-2">
-              <Text className="text-sm font-semibold text-base-content">
+              <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
                 Upcoming Workouts
               </Text>
               {upcomingWorkouts.length > 0 && (
-                <Text className="text-xs text-muted">
+                <Text className="text-xs text-gray-500 dark:text-gray-400">
                   {upcomingWorkouts.length} workout
                   {upcomingWorkouts.length !== 1 ? "s" : ""} scheduled
                 </Text>
               )}
               {upcomingWorkouts.length === 0 && !loading && (
-                <Text className="text-xs text-muted">
+                <Text className="text-xs text-gray-500 dark:text-gray-400">
                   No workouts scheduled
                 </Text>
               )}
@@ -178,10 +178,10 @@ export default function UpcomingWorkouts() {
           <View className="flex-row items-center gap-2">
             <TouchableOpacity
               onPress={() => setIsScheduleModalOpen(true)}
-              className="px-3 py-1.5 bg-primary rounded-lg flex-row items-center gap-1"
+              className="px-3 py-1.5 bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-lg flex-row items-center gap-1"
             >
               <Ionicons name="add" size={14} color="#ffffff" />
-              <Text className="text-xs font-medium text-primary-content">
+              <Text className="text-xs font-medium text-white">
                 Schedule
               </Text>
             </TouchableOpacity>
@@ -204,19 +204,19 @@ export default function UpcomingWorkouts() {
           <View className="mt-3">
             {loading ? (
               <View className="py-4 items-center">
-                <Text className="text-xs text-muted">Loading...</Text>
+                <Text className="text-xs text-gray-500 dark:text-gray-400">Loading...</Text>
               </View>
             ) : upcomingWorkouts.length === 0 ? (
               <View className="py-4 items-center">
                 <Ionicons name="calendar-outline" size={24} color="#9ca3af" />
-                <Text className="text-sm text-muted text-center mt-2">
+                <Text className="text-sm text-gray-500 dark:text-gray-400 text-center mt-2">
                   No workouts scheduled for the next 7 days
                 </Text>
                 <TouchableOpacity
                   onPress={() => setIsScheduleModalOpen(true)}
-                  className="mt-3 px-4 py-2 bg-primary rounded-lg"
+                  className="mt-3 px-4 py-2 bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-lg"
                 >
-                  <Text className="text-sm font-medium text-primary-content">
+                  <Text className="text-sm font-medium text-white">
                     Schedule Your First Workout
                   </Text>
                 </TouchableOpacity>
@@ -229,33 +229,33 @@ export default function UpcomingWorkouts() {
                 <View className="gap-3">
                   {sortedDates.map((date) => (
                     <View key={date} className="gap-2">
-                      <Text className="text-xs font-semibold text-muted uppercase">
+                      <Text className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
                         {formatDate(date)}
                       </Text>
                       {groupedWorkouts[date].map((workout) => (
                         <View
                           key={`${workout.schedule.id}-${date}`}
-                          className="bg-base-200 rounded-lg p-3 flex-row items-center justify-between"
+                          className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 flex-row items-center justify-between"
                         >
                           <View className="flex-1">
-                            <Text className="text-sm font-semibold text-base-content">
+                            <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
                               {workout.workout_name}
                             </Text>
                             {workout.workout_description && (
-                              <Text className="text-xs text-muted mt-0.5">
+                              <Text className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                 {workout.workout_description}
                               </Text>
                             )}
                           </View>
                           <View className="flex-row items-center gap-2">
                             <TouchableOpacity
-                              className="bg-primary rounded-lg px-3 py-1.5 flex-row items-center gap-1"
+                              className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-lg px-3 py-1.5 flex-row items-center gap-1"
                               onPress={() =>
                                 handleStartSession(workout.schedule.workout_id)
                               }
                             >
                               <Ionicons name="play" size={14} color="#ffffff" />
-                              <Text className="text-xs font-medium text-primary-content">
+                              <Text className="text-xs font-medium text-white">
                                 Start
                               </Text>
                             </TouchableOpacity>

@@ -82,8 +82,8 @@ export default function CompleteProfilePage() {
 
   if (!user) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <Text className="text-muted">Loading...</Text>
+      <View className="flex-1 justify-center items-center bg-white dark:bg-zinc-900">
+        <Text className="text-gray-500 dark:text-gray-400">Loading...</Text>
       </View>
     );
   }
@@ -91,32 +91,33 @@ export default function CompleteProfilePage() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 justify-center items-center p-4 bg-base-200"
+      className="flex-1 justify-center items-center p-4 bg-gray-50 dark:bg-zinc-800"
     >
       <View className="w-full max-w-md">
-        <View className="bg-base-100 rounded-lg shadow-lg p-6 gap-6">
+        <View className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6 gap-6">
           <View className="text-center">
-            <View className="bg-primary rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-4">
+            <View className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-4">
               <Ionicons name="person" size={32} color="#ffffff" />
             </View>
-            <Text className="text-2xl font-bold text-base-content">
+            <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
               Complete Your Profile
             </Text>
-            <Text className="text-base-content/60 mt-2">
+            <Text className="text-zinc-900/60 dark:text-white/60 mt-2">
               Welcome! Please complete your profile to get started.
             </Text>
           </View>
 
           <View className="gap-4">
             <View>
-              <Text className="text-sm font-medium text-base-content mb-1">
+              <Text className="text-sm font-medium text-zinc-900 dark:text-white mb-1">
                 First Name
               </Text>
               <TextInput
-                className={`border rounded-lg px-3 py-2 text-base-content bg-base-200 ${
-                  errors.firstName ? "border-error" : "border-base-300"
+                className={`border rounded-lg px-3 py-2 text-zinc-900 dark:text-white bg-gray-50 dark:bg-zinc-800 ${
+                  errors.firstName ? "border-error" : "border-gray-200 dark:border-zinc-700"
                 }`}
                 placeholder="Enter your first name"
+                placeholderTextColor="#9ca3af"
                 value={firstName}
                 onChangeText={(text) => {
                   setFirstName(text);
@@ -134,14 +135,15 @@ export default function CompleteProfilePage() {
             </View>
 
             <View>
-              <Text className="text-sm font-medium text-base-content mb-1">
+              <Text className="text-sm font-medium text-zinc-900 dark:text-white mb-1">
                 Last Name
               </Text>
               <TextInput
-                className={`border rounded-lg px-3 py-2 text-base-content bg-base-200 ${
-                  errors.lastName ? "border-error" : "border-base-300"
+                className={`border rounded-lg px-3 py-2 text-zinc-900 dark:text-white bg-gray-50 dark:bg-zinc-800 ${
+                  errors.lastName ? "border-error" : "border-gray-200 dark:border-zinc-700"
                 }`}
                 placeholder="Enter your last name"
+                placeholderTextColor="#9ca3af"
                 value={lastName}
                 onChangeText={(text) => {
                   setLastName(text);
@@ -159,19 +161,19 @@ export default function CompleteProfilePage() {
 
             <TouchableOpacity
               className={`w-full py-3 my-2 rounded-lg flex-row items-center justify-center ${
-                loading ? "bg-base-300" : "bg-primary"
+                loading ? "bg-gray-100 dark:bg-zinc-700" : "bg-[#ff4b8c] dark:bg-[#ff6fa1]"
               }`}
               onPress={handleSubmit}
               disabled={loading}
             >
               {loading ? (
-                <Text className="text-muted text-center font-medium">
+                <Text className="text-gray-500 dark:text-gray-400 text-center font-medium">
                   Creating Profile...
                 </Text>
               ) : (
                 <>
                   <Ionicons name="checkmark" size={16} color="#ffffff" />
-                  <Text className="text-primary-content text-center font-medium ml-2">
+                  <Text className="text-white text-center font-medium ml-2">
                     Complete Profile
                   </Text>
                 </>
@@ -188,7 +190,7 @@ export default function CompleteProfilePage() {
                 <Text className="font-medium text-info mb-1">
                   Profile Information
                 </Text>
-                <Text className="text-sm text-base-content/70">
+                <Text className="text-sm text-zinc-900/70 dark:text-white/70">
                   This information will be used to personalize your experience
                   and help you track your fitness journey.
                 </Text>

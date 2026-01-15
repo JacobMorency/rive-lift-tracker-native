@@ -135,32 +135,32 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
       {/* Summary Cards - 2x2 Grid */}
       <View className="gap-4 mb-6">
         <View className="flex-row gap-4">
-          <View className="flex-1 bg-base-300 rounded-lg p-4">
+          <View className="flex-1 bg-gray-100 dark:bg-zinc-700 rounded-lg p-4">
             <View className="flex-row items-center gap-2 mb-2">
               <Ionicons name="calendar" size={16} color="#ff4b8c" />
-              <Text className="text-sm font-medium text-muted">
+              <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Total Sessions
               </Text>
             </View>
             {loading ? (
               <ActivityIndicator size="small" color="#ff4b8c" />
             ) : (
-              <Text className="text-2xl font-bold text-base-content">
+              <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
                 {userStats?.total_sessions || 0}
               </Text>
             )}
           </View>
-          <View className="flex-1 bg-base-300 rounded-lg p-4">
+          <View className="flex-1 bg-gray-100 dark:bg-zinc-700 rounded-lg p-4">
             <View className="flex-row items-center gap-2 mb-2">
               <Ionicons name="barbell" size={16} color="#10b981" />
-              <Text className="text-sm font-medium text-muted">
+              <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Total Volume
               </Text>
             </View>
             {loading ? (
               <ActivityIndicator size="small" color="#10b981" />
             ) : (
-              <Text className="text-2xl font-bold text-base-content">
+              <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
                 {formatVolume(userStats?.total_volume || 0)}
               </Text>
             )}
@@ -168,32 +168,32 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
         </View>
 
         <View className="flex-row gap-4">
-          <View className="flex-1 bg-base-300 rounded-lg p-4">
+          <View className="flex-1 bg-gray-100 dark:bg-zinc-700 rounded-lg p-4">
             <View className="flex-row items-center gap-2 mb-2">
               <Ionicons name="flame" size={16} color="#f59e0b" />
-              <Text className="text-sm font-medium text-muted">
+              <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Workout Streak
               </Text>
             </View>
             {loading ? (
               <ActivityIndicator size="small" color="#f59e0b" />
             ) : (
-              <Text className="text-2xl font-bold text-base-content">
+              <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
                 {userStats?.workout_streak || 0} days
               </Text>
             )}
           </View>
-          <View className="flex-1 bg-base-300 rounded-lg p-4">
+          <View className="flex-1 bg-gray-100 dark:bg-zinc-700 rounded-lg p-4">
             <View className="flex-row items-center gap-2 mb-2">
               <Ionicons name="checkmark-circle" size={16} color="#3b82f6" />
-              <Text className="text-sm font-medium text-muted">
+              <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Active Days (Month)
               </Text>
             </View>
             {loading ? (
               <ActivityIndicator size="small" color="#3b82f6" />
             ) : (
-              <Text className="text-2xl font-bold text-base-content">
+              <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
                 {userStats?.active_days_this_month || 0}
               </Text>
             )}
@@ -203,10 +203,10 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
 
       {/* Volume by Muscle Group */}
       {muscleGroupVolumes.length > 0 && (
-        <View className="mb-6 bg-base-300 rounded-xl p-6">
+        <View className="mb-6 bg-gray-100 dark:bg-zinc-700 rounded-xl p-6">
           <View className="flex-row items-center gap-2 mb-4">
             <Ionicons name="body" size={20} color="#ff4b8c" />
-            <Text className="text-lg font-semibold text-base-content">
+            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
               Volume by Muscle Group
             </Text>
           </View>
@@ -214,20 +214,20 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
             {muscleGroupVolumes.map((group) => (
               <View key={group.muscleGroup} className="gap-2">
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-base font-semibold text-base-content">
+                  <Text className="text-base font-semibold text-zinc-900 dark:text-white">
                     {group.muscleGroup}
                   </Text>
                   <View className="flex-row items-center gap-2">
-                    <Text className="text-sm text-muted">
+                    <Text className="text-sm text-gray-500 dark:text-gray-400">
                       {formatVolume(group.totalVolume)}
                     </Text>
-                    <Text className="text-sm font-medium text-primary">
+                    <Text className="text-sm font-medium text-[#ff4b8c] dark:text-[#ff6fa1]">
                       {group.percentage}%
                     </Text>
                   </View>
                 </View>
                 {/* Progress Bar */}
-                <View className="h-2 bg-base-200 rounded-full overflow-hidden">
+                <View className="h-2 bg-gray-50 dark:bg-zinc-800 rounded-full overflow-hidden">
                   <View
                     className="h-full rounded-full"
                     style={{
@@ -244,10 +244,10 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
 
       {/* Most Used Exercises */}
       {mostUsedExercises.length > 0 && (
-        <View className="mb-6 bg-base-300 rounded-xl p-6">
+        <View className="mb-6 bg-gray-100 dark:bg-zinc-700 rounded-xl p-6">
           <View className="flex-row items-center gap-2 mb-4">
             <Ionicons name="list" size={20} color="#ff4b8c" />
-            <Text className="text-lg font-semibold text-base-content">
+            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
               Most Used Exercises
             </Text>
           </View>
@@ -255,16 +255,16 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
             {mostUsedExercises.map((exercise, index) => (
               <View
                 key={exercise.id}
-                className="flex-row items-center gap-3 bg-base-200 rounded-lg p-3"
+                className="flex-row items-center gap-3 bg-gray-50 dark:bg-zinc-800 rounded-lg p-3"
               >
-                <View className="w-8 h-8 bg-primary rounded-full items-center justify-center">
-                  <Text className="text-xs font-bold text-primary-content">
+                <View className="w-8 h-8 bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-full items-center justify-center">
+                  <Text className="text-xs font-bold text-[#ff4b8c] dark:text-[#ff6fa1]-content">
                     {index + 1}
                   </Text>
                 </View>
                 <View className="flex-1">
                   <View className="flex-row items-center justify-between mb-1">
-                    <Text className="text-base font-semibold text-base-content flex-1">
+                    <Text className="text-base font-semibold text-zinc-900 dark:text-white flex-1">
                       {exercise.name}
                     </Text>
                     <View className="flex-row items-center gap-2">
@@ -275,7 +275,7 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
                           color={getProgressionColor(exercise.progressionTrend)}
                         />
                       )}
-                      <Text className="text-sm text-muted">
+                      <Text className="text-sm text-gray-500 dark:text-gray-400">
                         {exercise.usageCount} uses
                       </Text>
                     </View>
@@ -317,11 +317,11 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
 
       {/* Recent Activity */}
       {userStats?.recent_sessions && userStats.recent_sessions.length > 0 && (
-        <View className="mb-6 bg-base-300 rounded-xl p-6">
+        <View className="mb-6 bg-gray-100 dark:bg-zinc-700 rounded-xl p-6">
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center gap-2">
               <Ionicons name="time" size={20} color="#ff4b8c" />
-              <Text className="text-lg font-semibold text-base-content">
+              <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
                 Recent Activity
               </Text>
             </View>
@@ -329,7 +329,7 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
               onPress={() => router.push("/(tabs)/sessions")}
               className="flex-row items-center gap-1"
             >
-              <Text className="text-sm text-primary font-medium">View All</Text>
+              <Text className="text-sm text-[#ff4b8c] dark:text-[#ff6fa1] font-medium">View All</Text>
               <Ionicons name="chevron-forward" size={16} color="#ff4b8c" />
             </TouchableOpacity>
           </View>
@@ -338,21 +338,21 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
               <TouchableOpacity
                 key={session.id}
                 onPress={() => router.push(`/session/${session.id}`)}
-                className="bg-base-200 rounded-lg p-3"
+                className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3"
               >
                 <View className="flex-row items-center justify-between">
                   <View className="flex-1">
-                    <Text className="text-base font-semibold text-base-content">
+                    <Text className="text-base font-semibold text-zinc-900 dark:text-white">
                       {session.workout_name}
                     </Text>
                     <View className="flex-row items-center gap-3 mt-1">
-                      <Text className="text-xs text-muted">
+                      <Text className="text-xs text-gray-500 dark:text-gray-400">
                         {formatDate(session.started_at)}
                       </Text>
-                      <Text className="text-xs text-muted">
+                      <Text className="text-xs text-gray-500 dark:text-gray-400">
                         {session.exercises_completed} exercises
                       </Text>
-                      <Text className="text-xs text-muted">
+                      <Text className="text-xs text-gray-500 dark:text-gray-400">
                         {formatVolume(session.total_volume)}
                       </Text>
                     </View>
@@ -369,13 +369,13 @@ export default function OverviewTab({ dateRange }: OverviewTabProps) {
       {!loading && (!userStats || userStats.total_sessions === 0) && (
         <View className="flex-1 justify-center items-center py-12">
           <View className="items-center">
-            <View className="w-20 h-20 bg-base-300 rounded-full items-center justify-center mb-4">
+            <View className="w-20 h-20 bg-gray-100 dark:bg-zinc-700 rounded-full items-center justify-center mb-4">
               <Ionicons name="barbell-outline" size={40} color="#9ca3af" />
             </View>
-            <Text className="text-xl font-bold text-base-content mb-2">
+            <Text className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
               No Workouts Yet
             </Text>
-            <Text className="text-center text-muted max-w-xs">
+            <Text className="text-center text-gray-500 dark:text-gray-400 max-w-xs">
               Start tracking your workouts to see your progress and personal
               records here.
             </Text>

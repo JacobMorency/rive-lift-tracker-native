@@ -329,17 +329,17 @@ export default function ScheduleWorkoutModal({
 
   return (
     <Modal visible={isOpen} animationType="slide" presentationStyle="pageSheet">
-      <View className="flex-1 bg-base-100" style={{ paddingTop: insets.top }}>
+      <View className="flex-1 bg-white dark:bg-zinc-900" style={{ paddingTop: insets.top }}>
         {/* Header */}
-        <View className="flex-row items-center justify-between p-4 border-b border-base-300">
+        <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-700">
           <TouchableOpacity onPress={handleClose}>
-            <Text className="text-primary font-medium">Cancel</Text>
+            <Text className="text-[#ff4b8c] dark:text-[#ff6fa1] font-medium">Cancel</Text>
           </TouchableOpacity>
-          <Text className="text-lg font-semibold text-base-content">
+          <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
             {editingSchedule ? "Edit Schedule" : "Schedule Workout"}
           </Text>
           <TouchableOpacity onPress={handleSave} disabled={loading}>
-            <Text className="text-primary font-medium">Save</Text>
+            <Text className="text-[#ff4b8c] dark:text-[#ff6fa1] font-medium">Save</Text>
           </TouchableOpacity>
         </View>
 

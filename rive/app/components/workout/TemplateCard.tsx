@@ -25,7 +25,7 @@ export default function TemplateCard({
 }: TemplateCardProps) {
   return (
     <View
-      className="bg-base-300 rounded-lg p-4"
+      className="bg-gray-100 dark:bg-zinc-700 rounded-lg p-4"
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -40,15 +40,15 @@ export default function TemplateCard({
       <TouchableOpacity onPress={onPress} className="flex-1">
         <View className="flex-row items-center justify-between">
           <View className="flex-1">
-            <Text className="text-lg font-medium text-base-content">
+            <Text className="text-lg font-medium text-zinc-900 dark:text-white">
               {workout.name}
             </Text>
             {workout.description && (
-              <Text className="text-sm text-muted mt-1">
+              <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {workout.description}
               </Text>
             )}
-            <Text className="text-xs text-muted mt-1">
+            <Text className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {workout.exercise_count} exercises
             </Text>
           </View>

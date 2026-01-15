@@ -22,11 +22,11 @@ export default function WeightInput({
   const isFormVariant = variant === "form";
   const containerClassName = isFormVariant
     ? "rounded-xl flex-row items-center"
-    : "flex-row items-center bg-base-200 rounded-lg";
+    : "flex-row items-center bg-gray-50 dark:bg-zinc-800 rounded-lg";
   const buttonClassName = isFormVariant ? "px-3 py-2" : "px-3 py-2";
   const inputClassName = isFormVariant
-    ? "flex-1 text-center py-2 text-lg font-bold text-base-content"
-    : "flex-1 text-center py-2 text-base font-bold text-base-content";
+    ? "flex-1 text-center py-2 text-lg font-bold text-zinc-900 dark:text-white"
+    : "flex-1 text-center py-2 text-base font-bold text-zinc-900 dark:text-white";
   const iconSize = isFormVariant ? 18 : 16;
 
   const displayValue =
@@ -100,8 +100,8 @@ export default function WeightInput({
         <Text
           className={
             isFormVariant
-              ? "text-sm font-semibold text-base-content"
-              : "text-xs text-muted"
+              ? "text-sm font-semibold text-zinc-900 dark:text-white"
+              : "text-xs text-gray-500 dark:text-gray-400"
           }
         >
           Weight (lbs)
@@ -111,8 +111,8 @@ export default function WeightInput({
         className={`${containerClassName} ${
           isFormVariant
             ? value !== null
-              ? "bg-primary/10 border-2 border-primary"
-              : "bg-base-300 border-2 border-transparent"
+              ? "bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10 border-2 border-[#ff4b8c] dark:border-[#ff6fa1]"
+              : "bg-gray-100 dark:bg-zinc-700 border-2 border-transparent"
             : ""
         }`}
       >

@@ -15,7 +15,7 @@ export default function WorkoutSelector({
 }: WorkoutSelectorProps) {
   return (
     <View className="mb-6">
-      <Text className="text-base-content font-medium mb-2">
+      <Text className="text-zinc-900 dark:text-white font-medium mb-2">
         Select Workout Template
       </Text>
       {templates.map((template) => (
@@ -23,14 +23,14 @@ export default function WorkoutSelector({
           key={template.id}
           className={`p-3 rounded-lg border mb-2 ${
             selectedWorkoutId === template.id
-              ? "bg-primary/10 border-primary"
-              : "bg-base-200 border-base-300"
+              ? "bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10 border-primary"
+              : "bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700"
           }`}
           onPress={() => onSelectWorkout(template.id)}
         >
-          <Text className="text-base-content font-medium">{template.name}</Text>
+          <Text className="text-zinc-900 dark:text-white font-medium">{template.name}</Text>
           {template.description && (
-            <Text className="text-muted text-sm mt-1">
+            <Text className="text-gray-500 dark:text-gray-400 text-sm mt-1">
               {template.description}
             </Text>
           )}

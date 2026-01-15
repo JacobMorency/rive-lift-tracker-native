@@ -33,13 +33,13 @@ export default function WorkoutHeader({
 
   return (
     <View
-      className="bg-base-200 px-4 py-4 border-b border-base-300"
+      className="bg-gray-50 dark:bg-zinc-800 px-4 py-4 border-b border-gray-200 dark:border-zinc-700"
       style={{ paddingTop: insets.top + 16 }}
     >
       <View className="flex-row items-center justify-between mb-3">
         <TouchableOpacity
           onPress={onClose}
-          className="w-10 h-10 items-center justify-center rounded-full bg-base-300"
+          className="w-10 h-10 items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-700"
         >
           <Ionicons name="close" size={20} color="#6b7280" />
         </TouchableOpacity>
@@ -48,7 +48,7 @@ export default function WorkoutHeader({
           {isEditingName ? (
             <View className="flex-row items-center gap-2">
               <TextInput
-                className="text-xl font-bold text-base-content bg-base-300 px-3 py-1 rounded-lg"
+                className="text-xl font-bold text-zinc-900 dark:text-white bg-gray-100 dark:bg-zinc-700 px-3 py-1 rounded-lg"
                 value={editingName}
                 onChangeText={setEditingName}
                 autoFocus
@@ -71,7 +71,7 @@ export default function WorkoutHeader({
             </View>
           ) : (
             <TouchableOpacity onPress={onEditName}>
-              <Text className="text-xl font-bold text-base-content">
+              <Text className="text-xl font-bold text-zinc-900 dark:text-white">
                 {loading
                   ? "Loading..."
                   : `${workoutDetails?.name || "Workout"}`}
@@ -79,7 +79,7 @@ export default function WorkoutHeader({
             </TouchableOpacity>
           )}
           {workoutDetails && (
-            <Text className="text-sm text-muted mt-1">
+            <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {workoutDetails.exercises.length} exercise
               {workoutDetails.exercises.length !== 1 ? "s" : ""}
             </Text>
@@ -98,10 +98,10 @@ export default function WorkoutHeader({
 
       {/* Workout Info */}
       {workoutDetails && workoutDetails.description && (
-        <View className="bg-base-300 rounded-lg p-3">
+        <View className="bg-gray-100 dark:bg-zinc-700 rounded-lg p-3">
           <View className="flex-row items-center gap-2">
             <Ionicons name="document-text" size={14} color="#9ca3af" />
-            <Text className="text-xs text-muted">Has description</Text>
+            <Text className="text-xs text-gray-500 dark:text-gray-400">Has description</Text>
           </View>
         </View>
       )}

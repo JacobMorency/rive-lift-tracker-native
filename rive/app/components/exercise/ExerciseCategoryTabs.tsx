@@ -18,7 +18,7 @@ export default function ExerciseCategoryTabs({
   return (
     <View className="mb-6">
       <View className="flex-row items-center justify-between mb-3">
-        <Text className="text-lg font-semibold text-base-content">
+        <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
           Filter by Category
         </Text>
         {selectedCount > 0 && (
@@ -36,7 +36,7 @@ export default function ExerciseCategoryTabs({
         <View className="flex-row gap-3">
           <TouchableOpacity
             className={`px-4 py-3 rounded-xl flex-row items-center gap-2 ${
-              selectedFilter === "" ? "bg-primary" : "bg-base-300"
+              selectedFilter === "" ? "bg-[#ff4b8c] dark:bg-[#ff6fa1]" : "bg-gray-100 dark:bg-zinc-700"
             }`}
             onPress={() => onFilterChange("")}
             style={{
@@ -55,8 +55,8 @@ export default function ExerciseCategoryTabs({
             <Text
               className={`text-sm font-medium ${
                 selectedFilter === ""
-                  ? "text-primary-content"
-                  : "text-base-content"
+                  ? "text-white"
+                  : "text-zinc-900 dark:text-white"
               }`}
             >
               All
@@ -67,7 +67,7 @@ export default function ExerciseCategoryTabs({
             <TouchableOpacity
               key={filter}
               className={`px-4 py-3 rounded-xl ${
-                selectedFilter === filter ? "bg-primary" : "bg-base-300"
+                selectedFilter === filter ? "bg-[#ff4b8c] dark:bg-[#ff6fa1]" : "bg-gray-100 dark:bg-zinc-700"
               }`}
               onPress={() => onFilterChange(filter)}
               style={{
@@ -82,8 +82,8 @@ export default function ExerciseCategoryTabs({
               <Text
                 className={`text-sm font-medium ${
                   selectedFilter === filter
-                    ? "text-primary-content"
-                    : "text-base-content"
+                    ? "text-white"
+                    : "text-zinc-900 dark:text-white"
                 }`}
               >
                 {filter}

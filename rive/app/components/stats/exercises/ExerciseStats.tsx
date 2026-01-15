@@ -15,28 +15,28 @@ export default function ExerciseStats({
   return (
     <View className="gap-4 mb-6">
       <View className="flex-row gap-4">
-        <View className="flex-1 bg-base-300 rounded-lg p-4">
+        <View className="flex-1 bg-gray-100 dark:bg-zinc-700 rounded-lg p-4">
           <View className="flex-row items-center gap-2 mb-2">
             <Ionicons name="trophy" size={16} color="#ff4b8c" />
-            <Text className="text-sm font-medium text-muted">Current PR</Text>
+            <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">Current PR</Text>
           </View>
           {loading ? (
             <ActivityIndicator size="small" color="#ff4b8c" />
           ) : (
-            <Text className="text-2xl font-bold text-base-content">
+            <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
               {exerciseData?.currentPR || 0} lbs
             </Text>
           )}
         </View>
-        <View className="flex-1 bg-base-300 rounded-lg p-4">
+        <View className="flex-1 bg-gray-100 dark:bg-zinc-700 rounded-lg p-4">
           <View className="flex-row items-center gap-2 mb-2">
             <Ionicons name="trending-up" size={16} color="#10b981" />
-            <Text className="text-sm font-medium text-muted">Sessions</Text>
+            <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">Sessions</Text>
           </View>
           {loading ? (
             <ActivityIndicator size="small" color="#10b981" />
           ) : (
-            <Text className="text-2xl font-bold text-base-content">
+            <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
               {exerciseData?.dataPoints.length || 0}
             </Text>
           )}
@@ -45,7 +45,7 @@ export default function ExerciseStats({
 
       {/* Progression Card (always visible; neutral if insufficient data) */}
       {exerciseData?.progression && (
-        <View className="bg-base-300 rounded-lg p-4">
+        <View className="bg-gray-100 dark:bg-zinc-700 rounded-lg p-4">
           <View className="flex-row items-center gap-2 mb-3">
             <Ionicons
               name={
@@ -64,13 +64,13 @@ export default function ExerciseStats({
                     : "#6b7280"
               }
             />
-            <Text className="text-sm font-medium text-muted">
+            <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
               Progression (since start of range)
             </Text>
           </View>
           <View className="gap-2">
             <View className="flex-row justify-between items-center">
-              <Text className="text-base-content">Volume Change:</Text>
+              <Text className="text-zinc-900 dark:text-white">Volume Change:</Text>
               <View className="flex-row items-center gap-1">
                 <Text
                   className={`text-sm font-semibold ${
@@ -78,7 +78,7 @@ export default function ExerciseStats({
                       ? "text-success"
                       : exerciseData.progression.volumePercentage < 0
                         ? "text-error"
-                        : "text-muted"
+                        : "text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   {exerciseData.progression.volumePercentage > 0 ? "+" : ""}
@@ -104,7 +104,7 @@ export default function ExerciseStats({
               </View>
             </View>
             <View className="flex-row justify-between items-center">
-              <Text className="text-base-content">Weight Change:</Text>
+              <Text className="text-zinc-900 dark:text-white">Weight Change:</Text>
               <View className="flex-row items-center gap-1">
                 <Text
                   className={`text-sm font-semibold ${
@@ -112,7 +112,7 @@ export default function ExerciseStats({
                       ? "text-success"
                       : exerciseData.progression.weightPercentage < 0
                         ? "text-error"
-                        : "text-muted"
+                        : "text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   {exerciseData.progression.weightPercentage > 0 ? "+" : ""}

@@ -31,7 +31,7 @@ export default function SetCard({
   if (isEditing && editingSet) {
     return (
       <View
-        className="bg-base-300 rounded-xl p-4"
+        className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-4"
         style={{
           shadowColor: "#000",
           shadowOffset: {
@@ -51,7 +51,7 @@ export default function SetCard({
                   {editingSet.set_number || 0}
                 </Text>
               </View>
-              <Text className="text-sm font-semibold text-base-content">
+              <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
                 Editing Set
               </Text>
             </View>
@@ -75,13 +75,13 @@ export default function SetCard({
                         editingSet.right_reps === null ||
                         editingSet.weight === null ||
                         editingSet.weight < 0
-                      ? "bg-base-300"
+                      ? "bg-gray-100 dark:bg-zinc-700"
                       : "bg-success"
                     : editingSet.reps === null ||
                         editingSet.reps === 0 ||
                         editingSet.weight === null ||
                         editingSet.weight < 0
-                      ? "bg-base-300"
+                      ? "bg-gray-100 dark:bg-zinc-700"
                       : "bg-success"
                 }`}
               >
@@ -89,7 +89,7 @@ export default function SetCard({
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={onCancel}
-                className="w-8 h-8 items-center justify-center rounded-full bg-base-300"
+                className="w-8 h-8 items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-700"
               >
                 <Ionicons name="close" size={16} color="#6b7280" />
               </TouchableOpacity>
@@ -131,8 +131,8 @@ export default function SetCard({
 
             {/* Edit Partials */}
             <View>
-              <Text className="text-xs text-muted mb-1">Partials</Text>
-              <View className="flex-row items-center bg-base-200 rounded-lg">
+              <Text className="text-xs text-gray-500 dark:text-gray-400 mb-1">Partials</Text>
+              <View className="flex-row items-center bg-gray-50 dark:bg-zinc-800 rounded-lg">
                 <TouchableOpacity
                   className="px-3 py-2"
                   onPress={() => {
@@ -148,7 +148,7 @@ export default function SetCard({
                   <Ionicons name="remove" size={16} color="#6b7280" />
                 </TouchableOpacity>
                 <TextInput
-                  className="flex-1 text-center py-2 text-base font-bold text-base-content"
+                  className="flex-1 text-center py-2 text-base font-bold text-zinc-900 dark:text-white"
                   value={editingSet?.partialReps?.toString() || ""}
                   onChangeText={(value) => {
                     if (value === "" || value === "-") {
@@ -194,7 +194,7 @@ export default function SetCard({
   // Display Mode
   return (
     <View
-      className="bg-base-300 rounded-xl p-4"
+      className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-4"
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -216,33 +216,33 @@ export default function SetCard({
           <View className="flex-row items-center gap-4">
             {set.is_unilateral ? (
               <View className="items-center">
-                <Text className="text-xs text-muted">Reps</Text>
+                <Text className="text-xs text-gray-500 dark:text-gray-400">Reps</Text>
                 <View className="flex-row gap-2">
-                  <Text className="text-base font-bold text-base-content">
+                  <Text className="text-base font-bold text-zinc-900 dark:text-white">
                     L: {set.left_reps || 0}
                   </Text>
-                  <Text className="text-base font-bold text-base-content">
+                  <Text className="text-base font-bold text-zinc-900 dark:text-white">
                     R: {set.right_reps || 0}
                   </Text>
                 </View>
               </View>
             ) : (
               <View className="items-center">
-                <Text className="text-xs text-muted">Reps</Text>
-                <Text className="text-base font-bold text-base-content">
+                <Text className="text-xs text-gray-500 dark:text-gray-400">Reps</Text>
+                <Text className="text-base font-bold text-zinc-900 dark:text-white">
                   {set.reps || 0}
                 </Text>
               </View>
             )}
             <View className="items-center">
-              <Text className="text-xs text-muted">Weight</Text>
-              <Text className="text-base font-bold text-base-content">
+              <Text className="text-xs text-gray-500 dark:text-gray-400">Weight</Text>
+              <Text className="text-base font-bold text-zinc-900 dark:text-white">
                 {set.weight || 0} lbs
               </Text>
             </View>
             {(set.partialReps ?? 0) > 0 && (
               <View className="items-center">
-                <Text className="text-xs text-muted">Partials</Text>
+                <Text className="text-xs text-gray-500 dark:text-gray-400">Partials</Text>
                 <Text className="text-base font-bold text-warning">
                   +{set.partialReps || 0}
                 </Text>

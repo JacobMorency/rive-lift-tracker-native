@@ -375,7 +375,7 @@ const WorkoutDetailsModal = ({
       animationType="slide"
       presentationStyle="fullScreen"
     >
-      <View className="flex-1 bg-base-100">
+      <View className="flex-1 bg-white dark:bg-zinc-900">
         <WorkoutHeader
           workoutDetails={workoutDetails}
           loading={loading}
@@ -397,7 +397,7 @@ const WorkoutDetailsModal = ({
           {loading ? (
             <View className="flex-1 justify-center items-center py-12">
               <ActivityIndicator size="large" color="#ff4b8c" />
-              <Text className="text-muted mt-3 text-center">
+              <Text className="text-gray-500 dark:text-gray-400 mt-3 text-center">
                 Loading workout details...
               </Text>
             </View>
@@ -405,14 +405,14 @@ const WorkoutDetailsModal = ({
             <View className="gap-6">
               {/* Workout Description */}
               {workoutDetails.description && (
-                <View className="bg-base-200 rounded-xl p-4">
+                <View className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4">
                   <View className="flex-row items-center gap-2 mb-2">
                     <Ionicons name="document-text" size={16} color="#ff4b8c" />
-                    <Text className="text-sm font-semibold text-base-content">
+                    <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
                       Description
                     </Text>
                   </View>
-                  <Text className="text-muted text-sm">
+                  <Text className="text-gray-500 dark:text-gray-400 text-sm">
                     {workoutDetails.description}
                   </Text>
                 </View>
@@ -427,7 +427,7 @@ const WorkoutDetailsModal = ({
             </View>
           ) : (
             <View className="flex-1 justify-center items-center py-8">
-              <Text className="text-muted">
+              <Text className="text-gray-500 dark:text-gray-400">
                 Failed to load workout details.
               </Text>
             </View>
@@ -437,11 +437,11 @@ const WorkoutDetailsModal = ({
         {/* Enhanced Footer Actions */}
         {!loading && workoutDetails && (
           <View
-            className="px-4 pt-4 border-t border-base-300"
+            className="px-4 pt-4 border-t border-gray-200 dark:border-zinc-700"
             style={{ paddingBottom: insets.bottom + 16 }}
           >
             <TouchableOpacity
-              className="bg-primary py-4 px-6 rounded-xl flex-row items-center justify-center"
+              className="bg-[#ff4b8c] dark:bg-[#ff6fa1] py-4 px-6 rounded-xl flex-row items-center justify-center"
               onPress={handleAddExercise}
               style={{
                 shadowColor: "#ff4b8c",
@@ -452,7 +452,7 @@ const WorkoutDetailsModal = ({
               }}
             >
               <Ionicons name="add-circle" size={20} color="#ffffff" />
-              <Text className="text-primary-content font-bold ml-2 text-lg">
+              <Text className="text-[#ff4b8c] dark:text-[#ff6fa1]-content font-bold ml-2 text-lg">
                 Add Exercises
               </Text>
             </TouchableOpacity>

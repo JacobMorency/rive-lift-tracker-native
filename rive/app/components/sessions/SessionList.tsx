@@ -29,18 +29,18 @@ export default function SessionList({
   const EmptyComponent = () => (
     <View className="flex-1 justify-center items-center py-12 px-4">
       <View className="items-center">
-        <View className="w-20 h-20 bg-base-300 rounded-full items-center justify-center mb-4">
+        <View className="w-20 h-20 bg-gray-100 dark:bg-zinc-700 rounded-full items-center justify-center mb-4">
           <Ionicons name="fitness-outline" size={40} color="#9ca3af" />
         </View>
-        <Text className="text-xl font-bold text-base-content mb-2">
+        <Text className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
           No Sessions Yet
         </Text>
-        <Text className="text-center text-muted mb-6 max-w-xs">
+        <Text className="text-center text-gray-500 dark:text-gray-400 mb-6 max-w-xs">
           Ready to begin your fitness journey? Let's start with your first session!
         </Text>
         <View className="flex-row items-center gap-2">
           <Ionicons name="arrow-up" size={16} color="#ff4b8c" />
-          <Text className="text-sm font-medium text-primary">
+          <Text className="text-sm font-medium text-[#ff4b8c] dark:text-[#ff6fa1]">
             Tap "Start New Session" above
           </Text>
         </View>

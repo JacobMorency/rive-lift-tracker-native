@@ -99,7 +99,7 @@ export default function ScheduleCard({
 
   return (
     <View
-      className="bg-base-200 rounded-xl p-4"
+      className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4"
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -113,11 +113,11 @@ export default function ScheduleCard({
     >
       <View className="flex-row items-start justify-between mb-2">
         <View className="flex-1">
-          <Text className="text-lg font-semibold text-base-content">
+          <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
             {workout_name}
           </Text>
           {workout_description && (
-            <Text className="text-sm text-muted mt-1">
+            <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
               {workout_description}
             </Text>
           )}
@@ -125,12 +125,12 @@ export default function ScheduleCard({
         <View className="flex-row items-center gap-2">
           <View
             className={`px-2 py-1 rounded-full ${
-              schedule.is_active ? "bg-success/10" : "bg-base-300"
+              schedule.is_active ? "bg-success/10" : "bg-gray-100 dark:bg-zinc-700"
             }`}
           >
             <Text
               className={`text-xs font-medium ${
-                schedule.is_active ? "text-success" : "text-muted"
+                schedule.is_active ? "text-success" : "text-gray-500 dark:text-gray-400"
               }`}
             >
               {schedule.is_active ? "Active" : "Inactive"}
@@ -160,14 +160,14 @@ export default function ScheduleCard({
       <View className="mt-3 gap-2">
         <View className="flex-row items-center gap-2">
           <Ionicons name="repeat-outline" size={16} color="#9ca3af" />
-          <Text className="text-sm text-muted">
+          <Text className="text-sm text-gray-500 dark:text-gray-400">
             {formatRecurrence(schedule)}
           </Text>
         </View>
 
         <View className="flex-row items-center gap-2">
           <Ionicons name="calendar-outline" size={16} color="#9ca3af" />
-          <Text className="text-sm text-muted">
+          <Text className="text-sm text-gray-500 dark:text-gray-400">
             {formatDateRange(schedule)}
           </Text>
         </View>

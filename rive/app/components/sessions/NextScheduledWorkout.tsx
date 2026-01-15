@@ -119,7 +119,7 @@ export default function NextScheduledWorkout() {
 
   return (
     <View
-      className="bg-base-200 rounded-xl p-4 mb-4"
+      className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-4"
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -135,19 +135,19 @@ export default function NextScheduledWorkout() {
         <View className="flex-1 mr-3">
           <View className="flex-row items-center gap-2 mb-1">
             <Ionicons name="calendar-outline" size={16} color="#ff4b8c" />
-            <Text className="text-xs font-semibold text-muted uppercase">
+            <Text className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
               Next Scheduled
             </Text>
           </View>
-          <Text className="text-base font-semibold text-base-content">
+          <Text className="text-base font-semibold text-zinc-900 dark:text-white">
             {nextWorkout?.workout_name}
           </Text>
-          <Text className="text-sm text-muted mt-0.5">
+          <Text className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {nextWorkout ? formatDate(nextWorkout.scheduledDate) : ""}
           </Text>
         </View>
         <TouchableOpacity
-          className="bg-primary rounded-lg px-4 py-2.5 flex-row items-center gap-2"
+          className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-lg px-4 py-2.5 flex-row items-center gap-2"
           onPress={() =>
             nextWorkout && handleStartSession(nextWorkout.schedule.workout_id)
           }
@@ -165,7 +165,7 @@ export default function NextScheduledWorkout() {
           ) : (
             <>
               <Ionicons name="play" size={16} color="#ffffff" />
-              <Text className="text-sm font-semibold text-primary-content">
+              <Text className="text-sm font-semibold text-white">
                 Start
               </Text>
             </>

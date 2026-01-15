@@ -32,7 +32,7 @@ const getWorkoutIcon = (workoutName: string) => {
 export default function SessionCard({ session, onPress }: SessionCardProps) {
   return (
     <TouchableOpacity
-      className="bg-base-200 rounded-xl p-4"
+      className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4"
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -62,14 +62,14 @@ export default function SessionCard({ session, onPress }: SessionCardProps) {
 
           {/* Session Info */}
           <View className="flex-1">
-            <Text className="text-lg font-semibold text-base-content">
+            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
               {session.name}
             </Text>
             <View className="flex-row items-center gap-3 mt-1">
-              <Text className="text-sm text-muted">
+              <Text className="text-sm text-gray-500 dark:text-gray-400">
                 {new Date(session.started_at).toLocaleDateString()}
               </Text>
-              <Text className="text-sm text-muted">
+              <Text className="text-sm text-gray-500 dark:text-gray-400">
                 {formatDuration(session.started_at, session.ended_at)}
               </Text>
             </View>

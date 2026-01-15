@@ -86,9 +86,9 @@ export default function SchedulePage() {
   const inactiveSchedules = schedules.filter((s) => !s.schedule.is_active);
 
   return (
-    <View className="flex-1 bg-base-100">
+    <View className="flex-1 bg-white dark:bg-zinc-900">
       <View
-        className="bg-base-200 px-4 border-b border-base-300"
+        className="bg-gray-50 dark:bg-zinc-800 px-4 border-b border-gray-200 dark:border-zinc-700"
         style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
       >
         <View className="flex-row items-center justify-between">
@@ -101,7 +101,7 @@ export default function SchedulePage() {
               <Ionicons name="arrow-back" size={24} color="#ff4b8c" />
             </TouchableOpacity>
             <View className="flex-1">
-              <Text className="text-2xl font-bold text-base-content">
+              <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
                 Manage Schedules
               </Text>
             </View>
@@ -119,7 +119,7 @@ export default function SchedulePage() {
       {loading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#ff4b8c" />
-          <Text className="text-muted mt-2">Loading schedules...</Text>
+          <Text className="text-gray-500 dark:text-gray-400 mt-2">Loading schedules...</Text>
         </View>
       ) : schedules.length === 0 ? (
         <ScrollView
@@ -132,16 +132,16 @@ export default function SchedulePage() {
         >
           <View className="items-center py-8">
             <Ionicons name="calendar-outline" size={64} color="#9ca3af" />
-            <Text className="text-xl font-semibold text-base-content mt-4 text-center">
+            <Text className="text-xl font-semibold text-zinc-900 dark:text-white mt-4 text-center">
               No Schedules Yet
             </Text>
-            <Text className="text-sm text-muted text-center mt-2 mb-6">
+            <Text className="text-sm text-gray-500 dark:text-gray-400 text-center mt-2 mb-6">
               Create your first workout schedule to start planning your
               workouts ahead of time.
             </Text>
             <TouchableOpacity
               onPress={() => setIsScheduleModalOpen(true)}
-              className="px-6 py-3 bg-primary rounded-xl flex-row items-center gap-2"
+              className="px-6 py-3 bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-xl flex-row items-center gap-2"
               style={{
                 shadowColor: "#ff4b8c",
                 shadowOffset: { width: 0, height: 4 },
@@ -151,7 +151,7 @@ export default function SchedulePage() {
               }}
             >
               <Ionicons name="add" size={20} color="#ffffff" />
-              <Text className="text-primary-content font-semibold text-base">
+              <Text className="text-white font-semibold text-base">
                 Schedule Your First Workout
               </Text>
             </TouchableOpacity>
@@ -167,7 +167,7 @@ export default function SchedulePage() {
         >
           {activeSchedules.length > 0 && (
             <View className="mb-6">
-              <Text className="text-lg font-semibold text-base-content mb-3">
+              <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">
                 Active Schedules ({activeSchedules.length})
               </Text>
               <View className="gap-3">
@@ -185,7 +185,7 @@ export default function SchedulePage() {
 
           {inactiveSchedules.length > 0 && (
             <View className="mb-6">
-              <Text className="text-lg font-semibold text-base-content mb-3">
+              <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">
                 Inactive Schedules ({inactiveSchedules.length})
               </Text>
               <View className="gap-3">

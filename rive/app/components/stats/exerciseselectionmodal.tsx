@@ -108,13 +108,13 @@ export default function ExerciseSelectionModal({
 
   return (
     <Modal visible={isOpen} animationType="slide" presentationStyle="pageSheet">
-      <View className="flex-1 bg-base-100">
+      <View className="flex-1 bg-white dark:bg-zinc-900">
         {/* Header */}
-        <View className="flex-row items-center justify-between p-4 border-b border-base-300">
+        <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-700">
           <TouchableOpacity onPress={handleCancel}>
             <Text className="text-primary text-base font-medium">Cancel</Text>
           </TouchableOpacity>
-          <Text className="text-lg font-semibold text-base-content">
+          <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
             Track PRs
           </Text>
           <TouchableOpacity onPress={handleSave}>
@@ -124,10 +124,10 @@ export default function ExerciseSelectionModal({
 
         {/* Search Bar */}
         <View className="p-4">
-          <View className="flex-row items-center bg-base-300 rounded-lg px-3 py-2">
+          <View className="flex-row items-center bg-gray-100 dark:bg-zinc-700 rounded-lg px-3 py-2">
             <Ionicons name="search" size={20} color="#9ca3af" />
             <TextInput
-              className="flex-1 ml-2 text-base-content"
+              className="flex-1 ml-2 text-zinc-900 dark:text-white"
               placeholder="Search exercises..."
               placeholderTextColor="#9ca3af"
               value={searchQuery}
@@ -138,7 +138,7 @@ export default function ExerciseSelectionModal({
 
         {/* Selected Count */}
         <View className="px-4 pb-2">
-          <Text className="text-sm text-muted">
+          <Text className="text-sm text-gray-500 dark:text-gray-400">
             {tempSelectedExercises.length} exercise
             {tempSelectedExercises.length !== 1 ? "s" : ""} selected
           </Text>
@@ -149,7 +149,7 @@ export default function ExerciseSelectionModal({
           {loading ? (
             <View className="flex-1 justify-center items-center py-12">
               <ActivityIndicator size="large" color="#ff4b8c" />
-              <Text className="text-muted mt-2">Loading exercises...</Text>
+              <Text className="text-gray-500 dark:text-gray-400 mt-2">Loading exercises...</Text>
             </View>
           ) : filteredExercises.length > 0 ? (
             <View className="gap-2 pb-4">
@@ -159,13 +159,13 @@ export default function ExerciseSelectionModal({
                   onPress={() => handleExerciseToggle(exercise.id)}
                   className={`flex-row items-center justify-between p-4 rounded-lg border ${
                     tempSelectedExercises.includes(exercise.id)
-                      ? "bg-primary/10 border-primary"
-                      : "bg-base-200 border-base-300"
+                      ? "bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10 border-primary"
+                      : "bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700"
                   }`}
                 >
                   <View className="flex-1">
                     <View className="flex-row items-center gap-2 mb-1">
-                      <Text className="text-base font-semibold text-base-content">
+                      <Text className="text-base font-semibold text-zinc-900 dark:text-white">
                         {exercise.name}
                       </Text>
                       {exercise.primaryMuscleGroup && (
@@ -185,15 +185,15 @@ export default function ExerciseSelectionModal({
                         </View>
                       )}
                     </View>
-                    <Text className="text-sm text-muted">
+                    <Text className="text-sm text-gray-500 dark:text-gray-400">
                       Used {exercise.usageCount} times
                     </Text>
                   </View>
                   <View
                     className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
                       tempSelectedExercises.includes(exercise.id)
-                        ? "bg-primary border-primary"
-                        : "border-base-400"
+                        ? "bg-[#ff4b8c] dark:bg-[#ff6fa1] border-[#ff4b8c] dark:border-[#ff6fa1]"
+                        : "border-gray-300 dark:border-zinc-600"
                     }`}
                   >
                     {tempSelectedExercises.includes(exercise.id) && (
@@ -206,10 +206,10 @@ export default function ExerciseSelectionModal({
           ) : (
             <View className="flex-1 justify-center items-center py-12">
               <Ionicons name="barbell-outline" size={48} color="#9ca3af" />
-              <Text className="text-lg font-semibold text-base-content mt-3 mb-2">
+              <Text className="text-lg font-semibold text-zinc-900 dark:text-white mt-3 mb-2">
                 No Exercises Found
               </Text>
-              <Text className="text-muted text-center">
+              <Text className="text-gray-500 dark:text-gray-400 text-center">
                 {searchQuery
                   ? "Try adjusting your search terms"
                   : "Start tracking workouts to see exercises here"}

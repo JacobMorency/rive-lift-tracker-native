@@ -32,7 +32,7 @@ export default function SelectWorkoutList({
       {/* Scheduled Workouts Section */}
       {scheduledWorkouts.length > 0 && (
         <View className="mb-4">
-          <Text className="text-lg font-semibold text-base-content mb-3">
+          <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">
             Scheduled for Today
           </Text>
           {scheduledWorkouts.map((scheduledWorkout) => {
@@ -55,7 +55,7 @@ export default function SelectWorkoutList({
 
       {/* All Workout Templates Section */}
       <View>
-        <Text className="text-lg font-semibold text-base-content mb-3">
+        <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">
           All Workout Templates
         </Text>
         {workoutTemplates.map((workout) => {

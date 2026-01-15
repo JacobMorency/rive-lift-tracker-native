@@ -98,15 +98,15 @@ export default function LoginPage() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 justify-center items-center p-4 bg-base-100"
+      className="flex-1 justify-center items-center p-4 bg-white dark:bg-zinc-900"
     >
       <View className="w-full max-w-md p-6 gap-4">
-        <Text className="text-2xl font-bold text-center text-base-content">
+        <Text className="text-2xl font-bold text-center text-zinc-900 dark:text-white">
           {isRegisterMode ? "Create account" : "Sign in"}
         </Text>
 
         <View className="flex justify-center items-center my-2">
-          <View className="bg-primary rounded-full h-20 w-20 flex items-center justify-center">
+          <View className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-full h-20 w-20 flex items-center justify-center">
             <Ionicons name="barbell" size={32} color="#ffffff" />
           </View>
         </View>
@@ -118,12 +118,12 @@ export default function LoginPage() {
         )}
 
         <View>
-          <Text className="text-sm font-medium text-base-content mb-1">
+          <Text className="text-sm font-medium text-zinc-900 dark:text-white mb-1">
             Email
           </Text>
           <TextInput
-            className={`border rounded-lg px-3 py-2 text-base-content bg-base-200 ${
-              emailEmpty ? "border-error" : "border-base-300"
+            className={`border rounded-lg px-3 py-2 text-zinc-900 dark:text-white bg-gray-50 dark:bg-zinc-800 ${
+              emailEmpty ? "border-error" : "border-gray-200 dark:border-zinc-700"
             }`}
             placeholder="Email"
             placeholderTextColor="#9ca3af"
@@ -143,12 +143,12 @@ export default function LoginPage() {
         </View>
 
         <View>
-          <Text className="text-sm font-medium text-base-content mb-1">
+          <Text className="text-sm font-medium text-zinc-900 dark:text-white mb-1">
             Password
           </Text>
           <TextInput
-            className={`border rounded-lg px-3 py-2 text-base-content bg-base-200 ${
-              passwordEmpty ? "border-error" : "border-base-300"
+            className={`border rounded-lg px-3 py-2 text-zinc-900 dark:text-white bg-gray-50 dark:bg-zinc-800 ${
+              passwordEmpty ? "border-error" : "border-gray-200 dark:border-zinc-700"
             }`}
             placeholder="Password"
             placeholderTextColor="#9ca3af"
@@ -174,17 +174,17 @@ export default function LoginPage() {
             onPress={handleForgotPassword}
             className="self-end mb-2"
           >
-            <Text className="text-primary text-sm">Forgot Password?</Text>
+            <Text className="text-[#ff4b8c] dark:text-[#ff6fa1] text-sm">Forgot Password?</Text>
           </TouchableOpacity>
         )}
 
         <TouchableOpacity
-          className={`w-full py-3 mt-2 rounded-lg ${loading ? "bg-base-300" : "bg-primary"}`}
+          className={`w-full py-3 mt-2 rounded-lg ${loading ? "bg-gray-100 dark:bg-zinc-700" : "bg-[#ff4b8c] dark:bg-[#ff6fa1]"}`}
           onPress={handleSubmit}
           disabled={loading}
         >
           <Text
-            className={`text-center font-medium ${loading ? "text-muted" : "text-primary-content"}`}
+            className={`text-center font-medium ${loading ? "text-gray-500 dark:text-gray-400" : "text-white"}`}
           >
             {loading
               ? "Loading..."
@@ -195,21 +195,21 @@ export default function LoginPage() {
         </TouchableOpacity>
 
         <View className="flex-row items-center my-4">
-          <View className="flex-1 h-px bg-base-300" />
-          <Text className="mx-4 text-muted">OR</Text>
-          <View className="flex-1 h-px bg-base-300" />
+          <View className="flex-1 h-px bg-gray-200 dark:bg-zinc-700" />
+          <Text className="mx-4 text-gray-500 dark:text-gray-400">OR</Text>
+          <View className="flex-1 h-px bg-gray-200 dark:bg-zinc-700" />
         </View>
 
         <TouchableOpacity
-          className="w-full py-3 rounded-lg border border-base-300"
+          className="w-full py-3 rounded-lg border border-gray-200 dark:border-zinc-700"
           onPress={() => setIsRegisterMode(!isRegisterMode)}
         >
-          <Text className="text-base-content text-center font-medium">
+          <Text className="text-zinc-900 dark:text-white text-center font-medium">
             {isRegisterMode ? "Have an account? Sign in" : "Create an account"}
           </Text>
         </TouchableOpacity>
 
-        <Text className="text-center text-sm text-muted">
+        <Text className="text-center text-sm text-gray-500 dark:text-gray-400">
           Google and Apple sign-in are coming soon!
         </Text>
       </View>

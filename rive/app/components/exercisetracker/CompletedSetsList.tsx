@@ -45,7 +45,7 @@ export default function CompletedSetsList({
 
   return (
     <View
-      className="bg-base-200 rounded-xl p-6"
+      className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-6"
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -60,7 +60,7 @@ export default function CompletedSetsList({
       <View className="flex-row items-center justify-between mb-4">
         <View className="flex-row items-center">
           <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-          <Text className="text-lg font-bold text-base-content ml-2">
+          <Text className="text-lg font-bold text-zinc-900 dark:text-white ml-2">
             Completed Sets
           </Text>
         </View>
@@ -73,10 +73,10 @@ export default function CompletedSetsList({
           {sets.length > 3 && (
             <TouchableOpacity
               onPress={() => setShowAllSets(!showAllSets)}
-              className="bg-base-300 px-3 py-1 rounded-full"
+              className="bg-gray-100 dark:bg-zinc-700 px-3 py-1 rounded-full"
             >
               <View className="flex-row items-center gap-1">
-                <Text className="text-base-content text-sm font-medium">
+                <Text className="text-zinc-900 dark:text-white text-sm font-medium">
                   {showAllSets ? "Show Less" : "Show All"}
                 </Text>
                 <Ionicons

@@ -37,11 +37,11 @@ export default function QuickInsights({
 
   if (loading) {
     return (
-      <View className="bg-base-300 rounded-xl p-6 mb-6">
-        <Text className="text-lg font-semibold text-base-content mb-4">
+      <View className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-6 mb-6">
+        <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
           Quick Insights
         </Text>
-        <Text className="text-sm text-muted">Loading...</Text>
+        <Text className="text-sm text-gray-500 dark:text-gray-400">Loading...</Text>
       </View>
     );
   }
@@ -53,16 +53,16 @@ export default function QuickInsights({
   }
 
   return (
-    <View className="bg-base-300 rounded-xl p-6 mb-6">
+    <View className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-6 mb-6">
       <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-lg font-semibold text-base-content">
+        <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
           Quick Insights
         </Text>
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/stats")}
           className="flex-row items-center gap-1"
         >
-          <Text className="text-sm text-primary font-medium">View Stats</Text>
+          <Text className="text-sm text-[#ff4b8c] dark:text-[#ff6fa1] font-medium">View Stats</Text>
           <Ionicons name="chevron-forward" size={16} color="#ff4b8c" />
         </TouchableOpacity>
       </View>
@@ -73,7 +73,7 @@ export default function QuickInsights({
           <View>
             <View className="flex-row items-center gap-2 mb-2">
               <Ionicons name="list" size={16} color="#ff4b8c" />
-              <Text className="text-sm font-medium text-muted">
+              <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Top Exercises This Week
               </Text>
             </View>
@@ -81,18 +81,18 @@ export default function QuickInsights({
               {topExercises.slice(0, 3).map((exercise, index) => (
                 <View
                   key={exercise.id}
-                  className="flex-row items-center gap-2 bg-base-200 rounded-lg p-2"
+                  className="flex-row items-center gap-2 bg-gray-50 dark:bg-zinc-800 rounded-lg p-2"
                 >
-                  <View className="w-6 h-6 bg-primary rounded-full items-center justify-center">
-                    <Text className="text-xs font-bold text-primary-content">
+                  <View className="w-6 h-6 bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-full items-center justify-center">
+                    <Text className="text-xs font-bold text-white">
                       {index + 1}
                     </Text>
                   </View>
                   <View className="flex-1">
-                    <Text className="text-sm font-semibold text-base-content">
+                    <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
                       {exercise.name}
                     </Text>
-                    <Text className="text-xs text-muted">
+                    <Text className="text-xs text-gray-500 dark:text-gray-400">
                       {exercise.usageCount} uses
                     </Text>
                   </View>
@@ -107,20 +107,20 @@ export default function QuickInsights({
           <View>
             <View className="flex-row items-center gap-2 mb-2">
               <Ionicons name="body" size={16} color="#10b981" />
-              <Text className="text-sm font-medium text-muted">
+              <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Most Trained Muscle Group
               </Text>
             </View>
-            <View className="bg-base-200 rounded-lg p-3">
-              <Text className="text-base font-semibold text-base-content">
+            <View className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3">
+              <Text className="text-base font-semibold text-zinc-900 dark:text-white">
                 {topMuscleGroup.name}
               </Text>
               <View className="flex-row items-center gap-2 mt-1">
-                <Text className="text-xs text-muted">
+                <Text className="text-xs text-gray-500 dark:text-gray-400">
                   {formatVolume(topMuscleGroup.volume)}
                 </Text>
                 {typeof topMuscleGroup.percentage === "number" && (
-                  <Text className="text-xs text-muted">
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">
                     • {topMuscleGroup.percentage}% of volume
                   </Text>
                 )}
@@ -134,7 +134,7 @@ export default function QuickInsights({
           <View>
             <View className="flex-row items-center gap-2 mb-2">
               <Ionicons name="trophy" size={16} color="#f59e0b" />
-              <Text className="text-sm font-medium text-muted">
+              <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
                 Recent PRs
               </Text>
             </View>
@@ -142,14 +142,14 @@ export default function QuickInsights({
               {recentPRs.slice(0, 2).map((pr, index) => (
                 <View
                   key={index}
-                  className="bg-base-200 rounded-lg p-2 flex-row items-center gap-2"
+                  className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-2 flex-row items-center gap-2"
                 >
                   <Ionicons name="trophy" size={16} color="#f59e0b" />
                   <View className="flex-1">
-                    <Text className="text-sm font-semibold text-base-content">
+                    <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
                       {pr.exercise_name}
                     </Text>
-                    <Text className="text-xs text-muted">
+                    <Text className="text-xs text-gray-500 dark:text-gray-400">
                       {pr.max_weight} lbs × {pr.max_reps} reps
                     </Text>
                   </View>

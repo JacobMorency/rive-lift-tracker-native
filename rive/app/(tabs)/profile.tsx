@@ -30,7 +30,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <View className="flex-1 bg-base-100">
+    <View className="flex-1 bg-white dark:bg-zinc-900">
       <Header
         title="Profile"
         subtitle={
@@ -46,7 +46,7 @@ export default function ProfilePage() {
         <View>
           {/* Enhanced User Info Card */}
           <View
-            className="bg-base-300 rounded-xl p-6"
+            className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-6"
             style={{
               shadowColor: "#000",
               shadowOffset: {
@@ -59,21 +59,21 @@ export default function ProfilePage() {
             }}
           >
             <View className="items-center">
-              <View className="bg-primary rounded-full h-24 w-24 flex items-center justify-center mb-4 relative">
+              <View className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-full h-24 w-24 flex items-center justify-center mb-4 relative">
                 <Ionicons name="person" size={36} color="#ffffff" />
-                <View className="absolute -bottom-1 -right-1 bg-success rounded-full h-8 w-8 items-center justify-center border-2 border-base-300">
+                <View className="absolute -bottom-1 -right-1 bg-success rounded-full h-8 w-8 items-center justify-center border-2 border-gray-100 dark:border-zinc-700">
                   <Ionicons name="checkmark" size={16} color="#ffffff" />
                 </View>
               </View>
               {userData && (
-                <Text className="text-xl font-bold text-base-content">
+                <Text className="text-xl font-bold text-zinc-900 dark:text-white">
                   {userData.first_name} {userData.last_name}
                 </Text>
               )}
-              {user && <Text className="text-muted mt-1">{user.email}</Text>}
+              {user && <Text className="text-gray-500 dark:text-gray-400 mt-1">{user.email}</Text>}
               <View className="flex-row items-center gap-2 mt-3">
                 <Ionicons name="calendar" size={14} color="#9ca3af" />
-                <Text className="text-sm text-muted">
+                <Text className="text-sm text-gray-500 dark:text-gray-400">
                   Member since{" "}
                   {user?.created_at
                     ? new Date(user.created_at).toLocaleDateString()
@@ -87,7 +87,7 @@ export default function ProfilePage() {
 
           {/* Enhanced Settings Card */}
           <View
-            className="bg-base-300 rounded-xl p-6"
+            className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-6"
             style={{
               shadowColor: "#000",
               shadowOffset: {
@@ -101,21 +101,21 @@ export default function ProfilePage() {
           >
             <View className="flex-row items-center mb-6">
               <Ionicons name="settings" size={24} color="#ff4b8c" />
-              <Text className="text-xl font-bold text-base-content ml-3">
+              <Text className="text-xl font-bold text-zinc-900 dark:text-white ml-3">
                 Settings
               </Text>
             </View>
             <View className="gap-2">
-              <TouchableOpacity className="bg-base-200 rounded-lg p-4 flex-row items-center justify-between">
+              <TouchableOpacity className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 flex-row items-center justify-between">
                 <View className="flex-row items-center gap-3">
-                  <View className="w-10 h-10 bg-primary/20 rounded-lg items-center justify-center">
+                  <View className="w-10 h-10 bg-[#ff4b8c]/20 dark:bg-[#ff6fa1]/20 rounded-lg items-center justify-center">
                     <Ionicons name="person" size={20} color="#ff4b8c" />
                   </View>
                   <View>
-                    <Text className="text-base-content font-medium">
+                    <Text className="text-zinc-900 dark:text-white font-medium">
                       Edit Profile
                     </Text>
-                    <Text className="text-muted text-sm">
+                    <Text className="text-gray-500 dark:text-gray-400 text-sm">
                       Update your personal information
                     </Text>
                   </View>
@@ -123,16 +123,16 @@ export default function ProfilePage() {
                 <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
               </TouchableOpacity>
 
-              <TouchableOpacity className="bg-base-200 rounded-lg p-4 flex-row items-center justify-between">
+              <TouchableOpacity className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 flex-row items-center justify-between">
                 <View className="flex-row items-center gap-3">
                   <View className="w-10 h-10 bg-warning/20 rounded-lg items-center justify-center">
                     <Ionicons name="notifications" size={20} color="#f59e0b" />
                   </View>
                   <View>
-                    <Text className="text-base-content font-medium">
+                    <Text className="text-zinc-900 dark:text-white font-medium">
                       Notifications
                     </Text>
-                    <Text className="text-muted text-sm">
+                    <Text className="text-gray-500 dark:text-gray-400 text-sm">
                       Manage your notification preferences
                     </Text>
                   </View>
@@ -140,7 +140,7 @@ export default function ProfilePage() {
                 <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
               </TouchableOpacity>
 
-              <TouchableOpacity className="bg-base-200 rounded-lg p-4 flex-row items-center justify-between">
+              <TouchableOpacity className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 flex-row items-center justify-between">
                 <View className="flex-row items-center gap-3">
                   <View className="w-10 h-10 bg-success/20 rounded-lg items-center justify-center">
                     <Ionicons
@@ -150,10 +150,10 @@ export default function ProfilePage() {
                     />
                   </View>
                   <View>
-                    <Text className="text-base-content font-medium">
+                    <Text className="text-zinc-900 dark:text-white font-medium">
                       Privacy & Security
                     </Text>
-                    <Text className="text-muted text-sm">
+                    <Text className="text-gray-500 dark:text-gray-400 text-sm">
                       Control your data and privacy
                     </Text>
                   </View>
@@ -161,16 +161,16 @@ export default function ProfilePage() {
                 <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
               </TouchableOpacity>
 
-              <TouchableOpacity className="bg-base-200 rounded-lg p-4 flex-row items-center justify-between">
+              <TouchableOpacity className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 flex-row items-center justify-between">
                 <View className="flex-row items-center gap-3">
                   <View className="w-10 h-10 bg-info/20 rounded-lg items-center justify-center">
                     <Ionicons name="help-circle" size={20} color="#3b82f6" />
                   </View>
                   <View>
-                    <Text className="text-base-content font-medium">
+                    <Text className="text-zinc-900 dark:text-white font-medium">
                       Help & Support
                     </Text>
-                    <Text className="text-muted text-sm">
+                    <Text className="text-gray-500 dark:text-gray-400 text-sm">
                       Get help and contact support
                     </Text>
                   </View>
@@ -198,7 +198,7 @@ export default function ProfilePage() {
             onPress={handleLogout}
           >
             <Ionicons name="log-out" size={20} color="#ffffff" />
-            <Text className="text-error-content text-center font-bold ml-2 text-lg">
+            <Text className="text-white text-center font-bold ml-2 text-lg">
               Logout
             </Text>
           </TouchableOpacity>

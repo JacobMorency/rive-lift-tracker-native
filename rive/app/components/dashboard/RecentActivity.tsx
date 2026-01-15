@@ -45,24 +45,24 @@ export default function RecentActivity({
 
   if (loading) {
     return (
-      <View className="bg-base-300 rounded-xl p-6 mb-6">
-        <Text className="text-lg font-semibold text-base-content mb-4">
+      <View className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-6 mb-6">
+        <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
           Recent Activity
         </Text>
-        <Text className="text-sm text-muted">Loading...</Text>
+        <Text className="text-sm text-gray-500 dark:text-gray-400">Loading...</Text>
       </View>
     );
   }
 
   if (!recentSessions || recentSessions.length === 0) {
     return (
-      <View className="bg-base-300 rounded-xl p-6 mb-6">
-        <Text className="text-lg font-semibold text-base-content mb-4">
+      <View className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-6 mb-6">
+        <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
           Recent Activity
         </Text>
         <View className="items-center py-4">
           <Ionicons name="barbell-outline" size={32} color="#9ca3af" />
-          <Text className="text-sm text-muted mt-2 text-center">
+          <Text className="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">
             No recent sessions
           </Text>
         </View>
@@ -73,16 +73,16 @@ export default function RecentActivity({
   const displaySessions = recentSessions.slice(0, 3);
 
   return (
-    <View className="bg-base-300 rounded-xl p-6 mb-6">
+    <View className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-6 mb-6">
       <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-lg font-semibold text-base-content">
+        <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
           Recent Activity
         </Text>
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/sessions")}
           className="flex-row items-center gap-1"
         >
-          <Text className="text-sm text-primary font-medium">View All</Text>
+          <Text className="text-sm text-[#ff4b8c] dark:text-[#ff6fa1] font-medium">View All</Text>
           <Ionicons name="chevron-forward" size={16} color="#ff4b8c" />
         </TouchableOpacity>
       </View>
@@ -92,21 +92,21 @@ export default function RecentActivity({
           <TouchableOpacity
             key={session.id}
             onPress={() => router.push(`/session/${session.id}`)}
-            className="bg-base-200 rounded-lg p-3"
+            className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3"
           >
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
-                <Text className="text-base font-semibold text-base-content">
+                <Text className="text-base font-semibold text-zinc-900 dark:text-white">
                   {session.workout_name}
                 </Text>
                 <View className="flex-row items-center gap-3 mt-1">
-                  <Text className="text-xs text-muted">
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">
                     {formatDate(session.started_at)}
                   </Text>
-                  <Text className="text-xs text-muted">
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">
                     {session.exercises_completed} exercises
                   </Text>
-                  <Text className="text-xs text-muted">
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">
                     {formatVolume(session.total_volume)}
                   </Text>
                 </View>

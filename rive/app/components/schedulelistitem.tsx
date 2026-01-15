@@ -103,20 +103,20 @@ export default function ScheduleListItem({
   };
 
   return (
-    <View className="bg-base-200 rounded-xl p-4 mb-3">
+    <View className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-3">
       <View className="flex-row items-start justify-between mb-3">
         <View className="flex-1">
-          <Text className="text-lg font-semibold text-base-content mb-1">
+          <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-1">
             {scheduledWorkout.workout_name}
           </Text>
           {scheduledWorkout.workout_description && (
-            <Text className="text-muted text-sm mb-2">
+            <Text className="text-gray-500 dark:text-gray-400 text-sm mb-2">
               {scheduledWorkout.workout_description}
             </Text>
           )}
           <View className="flex-row items-center">
             <Ionicons name="repeat-outline" size={14} color="#6b7280" />
-            <Text className="text-muted text-sm ml-1">
+            <Text className="text-gray-500 dark:text-gray-400 text-sm ml-1">
               {formatRecurrenceText()}
             </Text>
           </View>
@@ -124,13 +124,13 @@ export default function ScheduleListItem({
 
         <View className="flex-row items-center gap-2">
           <TouchableOpacity
-            className="w-8 h-8 rounded-full bg-base-300 items-center justify-center"
+            className="w-8 h-8 rounded-full bg-gray-100 dark:bg-zinc-700 items-center justify-center"
             onPress={handleEdit}
           >
             <Ionicons name="pencil-outline" size={16} color="#6b7280" />
           </TouchableOpacity>
           <TouchableOpacity
-            className="w-8 h-8 rounded-full bg-base-300 items-center justify-center"
+            className="w-8 h-8 rounded-full bg-gray-100 dark:bg-zinc-700 items-center justify-center"
             onPress={handleDelete}
           >
             <Ionicons name="trash-outline" size={16} color="#ef4444" />
@@ -139,11 +139,11 @@ export default function ScheduleListItem({
       </View>
 
       <TouchableOpacity
-        className="bg-primary rounded-lg p-3 flex-row items-center justify-center"
+        className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-lg p-3 flex-row items-center justify-center"
         onPress={handleStartSession}
       >
         <Ionicons name="play-circle" size={20} color="#ffffff" />
-        <Text className="text-primary-content font-semibold ml-2">
+        <Text className="text-white font-semibold ml-2">
           Start Session
         </Text>
       </TouchableOpacity>

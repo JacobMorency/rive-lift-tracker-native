@@ -24,12 +24,12 @@ export default function RecurrenceSelector({
 }: RecurrenceSelectorProps) {
   return (
     <View className="mb-4">
-      <Text className="text-base-content font-medium mb-2">Repeat</Text>
+      <Text className="text-zinc-900 dark:text-white font-medium mb-2">Repeat</Text>
       <TouchableOpacity
-        className="bg-base-200 rounded-lg p-3 flex-row items-center justify-between"
+        className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 flex-row items-center justify-between"
         onPress={onToggleDropdown}
       >
-        <Text className="text-base-content">
+        <Text className="text-zinc-900 dark:text-white">
           {getRecurrenceDisplayText(recurrenceType, startDate)}
         </Text>
         <Ionicons
@@ -40,13 +40,13 @@ export default function RecurrenceSelector({
       </TouchableOpacity>
 
       {showDropdown && (
-        <View className="mt-2 bg-base-100 rounded-lg border border-base-300">
+        <View className="mt-2 bg-white dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-zinc-700">
           {getRecurrenceOptions(startDate).map((option) => (
             <TouchableOpacity
               key={option.type}
-              className={`p-3 border-b border-base-300 last:border-b-0 ${
+              className={`p-3 border-b border-gray-200 dark:border-zinc-700 last:border-b-0 ${
                 recurrenceType === option.type
-                  ? "bg-primary/10"
+                  ? "bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10"
                   : "bg-transparent"
               }`}
               onPress={() => onSelectRecurrence(option.type)}
@@ -54,8 +54,8 @@ export default function RecurrenceSelector({
               <Text
                 className={`font-medium ${
                   recurrenceType === option.type
-                    ? "text-primary"
-                    : "text-base-content"
+                    ? "text-[#ff4b8c] dark:text-[#ff6fa1]"
+                    : "text-zinc-900 dark:text-white"
                 }`}
               >
                 {option.label}

@@ -1,5 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  // Enable system-based dark mode detection
+  darkMode: "media",
   // NOTE: Update this to include the paths to all files that contain Nativewind classes.
   content: [
     "./app/**/*.{js,jsx,ts,tsx}",
@@ -13,7 +15,8 @@ module.exports = {
       colors: {
         // Project Hyper Pink Color Scheme
         primary: {
-          DEFAULT: "#ff4b8c", // Vibrant fitness pink
+          DEFAULT: "#ff4b8c", // Light mode: vibrant fitness pink
+          dark: "#ff6fa1", // Dark mode: slightly lighter for better contrast
           content: "#ffffff",
         },
         secondary: {

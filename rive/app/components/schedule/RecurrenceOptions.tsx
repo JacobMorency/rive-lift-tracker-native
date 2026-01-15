@@ -20,7 +20,7 @@ export default function RecurrenceOptions({
   if (recurrenceType === "monthly_date") {
     return (
       <View className="mb-4">
-        <Text className="text-base-content font-medium mb-2">
+        <Text className="text-zinc-900 dark:text-white font-medium mb-2">
           Dates of Month
         </Text>
         <View className="flex-row flex-wrap gap-2">
@@ -29,16 +29,16 @@ export default function RecurrenceOptions({
               key={date}
               className={`w-10 h-10 rounded-lg border items-center justify-center ${
                 selectedDates.includes(date)
-                  ? "bg-primary border-primary"
-                  : "bg-base-200 border-base-300"
+                  ? "bg-[#ff4b8c] dark:bg-[#ff6fa1] border-[#ff4b8c] dark:border-[#ff6fa1]"
+                  : "bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700"
               }`}
               onPress={() => onDateToggle(date)}
             >
               <Text
                 className={`text-sm font-medium ${
                   selectedDates.includes(date)
-                    ? "text-primary-content"
-                    : "text-base-content"
+                    ? "text-white"
+                    : "text-zinc-900 dark:text-white"
                 }`}
               >
                 {date}

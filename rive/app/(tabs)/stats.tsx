@@ -33,7 +33,7 @@ export default function StatsPage() {
   };
 
   return (
-    <View className="flex-1 bg-base-100">
+    <View className="flex-1 bg-white dark:bg-zinc-900">
       <Header
         title="Stats"
         subtitle={
@@ -51,20 +51,20 @@ export default function StatsPage() {
 
       {/* Tab Selector */}
       <View className="flex-row justify-center mb-6 mt-3">
-        <View className="flex-row bg-base-300 rounded-xl p-1">
+        <View className="flex-row bg-gray-100 dark:bg-zinc-700 rounded-xl p-1">
           {tabs.map((tab) => (
             <TouchableOpacity
               key={tab.id}
               className={`px-4 py-2 rounded-lg ${
-                selectedTab === tab.id ? "bg-primary" : "bg-transparent"
+                selectedTab === tab.id ? "bg-[#ff4b8c] dark:bg-[#ff6fa1]" : "bg-transparent"
               }`}
               onPress={() => setSelectedTab(tab.id)}
             >
               <Text
                 className={`text-sm font-medium ${
                   selectedTab === tab.id
-                    ? "text-primary-content"
-                    : "text-base-content"
+                    ? "text-white"
+                    : "text-zinc-900 dark:text-white"
                 }`}
               >
                 {tab.label}

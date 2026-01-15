@@ -32,22 +32,22 @@ export default function ExerciseSelector({
   return (
     <View className="mb-6">
       <View className="flex-row items-center justify-between mb-3">
-        <Text className="text-lg font-semibold text-base-content">
+        <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
           Your Most Used Exercises
         </Text>
         {exercises.length > 0 && (
           <TouchableOpacity
-            className="px-3 py-2 rounded-lg bg-base-300"
+            className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-zinc-700"
             onPress={() => setIsSelectorOpen(true)}
           >
-            <Text className="text-sm text-base-content">Browse</Text>
+            <Text className="text-sm text-zinc-900 dark:text-white">Browse</Text>
           </TouchableOpacity>
         )}
       </View>
       {loading ? (
         <View className="flex-row justify-center py-4">
           <ActivityIndicator size="small" color="#ff4b8c" />
-          <Text className="text-muted ml-2">Loading exercises...</Text>
+          <Text className="text-gray-500 dark:text-gray-400 ml-2">Loading exercises...</Text>
         </View>
       ) : exercises.length > 0 ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -59,7 +59,7 @@ export default function ExerciseSelector({
                 className={`px-4 py-3 rounded-lg ${
                   selectedExerciseId === exercise.id
                     ? "bg-primary"
-                    : "bg-base-300"
+                    : "bg-gray-100 dark:bg-zinc-700"
                 }`}
               >
                 <View className="flex-row items-center justify-between">
@@ -67,8 +67,8 @@ export default function ExerciseSelector({
                     <Text
                       className={`text-sm font-medium ${
                         selectedExerciseId === exercise.id
-                          ? "text-primary-content"
-                          : "text-base-content"
+                          ? "text-white"
+                          : "text-zinc-900 dark:text-white"
                       }`}
                       numberOfLines={1}
                     >
@@ -77,8 +77,8 @@ export default function ExerciseSelector({
                     <Text
                       className={`text-xs ${
                         selectedExerciseId === exercise.id
-                          ? "text-primary-content/70"
-                          : "text-muted"
+                          ? "text-white/70"
+                          : "text-gray-500 dark:text-gray-400"
                       }`}
                     >
                       {exercise.usageCount} uses
@@ -123,12 +123,12 @@ export default function ExerciseSelector({
           </View>
         </ScrollView>
       ) : (
-        <View className="bg-base-300 rounded-lg p-6 items-center">
+        <View className="bg-gray-100 dark:bg-zinc-700 rounded-lg p-6 items-center">
           <Ionicons name="barbell-outline" size={48} color="#9ca3af" />
-          <Text className="text-lg font-semibold text-base-content mt-3 mb-2">
+          <Text className="text-lg font-semibold text-zinc-900 dark:text-white mt-3 mb-2">
             No Exercises Yet
           </Text>
-          <Text className="text-muted text-center">
+          <Text className="text-gray-500 dark:text-gray-400 text-center">
             Start tracking your workouts to see your most used exercises here
           </Text>
         </View>
@@ -137,14 +137,14 @@ export default function ExerciseSelector({
       {/* Searchable Exercise Modal */}
       <Modal visible={isSelectorOpen} animationType="slide" transparent>
         <View
-          className="flex-1 bg-base-100/95 px-4 py-6"
+          className="flex-1 bg-white dark:bg-zinc-900/95 px-4 py-6"
           style={{
             paddingTop: insets.top + 8,
             paddingBottom: insets.bottom + 8,
           }}
         >
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-lg font-semibold text-base-content">
+            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
               Select Exercise
             </Text>
             <TouchableOpacity onPress={() => setIsSelectorOpen(false)}>
@@ -152,13 +152,13 @@ export default function ExerciseSelector({
             </TouchableOpacity>
           </View>
 
-          <View className="mb-4 bg-base-300 rounded-lg px-3">
+          <View className="mb-4 bg-gray-100 dark:bg-zinc-700 rounded-lg px-3">
             <TextInput
               placeholder="Search by name or category"
               placeholderTextColor="#9ca3af"
               value={searchQuery}
               onChangeText={setSearchQuery}
-              className="py-3 text-base text-base-content"
+              className="py-3 text-base text-zinc-900 dark:text-white"
             />
           </View>
 
@@ -177,7 +177,7 @@ export default function ExerciseSelector({
                 .map((exercise) => (
                   <TouchableOpacity
                     key={`modal-${exercise.id}`}
-                    className="p-3 rounded-lg bg-base-300"
+                    className="p-3 rounded-lg bg-gray-100 dark:bg-zinc-700"
                     onPress={() => {
                       onSelectExercise(exercise.id);
                       setIsSelectorOpen(false);
@@ -186,20 +186,20 @@ export default function ExerciseSelector({
                     <View className="flex-row items-center justify-between">
                       <View className="flex-1 mr-3">
                         <Text
-                          className="text-base font-semibold text-base-content"
+                          className="text-base font-semibold text-zinc-900 dark:text-white"
                           numberOfLines={1}
                         >
                           {exercise.name}
                         </Text>
                         <View className="flex-row items-center gap-2 mt-1">
                           {exercise.primaryMuscleGroup && (
-                            <View className="px-2 py-0.5 rounded-full bg-primary/10">
+                            <View className="px-2 py-0.5 rounded-full bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10">
                               <Text className="text-xs text-primary">
                                 {exercise.primaryMuscleGroup}
                               </Text>
                             </View>
                           )}
-                          <Text className="text-xs text-muted">
+                          <Text className="text-xs text-gray-500 dark:text-gray-400">
                             {exercise.usageCount} uses
                           </Text>
                         </View>

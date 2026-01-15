@@ -134,10 +134,10 @@ export default function ExercisesTab({ dateRange }: ExercisesTabProps) {
       {!selectedExercise && (
         <View className="flex-1 items-center justify-center py-20">
           <Ionicons name="barbell-outline" size={64} color="#6b7280" />
-          <Text className="text-lg font-semibold text-base-content mt-4">
+          <Text className="text-lg font-semibold text-zinc-900 dark:text-white mt-4">
             Select an Exercise
           </Text>
-          <Text className="text-muted text-center mt-2">
+          <Text className="text-gray-500 dark:text-gray-400 text-center mt-2">
             Choose an exercise above to view detailed analytics and progression
             charts
           </Text>

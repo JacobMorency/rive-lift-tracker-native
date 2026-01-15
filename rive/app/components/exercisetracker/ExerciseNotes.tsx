@@ -72,7 +72,7 @@ export default function ExerciseNotes({
   return (
     <>
       <View
-        className="bg-base-300 rounded-xl p-4 mb-4 flex-row items-center gap-2"
+        className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-4 mb-4 flex-row items-center gap-2"
         style={{
           shadowColor: "#000",
           shadowOffset: {
@@ -90,13 +90,13 @@ export default function ExerciseNotes({
           activeOpacity={0.7}
         >
           <Ionicons name="document-text-outline" size={16} color="#ff4b8c" />
-          <Text className="text-sm font-medium text-base-content">Notes:</Text>
+          <Text className="text-sm font-medium text-zinc-900 dark:text-white">Notes:</Text>
           {hasNotes ? (
-            <Text className="text-sm text-muted flex-1" numberOfLines={1}>
+            <Text className="text-sm text-gray-500 dark:text-gray-400 flex-1" numberOfLines={1}>
               {notes}
             </Text>
           ) : (
-            <Text className="text-sm text-muted">Tap to add</Text>
+            <Text className="text-sm text-gray-500 dark:text-gray-400">Tap to add</Text>
           )}
         </TouchableOpacity>
         {hasNotes && (
@@ -117,15 +117,15 @@ export default function ExerciseNotes({
         presentationStyle="pageSheet"
         onRequestClose={() => setIsModalOpen(false)}
       >
-        <View className="flex-1 bg-base-100" style={{ paddingTop: insets.top }}>
+        <View className="flex-1 bg-white dark:bg-zinc-900" style={{ paddingTop: insets.top }}>
           {/* Header */}
-          <View className="px-4 py-4 border-b border-base-300">
+          <View className="px-4 py-4 border-b border-gray-200 dark:border-zinc-700">
             <View className="flex-row items-center justify-between mb-2">
               <View className="flex-1">
-                <Text className="text-lg font-semibold text-base-content">
+                <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
                   Exercise Notes
                 </Text>
-                <Text className="text-sm text-muted mt-0.5">
+                <Text className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                   {exerciseName}
                 </Text>
               </View>
@@ -145,11 +145,11 @@ export default function ExerciseNotes({
             {isEditing ? (
               <View className="gap-4">
                 <View>
-                  <Text className="text-sm font-medium text-base-content mb-2">
+                  <Text className="text-sm font-medium text-zinc-900 dark:text-white mb-2">
                     Notes
                   </Text>
                   <TextInput
-                    className="bg-base-200 rounded-xl p-4 text-base-content"
+                    className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 text-zinc-900 dark:text-white"
                     placeholder={`Add notes for ${exerciseName}...`}
                     placeholderTextColor="#9ca3af"
                     value={editedNotes}
@@ -170,13 +170,13 @@ export default function ExerciseNotes({
                     onPress={handleCancel}
                     className="px-5 py-3 rounded-xl"
                   >
-                    <Text className="text-base font-medium text-base-content">
+                    <Text className="text-base font-medium text-zinc-900 dark:text-white">
                       Cancel
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handleSave}
-                    className="px-5 py-3 rounded-xl bg-primary"
+                    className="px-5 py-3 rounded-xl bg-[#ff4b8c] dark:bg-[#ff6fa1]"
                     style={{
                       shadowColor: "#ff4b8c",
                       shadowOffset: { width: 0, height: 2 },
@@ -185,7 +185,7 @@ export default function ExerciseNotes({
                       elevation: 4,
                     }}
                   >
-                    <Text className="text-base font-semibold text-primary-content">
+                    <Text className="text-base font-semibold text-white">
                       Save
                     </Text>
                   </TouchableOpacity>
@@ -195,9 +195,9 @@ export default function ExerciseNotes({
               <View className="gap-4">
                 {hasNotes ? (
                   <>
-                    <View className="bg-base-200 rounded-xl p-4">
+                    <View className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4">
                       <Text
-                        className="text-base text-base-content leading-6"
+                        className="text-base text-zinc-900 dark:text-white leading-6"
                         style={{ fontSize: 16, lineHeight: 24 }}
                       >
                         {notes}
@@ -205,7 +205,7 @@ export default function ExerciseNotes({
                     </View>
                     <TouchableOpacity
                       onPress={handleEdit}
-                      className="flex-row items-center justify-center gap-2 py-3.5 rounded-xl bg-primary"
+                      className="flex-row items-center justify-center gap-2 py-3.5 rounded-xl bg-[#ff4b8c] dark:bg-[#ff6fa1]"
                       style={{
                         shadowColor: "#ff4b8c",
                         shadowOffset: { width: 0, height: 2 },
@@ -215,30 +215,30 @@ export default function ExerciseNotes({
                       }}
                     >
                       <Ionicons name="pencil" size={18} color="#ffffff" />
-                      <Text className="text-base font-semibold text-primary-content">
+                      <Text className="text-base font-semibold text-white">
                         Edit Notes
                       </Text>
                     </TouchableOpacity>
                   </>
                 ) : (
                   <View className="items-center py-8">
-                    <View className="w-16 h-16 bg-primary/10 rounded-full items-center justify-center mb-4">
+                    <View className="w-16 h-16 bg-[#ff4b8c] dark:bg-[#ff6fa1]/10 rounded-full items-center justify-center mb-4">
                       <Ionicons
                         name="document-text-outline"
                         size={32}
                         color="#ff4b8c"
                       />
                     </View>
-                    <Text className="text-lg font-semibold text-base-content mb-2">
+                    <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
                       No Notes Yet
                     </Text>
-                    <Text className="text-sm text-muted text-center mb-6 max-w-xs">
+                    <Text className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6 max-w-xs">
                       Add notes to remember setup details, form cues, or other
                       reminders for this exercise.
                     </Text>
                     <TouchableOpacity
                       onPress={handleEdit}
-                      className="flex-row items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-primary"
+                      className="flex-row items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#ff4b8c] dark:bg-[#ff6fa1]"
                       style={{
                         shadowColor: "#ff4b8c",
                         shadowOffset: { width: 0, height: 2 },
@@ -248,7 +248,7 @@ export default function ExerciseNotes({
                       }}
                     >
                       <Ionicons name="add-circle" size={20} color="#ffffff" />
-                      <Text className="text-base font-semibold text-primary-content">
+                      <Text className="text-base font-semibold text-white">
                         Add Notes
                       </Text>
                     </TouchableOpacity>

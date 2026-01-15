@@ -50,7 +50,7 @@ export default function SessionFilters({
       {/* Filter Icon Button */}
       <View className="px-4 py-3">
         <TouchableOpacity
-          className="flex-row items-center justify-between bg-base-200 rounded-xl px-4 py-3"
+          className="flex-row items-center justify-between bg-gray-50 dark:bg-zinc-800 rounded-xl px-4 py-3"
           onPress={() => setShowFilterModal(true)}
           style={{
             shadowColor: hasActiveFilters ? "#ff4b8c" : "#000",
@@ -68,12 +68,12 @@ export default function SessionFilters({
               size={20}
               color={hasActiveFilters ? "#ff4b8c" : "#6b7280"}
             />
-            <Text className="text-base font-medium text-base-content">
+            <Text className="text-base font-medium text-zinc-900 dark:text-white">
               Filters
             </Text>
             {hasActiveFilters && (
-              <View className="bg-primary rounded-full px-2 py-0.5 min-w-[20px] items-center justify-center">
-                <Text className="text-xs font-bold text-primary-content">
+              <View className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-full px-2 py-0.5 min-w-[20px] items-center justify-center">
+                <Text className="text-xs font-bold text-white">
                   {getFilterCount()}
                 </Text>
               </View>
@@ -91,10 +91,10 @@ export default function SessionFilters({
         onRequestClose={() => setShowFilterModal(false)}
       >
         <View className="flex-1 bg-black/50 justify-end">
-          <View className="bg-base-200 rounded-t-3xl max-h-[85%]">
+          <View className="bg-gray-50 dark:bg-zinc-800 rounded-t-3xl max-h-[85%]">
             {/* Header */}
-            <View className="px-4 py-4 border-b border-base-300 flex-row items-center justify-between">
-              <Text className="text-xl font-bold text-base-content">
+            <View className="px-4 py-4 border-b border-gray-200 dark:border-zinc-700 flex-row items-center justify-between">
+              <Text className="text-xl font-bold text-zinc-900 dark:text-white">
                 Filters
               </Text>
               <View className="flex-row items-center gap-3">
@@ -121,7 +121,7 @@ export default function SessionFilters({
             >
               {/* Workout Filter */}
               <View className="mb-6">
-                <Text className="text-base font-semibold text-base-content mb-3">
+                <Text className="text-base font-semibold text-zinc-900 dark:text-white mb-3">
                   Workout
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -145,7 +145,7 @@ export default function SessionFilters({
 
               {/* Date Range Filter */}
               <View className="mb-6">
-                <Text className="text-base font-semibold text-base-content mb-3">
+                <Text className="text-base font-semibold text-zinc-900 dark:text-white mb-3">
                   Date Range
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -171,7 +171,7 @@ export default function SessionFilters({
 
               {/* Status Filter */}
               <View className="mb-6">
-                <Text className="text-base font-semibold text-base-content mb-3">
+                <Text className="text-base font-semibold text-zinc-900 dark:text-white mb-3">
                   Status
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -209,7 +209,7 @@ export default function SessionFilters({
 
               {/* Sort Order */}
               <View className="mb-4">
-                <Text className="text-base font-semibold text-base-content mb-3">
+                <Text className="text-base font-semibold text-zinc-900 dark:text-white mb-3">
                   Sort Order
                 </Text>
                 <View className="flex-row gap-2">

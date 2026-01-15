@@ -1,10 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -152,7 +147,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <View className="flex-1 bg-base-100">
+    <View className="flex-1 bg-white dark:bg-zinc-900">
       <Header
         title="Dashboard"
         subtitle={

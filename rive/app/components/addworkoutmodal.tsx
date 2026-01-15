@@ -152,7 +152,7 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
     <Modal visible={isOpen} animationType="slide" presentationStyle="pageSheet">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1 bg-base-100"
+        className="flex-1 bg-white dark:bg-zinc-900"
       >
         {currentStep === "create-workout" ? (
           <CreateWorkoutForm

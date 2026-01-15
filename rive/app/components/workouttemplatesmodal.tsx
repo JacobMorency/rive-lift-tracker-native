@@ -206,9 +206,9 @@ const WorkoutTemplatesModal = ({
 
   return (
     <Modal visible={isOpen} animationType="slide" presentationStyle="pageSheet">
-      <View className="flex-1 bg-base-100">
+      <View className="flex-1 bg-white dark:bg-zinc-900">
         {/* Header */}
-        <View className="flex-row items-center justify-between p-4 border-b border-base-300">
+        <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-700">
           <TouchableOpacity
             onPress={onClose}
             className="w-8 h-8 items-center justify-center"
@@ -216,7 +216,7 @@ const WorkoutTemplatesModal = ({
             <Ionicons name="close" size={24} color="#6b7280" />
           </TouchableOpacity>
 
-          <Text className="text-lg font-semibold text-base-content">
+          <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
             Workout Templates ({workoutTemplates.length})
           </Text>
 
@@ -225,9 +225,9 @@ const WorkoutTemplatesModal = ({
 
         {/* Add New Workout Button */}
         {onAddNewWorkout && (
-          <View className="p-4 border-b border-base-300">
+          <View className="p-4 border-b border-gray-200 dark:border-zinc-700">
             <TouchableOpacity
-              className="w-full py-3 rounded-lg bg-primary flex-row items-center justify-center"
+              className="w-full py-3 rounded-lg bg-[#ff4b8c] dark:bg-[#ff6fa1] flex-row items-center justify-center"
               style={{
                 shadowColor: "#000",
                 shadowOffset: {
@@ -241,7 +241,7 @@ const WorkoutTemplatesModal = ({
               onPress={onAddNewWorkout}
             >
               <Ionicons name="add-circle-outline" size={20} color="#ffffff" />
-              <Text className="text-primary-content text-center font-medium ml-2">
+              <Text className="text-[#ff4b8c] dark:text-[#ff6fa1]-content text-center font-medium ml-2">
                 Add New Workout
               </Text>
             </TouchableOpacity>
@@ -253,15 +253,15 @@ const WorkoutTemplatesModal = ({
           {loading ? (
             <View className="flex-1 justify-center items-center py-8">
               <ActivityIndicator size="large" color="#ff4b8c" />
-              <Text className="text-muted mt-2">Loading workouts...</Text>
+              <Text className="text-gray-500 dark:text-gray-400 mt-2">Loading workouts...</Text>
             </View>
           ) : workoutTemplates.length === 0 ? (
             <View className="flex-1 justify-center items-center py-8 px-4">
               <Text className="text-6xl mb-4">🏋️</Text>
-              <Text className="text-lg font-semibold text-base-content mb-2">
+              <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
                 No Workout Templates
               </Text>
-              <Text className="text-muted text-center">
+              <Text className="text-gray-500 dark:text-gray-400 text-center">
                 Create your first workout template to get started
               </Text>
             </View>

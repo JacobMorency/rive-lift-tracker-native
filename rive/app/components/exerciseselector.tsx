@@ -164,26 +164,26 @@ const ExerciseSelector = ({
   };
 
   return (
-    <View className="flex-1 bg-base-100">
+    <View className="flex-1 bg-white dark:bg-zinc-900">
       {/* Enhanced Header */}
       <View
-        className="bg-base-200 px-4 py-4 border-b border-base-300"
+        className="bg-gray-50 dark:bg-zinc-800 px-4 py-4 border-b border-gray-200 dark:border-zinc-700"
         style={{ paddingTop: insets.top + 16 }}
       >
         <View className="flex-row items-center justify-between mb-3">
           <TouchableOpacity
             onPress={onClose}
-            className="w-10 h-10 items-center justify-center rounded-full bg-base-300"
+            className="w-10 h-10 items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-700"
           >
             <Ionicons name="close" size={20} color="#6b7280" />
           </TouchableOpacity>
 
           <View className="flex-1 items-center">
-            <Text className="text-xl font-bold text-base-content">
+            <Text className="text-xl font-bold text-zinc-900 dark:text-white">
               {workoutName ? `Add Exercises to "${workoutName}"` : title}
             </Text>
             {selectedExercises.length > 0 && (
-              <Text className="text-sm text-muted mt-1">
+              <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {selectedExercises.length} exercise
                 {selectedExercises.length !== 1 ? "s" : ""} selected
               </Text>
@@ -192,7 +192,7 @@ const ExerciseSelector = ({
 
           <TouchableOpacity
             onPress={handleConfirm}
-            className="w-10 h-10 items-center justify-center rounded-full bg-primary"
+            className="w-10 h-10 items-center justify-center rounded-full bg-[#ff4b8c] dark:bg-[#ff6fa1]"
             style={{
               shadowColor: "#ff4b8c",
               shadowOffset: { width: 0, height: 2 },
@@ -207,13 +207,13 @@ const ExerciseSelector = ({
 
         {/* Progress Indicator */}
         <View className="flex-row items-center gap-2">
-          <View className="flex-1 h-2 bg-base-300 rounded-full overflow-hidden">
+          <View className="flex-1 h-2 bg-gray-100 dark:bg-zinc-700 rounded-full overflow-hidden">
             <View
-              className="h-full bg-primary rounded-full"
+              className="h-full bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-full"
               style={{ width: "100%" }}
             />
           </View>
-          <Text className="text-xs text-muted ml-2">Step 2 of 2</Text>
+          <Text className="text-xs text-gray-500 dark:text-gray-400 ml-2">Step 2 of 2</Text>
         </View>
       </View>
 

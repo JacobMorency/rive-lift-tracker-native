@@ -1059,19 +1059,19 @@ export default function SessionDetailPage() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-base-100">
+      <View className="flex-1 bg-white dark:bg-zinc-900">
         {/* Header */}
         <View
-          className="bg-base-200 px-4 border-b border-base-300"
+          className="bg-gray-50 dark:bg-zinc-800 px-4 border-b border-gray-200 dark:border-zinc-700"
           style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
         >
-          <Text className="text-2xl font-bold text-base-content">Session</Text>
+          <Text className="text-2xl font-bold text-zinc-900 dark:text-white">Session</Text>
         </View>
 
         {/* Loading */}
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#ff4b8c" />
-          <Text className="text-muted mt-2">Loading session...</Text>
+          <Text className="text-gray-500 dark:text-gray-400 mt-2">Loading session...</Text>
         </View>
       </View>
     );
@@ -1079,20 +1079,20 @@ export default function SessionDetailPage() {
 
   if (!sessionData) {
     return (
-      <View className="flex-1 bg-base-100">
+      <View className="flex-1 bg-white dark:bg-zinc-900">
         {/* Header */}
         <View
-          className="bg-base-200 px-4 border-b border-base-300"
+          className="bg-gray-50 dark:bg-zinc-800 px-4 border-b border-gray-200 dark:border-zinc-700"
           style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
         >
-          <Text className="text-2xl font-bold text-base-content">
+          <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
             Session Not Found
           </Text>
         </View>
 
         {/* Content */}
         <View className="flex-1 justify-center items-center px-4">
-          <Text className="text-muted text-center">
+          <Text className="text-gray-500 dark:text-gray-400 text-center">
             Session not found or you don&apos;t have access to it.
           </Text>
         </View>
@@ -1119,18 +1119,18 @@ export default function SessionDetailPage() {
 
   // Show exercise list
   return (
-    <View className="flex-1 bg-base-100">
+    <View className="flex-1 bg-white dark:bg-zinc-900">
       {/* Header */}
       <View
-        className="bg-base-200 px-4 border-b border-base-300"
+        className="bg-gray-50 dark:bg-zinc-800 px-4 border-b border-gray-200 dark:border-zinc-700"
         style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
       >
         <View className="flex-row items-center justify-between">
           <View className="flex-1">
-            <Text className="text-2xl font-bold text-base-content">
+            <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
               {sessionData.workout_name}
             </Text>
-            <Text className="text-muted mt-1">
+            <Text className="text-gray-500 dark:text-gray-400 mt-1">
               Started {new Date(sessionData.started_at).toLocaleDateString()}
             </Text>
           </View>
@@ -1138,7 +1138,7 @@ export default function SessionDetailPage() {
             <TouchableOpacity
               className={`w-8 h-8 rounded-full items-center justify-center ${
                 exerciseProgress.every((ex) => !ex.completed)
-                  ? "bg-base-300"
+                  ? "bg-gray-100 dark:bg-zinc-700"
                   : "bg-success"
               }`}
               onPress={handleCompleteSession}
@@ -1185,15 +1185,15 @@ export default function SessionDetailPage() {
         {/* Progress Indicator */}
         <View className="mb-6">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-lg font-semibold text-base-content">
+            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
               Progress
             </Text>
-            <Text className="text-sm text-muted">
+            <Text className="text-sm text-gray-500 dark:text-gray-400">
               {exerciseProgress.filter((ex) => ex.completed).length} of{" "}
               {sessionData.exercises.length} completed
             </Text>
           </View>
-          <View className="bg-base-300 rounded-full h-2">
+          <View className="bg-gray-100 dark:bg-zinc-700 rounded-full h-2">
             <View
               className="bg-primary rounded-full h-2"
               style={{
@@ -1212,7 +1212,7 @@ export default function SessionDetailPage() {
 
         <View className="mb-4">
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-lg font-semibold text-base-content">
+            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
               Exercises ({sessionData.exercises.length})
             </Text>
             <TouchableOpacity
@@ -1223,20 +1223,20 @@ export default function SessionDetailPage() {
               <Text className="text-white font-medium ml-1">Add Exercise</Text>
             </TouchableOpacity>
           </View>
-          <Text className="text-muted text-sm">
+          <Text className="text-gray-500 dark:text-gray-400 text-sm">
             Tap an exercise to start tracking your sets
           </Text>
         </View>
 
         {sessionData.exercises.length === 0 ? (
           <View className="flex-1 justify-center items-center py-8">
-            <View className="w-16 h-16 bg-base-300 rounded-full items-center justify-center mb-4">
+            <View className="w-16 h-16 bg-gray-100 dark:bg-zinc-700 rounded-full items-center justify-center mb-4">
               <Ionicons name="barbell-outline" size={32} color="#ff4b8c" />
             </View>
-            <Text className="text-lg font-semibold text-base-content mb-2">
+            <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
               No Exercises
             </Text>
-            <Text className="text-muted text-center">
+            <Text className="text-gray-500 dark:text-gray-400 text-center">
               This workout template has no exercises
             </Text>
           </View>
@@ -1264,7 +1264,7 @@ export default function SessionDetailPage() {
                         ? "bg-success/10 border border-success/20"
                         : hasStarted
                           ? "bg-warning/10 border border-warning/20"
-                          : "bg-base-200 border border-base-300"
+                          : "bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700"
                     }`}
                     onPress={() => handleExerciseClick(index)}
                     style={{
@@ -1286,7 +1286,7 @@ export default function SessionDetailPage() {
                             ? "bg-success"
                             : hasStarted
                               ? "bg-warning"
-                              : "bg-base-300"
+                              : "bg-gray-100 dark:bg-zinc-700"
                         }`}
                       >
                         <Ionicons
@@ -1305,13 +1305,13 @@ export default function SessionDetailPage() {
                       {/* Exercise Info */}
                       <View className="flex-1">
                         <View className="mb-1">
-                          <Text className="text-lg font-semibold text-base-content">
+                          <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
                             {formatExerciseName(exercise.name)}
                           </Text>
                         </View>
 
                         <View className="flex-row items-center justify-between">
-                          <Text className="text-sm text-muted">
+                          <Text className="text-sm text-gray-500 dark:text-gray-400">
                             {exercise.primaryMuscleGroup || "Exercise"}
                           </Text>
                           {setCount > 0 && (
@@ -1321,7 +1321,7 @@ export default function SessionDetailPage() {
                                 size={14}
                                 color="#6b7280"
                               />
-                              <Text className="text-sm text-muted ml-1">
+                              <Text className="text-sm text-gray-500 dark:text-gray-400 ml-1">
                                 {setCount} set{setCount !== 1 ? "s" : ""}
                               </Text>
                             </View>

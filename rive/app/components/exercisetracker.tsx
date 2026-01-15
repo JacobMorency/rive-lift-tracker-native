@@ -165,10 +165,10 @@ const ExerciseTracker = ({
   };
 
   return (
-    <View className="flex-1 bg-base-100">
+    <View className="flex-1 bg-white dark:bg-zinc-900">
       {/* Header */}
       <View
-        className="flex-row items-center justify-between px-4 pb-4 border-b border-base-300"
+        className="flex-row items-center justify-between px-4 pb-4 border-b border-gray-200 dark:border-zinc-700"
         style={{ paddingTop: insets.top + 16 }}
       >
         <TouchableOpacity
@@ -179,17 +179,17 @@ const ExerciseTracker = ({
         </TouchableOpacity>
 
         <View className="flex-1 items-center">
-          <Text className="text-lg font-semibold text-base-content">
+          <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
             {formatExerciseName(exercise.name)}
           </Text>
           {exercise.primaryMuscleGroup && (
-            <Text className="text-sm text-muted">{exercise.primaryMuscleGroup}</Text>
+            <Text className="text-sm text-gray-500 dark:text-gray-400">{exercise.primaryMuscleGroup}</Text>
           )}
         </View>
 
         <TouchableOpacity
           className={`w-8 h-8 items-center justify-center rounded-full ${
-            sets.length === 0 ? "bg-base-300" : "bg-primary"
+            sets.length === 0 ? "bg-gray-100 dark:bg-zinc-700" : "bg-[#ff4b8c] dark:bg-[#ff6fa1]"
           }`}
           onPress={handleComplete}
           disabled={sets.length === 0}

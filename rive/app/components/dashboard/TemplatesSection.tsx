@@ -148,12 +148,12 @@ export default function TemplatesSection({
         {/* Header */}
         <View className="flex-row items-center gap-2 mb-4">
           <Ionicons name="barbell" size={24} color="#ff4b8c" />
-          <Text className="text-xl font-bold text-base-content">
+          <Text className="text-xl font-bold text-zinc-900 dark:text-white">
             Workout Templates
           </Text>
           {workoutTemplates.length > 0 && (
-            <View className="bg-primary/20 px-2 py-1 rounded-full">
-              <Text className="text-xs font-semibold text-primary">
+            <View className="bg-[#ff4b8c]/20 dark:bg-[#ff6fa1]/20 px-2 py-1 rounded-full">
+              <Text className="text-xs font-semibold text-[#ff4b8c] dark:text-[#ff6fa1]">
                 {workoutTemplates.length}
               </Text>
             </View>
@@ -162,14 +162,14 @@ export default function TemplatesSection({
 
         {/* Content */}
         {loading ? (
-          <View className="flex-row items-center justify-center py-8 bg-base-300 rounded-xl">
+          <View className="flex-row items-center justify-center py-8 bg-gray-100 dark:bg-zinc-700 rounded-xl">
             <ActivityIndicator size="small" color="#ff4b8c" />
-            <Text className="text-muted ml-2">Loading templates...</Text>
+            <Text className="text-gray-500 dark:text-gray-400 ml-2">Loading templates...</Text>
           </View>
         ) : (
           <>
             <TouchableOpacity
-              className="bg-primary rounded-xl p-4 mb-4 flex-row items-center justify-center"
+              className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-xl p-4 mb-4 flex-row items-center justify-center"
               onPress={() => setIsAddModalOpen(true)}
               style={{
                 shadowColor: "#ff4b8c",
@@ -180,22 +180,22 @@ export default function TemplatesSection({
               }}
             >
               <Ionicons name="add-circle" size={22} color="#ffffff" />
-              <Text className="text-primary-content font-bold text-base ml-2">
+              <Text className="text-white font-bold text-base ml-2">
                 Create New Workout Template
               </Text>
             </TouchableOpacity>
 
             {workoutTemplates.length === 0 ? (
-              <View className="items-center py-12 bg-base-300 rounded-xl">
+              <View className="items-center py-12 bg-gray-100 dark:bg-zinc-700 rounded-xl">
                 <Ionicons
                   name="barbell-outline"
                   size={48}
                   color="#9ca3af"
                 />
-                <Text className="text-lg font-bold text-base-content mt-4 mb-2">
+                <Text className="text-lg font-bold text-zinc-900 dark:text-white mt-4 mb-2">
                   No Templates Yet
                 </Text>
-                <Text className="text-sm text-muted text-center px-4">
+                <Text className="text-sm text-gray-500 dark:text-gray-400 text-center px-4">
                   Create your first workout template to get started
                 </Text>
               </View>
@@ -204,7 +204,7 @@ export default function TemplatesSection({
                 {workoutTemplates.map((template) => (
                   <TouchableOpacity
                     key={template.id}
-                    className="bg-base-300 rounded-xl p-4"
+                    className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-4"
                     onPress={() => handleViewWorkoutDetails(template.id)}
                     style={{
                       shadowColor: "#000",
@@ -216,25 +216,25 @@ export default function TemplatesSection({
                   >
                     <View className="flex-row items-center justify-between">
                       <View className="flex-1">
-                        <Text className="text-base font-bold text-base-content">
+                        <Text className="text-base font-bold text-zinc-900 dark:text-white">
                           {template.name}
                         </Text>
                         {template.description && (
-                          <Text className="text-sm text-muted mt-1">
+                          <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                             {template.description}
                           </Text>
                         )}
                         <View className="flex-row items-center gap-3 mt-2">
                           <View className="flex-row items-center gap-1">
                             <Ionicons name="list" size={14} color="#9ca3af" />
-                            <Text className="text-xs text-muted">
+                            <Text className="text-xs text-gray-500 dark:text-gray-400">
                               {template.exercises.length} exercise
                               {template.exercises.length !== 1 ? "s" : ""}
                             </Text>
                           </View>
                           <View className="flex-row items-center gap-1">
                             <Ionicons name="calendar-outline" size={14} color="#9ca3af" />
-                            <Text className="text-xs text-muted">
+                            <Text className="text-xs text-gray-500 dark:text-gray-400">
                               {new Date(
                                 template.created_at
                               ).toLocaleDateString()}

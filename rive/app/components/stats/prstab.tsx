@@ -165,29 +165,29 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
       <View className="mb-6">
         <View className="flex-row items-center justify-between mb-4">
           <View>
-            <Text className="text-lg font-semibold text-base-content">
+            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
               Personal Records
             </Text>
-            <Text className="text-sm text-muted">
+            <Text className="text-sm text-gray-500 dark:text-gray-400">
               Track your best performances
             </Text>
           </View>
           <TouchableOpacity
             onPress={() => setIsSelectionModalOpen(true)}
-            className="bg-primary rounded-lg px-4 py-2"
+            className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-lg px-4 py-2"
           >
-            <Text className="text-primary-content font-medium">Manage</Text>
+            <Text className="text-[#ff4b8c] dark:text-[#ff6fa1]-content font-medium">Manage</Text>
           </TouchableOpacity>
         </View>
 
-        <View className="bg-base-300 rounded-lg p-4">
+        <View className="bg-gray-100 dark:bg-zinc-700 rounded-lg p-4">
           <View className="flex-row items-center gap-2 mb-2">
             <Ionicons name="list" size={16} color="#ff4b8c" />
-            <Text className="text-sm font-medium text-muted">
+            <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
               Currently Tracking
             </Text>
           </View>
-          <Text className="text-2xl font-bold text-base-content">
+          <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
             {trackedExercises.length} exercise
             {trackedExercises.length !== 1 ? "s" : ""}
           </Text>
@@ -198,12 +198,12 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
       {loading ? (
         <View className="flex-1 justify-center items-center py-12">
           <ActivityIndicator size="large" color="#ff4b8c" />
-          <Text className="text-muted mt-2">Loading PRs...</Text>
+          <Text className="text-gray-500 dark:text-gray-400 mt-2">Loading PRs...</Text>
         </View>
       ) : trackedPRs.length > 0 ? (
         <View className="gap-4">
           {trackedPRs.map((pr) => (
-            <View key={pr.exerciseId} className="bg-base-300 rounded-xl p-6">
+            <View key={pr.exerciseId} className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-6">
               {/* Exercise Header */}
               <TouchableOpacity
                 onPress={() =>
@@ -215,7 +215,7 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
               >
                 <View className="flex-1">
                   <View className="flex-row items-center gap-2 mb-1">
-                    <Text className="text-lg font-semibold text-base-content">
+                    <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
                       {pr.exerciseName}
                     </Text>
                     {pr.primaryMuscleGroup && (
@@ -252,14 +252,14 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                   <View className="flex-row justify-between items-center">
                     <View className="flex-row items-center gap-2">
                       <Ionicons name="barbell" size={16} color="#ff4b8c" />
-                      <Text className="text-base-content">Max Weight:</Text>
+                      <Text className="text-zinc-900 dark:text-white">Max Weight:</Text>
                     </View>
                     <View className="items-end">
-                      <Text className="text-lg font-bold text-primary">
+                      <Text className="text-lg font-bold text-[#ff4b8c] dark:text-[#ff6fa1]">
                         {pr.maxWeight} lbs × {pr.maxWeightReps} reps
                       </Text>
                       {pr.maxWeightDate && (
-                        <Text className="text-xs text-muted">
+                        <Text className="text-xs text-gray-500 dark:text-gray-400">
                           {formatDate(pr.maxWeightDate)}
                         </Text>
                       )}
@@ -269,14 +269,14 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                   <View className="flex-row justify-between items-center">
                     <View className="flex-row items-center gap-2">
                       <Ionicons name="repeat" size={16} color="#ff4b8c" />
-                      <Text className="text-base-content">Max Reps:</Text>
+                      <Text className="text-zinc-900 dark:text-white">Max Reps:</Text>
                     </View>
                     <View className="items-end">
-                      <Text className="text-lg font-bold text-primary">
+                      <Text className="text-lg font-bold text-[#ff4b8c] dark:text-[#ff6fa1]">
                         {pr.maxReps} reps × {pr.maxRepsWeight} lbs
                       </Text>
                       {pr.maxRepsDate && (
-                        <Text className="text-xs text-muted">
+                        <Text className="text-xs text-gray-500 dark:text-gray-400">
                           {formatDate(pr.maxRepsDate)}
                         </Text>
                       )}
@@ -287,11 +287,11 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
 
               {/* PR History and Progress Charts (Expandable) */}
               {expandedExercise === pr.exerciseId && (
-                <View className="mt-4 pt-4 border-t border-base-200">
+                <View className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
                   {/* PR History */}
                   {pr.prHistory.length > 0 && (
                     <View className="mb-4">
-                      <Text className="text-sm font-medium text-muted mb-3">
+                      <Text className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
                         PR History ({pr.prHistory.length} achievements)
                       </Text>
                       <View className="gap-2">
@@ -306,7 +306,7 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                                 size={14}
                                 color={getPRTypeColor(entry.type)}
                               />
-                              <Text className="text-sm text-base-content capitalize">
+                              <Text className="text-sm text-zinc-900 dark:text-white capitalize">
                                 {entry.type} PR:
                               </Text>
                             </View>
@@ -319,14 +319,14 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                                   ? `${entry.value} lbs × ${entry.reps} reps`
                                   : `${entry.value} reps × ${entry.weight} lbs`}
                               </Text>
-                              <Text className="text-xs text-muted">
+                              <Text className="text-xs text-gray-500 dark:text-gray-400">
                                 {formatDate(entry.date)}
                               </Text>
                             </View>
                           </View>
                         ))}
                         {pr.prHistory.length > 5 && (
-                          <Text className="text-xs text-muted text-center mt-2">
+                          <Text className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
                             +{pr.prHistory.length - 5} more achievements
                           </Text>
                         )}
@@ -338,7 +338,7 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                   {loadingProgress.has(pr.exerciseId) ? (
                     <View className="items-center py-4">
                       <ActivityIndicator size="small" color="#ff4b8c" />
-                      <Text className="text-xs text-muted mt-2">
+                      <Text className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                         Loading progress...
                       </Text>
                     </View>
@@ -348,7 +348,7 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                       const dataPoints = progress.dataPoints;
                       if (dataPoints.length === 0) {
                         return (
-                          <Text className="text-sm text-muted text-center py-4">
+                          <Text className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
                             No progress data available for this date range
                           </Text>
                         );
@@ -366,24 +366,24 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                       return (
                         <View className="gap-4">
                           {/* Volume Progression Summary */}
-                          <View className="bg-base-200 rounded-lg p-4">
+                          <View className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4">
                             <View className="flex-row items-center gap-2 mb-3">
                               <Ionicons name="trending-up" size={16} color="#10b981" />
-                              <Text className="text-base font-semibold text-base-content">
+                              <Text className="text-base font-semibold text-zinc-900 dark:text-white">
                                 Volume Progression
                               </Text>
                             </View>
                             <View className="gap-2">
                               <View className="flex-row justify-between items-center">
-                                <Text className="text-sm text-muted">
+                                <Text className="text-sm text-gray-500 dark:text-gray-400">
                                   Average Volume:
                                 </Text>
-                                <Text className="text-base font-bold text-primary">
+                                <Text className="text-base font-bold text-[#ff4b8c] dark:text-[#ff6fa1]">
                                   {Math.round(avgVolume).toLocaleString()} lbs
                                 </Text>
                               </View>
                               <View className="flex-row justify-between items-center">
-                                <Text className="text-sm text-muted">
+                                <Text className="text-sm text-gray-500 dark:text-gray-400">
                                   Highest Volume:
                                 </Text>
                                 <Text className="text-base font-bold text-success">
@@ -391,16 +391,16 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                                 </Text>
                               </View>
                               <View className="flex-row justify-between items-center">
-                                <Text className="text-sm text-muted">
+                                <Text className="text-sm text-gray-500 dark:text-gray-400">
                                   Total Sessions:
                                 </Text>
-                                <Text className="text-base font-bold text-primary">
+                                <Text className="text-base font-bold text-[#ff4b8c] dark:text-[#ff6fa1]">
                                   {dataPoints.length}
                                 </Text>
                               </View>
                               {progress.progression.volumePercentage !== 0 && (
-                                <View className="flex-row justify-between items-center mt-1 pt-2 border-t border-base-300">
-                                  <Text className="text-sm text-muted">
+                                <View className="flex-row justify-between items-center mt-1 pt-2 border-t border-gray-200 dark:border-zinc-700">
+                                  <Text className="text-sm text-gray-500 dark:text-gray-400">
                                     Volume Change:
                                   </Text>
                                   <View className="flex-row items-center gap-1">
@@ -447,33 +447,33 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                           </View>
 
                           {/* Weight Progression Summary */}
-                          <View className="bg-base-200 rounded-lg p-4">
+                          <View className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4">
                             <View className="flex-row items-center gap-2 mb-3">
                               <Ionicons name="barbell" size={16} color="#ff4b8c" />
-                              <Text className="text-base font-semibold text-base-content">
+                              <Text className="text-base font-semibold text-zinc-900 dark:text-white">
                                 Max Weight Progression
                               </Text>
                             </View>
                             <View className="gap-2">
                               <View className="flex-row justify-between items-center">
-                                <Text className="text-sm text-muted">
+                                <Text className="text-sm text-gray-500 dark:text-gray-400">
                                   Current Max:
                                 </Text>
-                                <Text className="text-base font-bold text-primary">
+                                <Text className="text-base font-bold text-[#ff4b8c] dark:text-[#ff6fa1]">
                                   {Math.round(currentMaxWeight)} lbs
                                 </Text>
                               </View>
                               <View className="flex-row justify-between items-center">
-                                <Text className="text-sm text-muted">
+                                <Text className="text-sm text-gray-500 dark:text-gray-400">
                                   Average Max:
                                 </Text>
-                                <Text className="text-base font-bold text-primary">
+                                <Text className="text-base font-bold text-[#ff4b8c] dark:text-[#ff6fa1]">
                                   {Math.round(avgMaxWeight)} lbs
                                 </Text>
                               </View>
                               {progress.progression.weightPercentage !== 0 && (
-                                <View className="flex-row justify-between items-center mt-1 pt-2 border-t border-base-300">
-                                  <Text className="text-sm text-muted">
+                                <View className="flex-row justify-between items-center mt-1 pt-2 border-t border-gray-200 dark:border-zinc-700">
+                                  <Text className="text-sm text-gray-500 dark:text-gray-400">
                                     Weight Change:
                                   </Text>
                                   <View className="flex-row items-center gap-1">
@@ -530,21 +530,21 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
       ) : (
         <View className="flex-1 justify-center items-center py-12">
           <View className="items-center">
-            <View className="w-20 h-20 bg-base-300 rounded-full items-center justify-center mb-4">
+            <View className="w-20 h-20 bg-gray-100 dark:bg-zinc-700 rounded-full items-center justify-center mb-4">
               <Ionicons name="trophy-outline" size={40} color="#9ca3af" />
             </View>
-            <Text className="text-xl font-bold text-base-content mb-2">
+            <Text className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
               No PRs Tracked Yet
             </Text>
-            <Text className="text-center text-muted mb-6 max-w-xs">
+            <Text className="text-center text-gray-500 dark:text-gray-400 mb-6 max-w-xs">
               Select exercises to start tracking your personal records and see
               your progress over time.
             </Text>
             <TouchableOpacity
               onPress={() => setIsSelectionModalOpen(true)}
-              className="bg-primary rounded-lg px-6 py-3"
+              className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-lg px-6 py-3"
             >
-              <Text className="text-primary-content font-semibold">
+              <Text className="text-[#ff4b8c] dark:text-[#ff6fa1]-content font-semibold">
                 Select Exercises
               </Text>
             </TouchableOpacity>

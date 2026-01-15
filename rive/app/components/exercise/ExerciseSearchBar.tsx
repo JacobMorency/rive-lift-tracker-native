@@ -16,11 +16,11 @@ export default function ExerciseSearchBar({
 
   return (
     <View
-      className="px-6 pt-4 bg-base-100"
+      className="px-6 pt-4 bg-white dark:bg-zinc-900"
       style={{ paddingBottom: insets.bottom + 16 }}
     >
       <View
-        className="flex-row items-center bg-base-200 rounded-full px-4 py-3 border-2 border-base-300"
+        className="flex-row items-center bg-gray-50 dark:bg-zinc-800 rounded-full px-4 py-3 border-2 border-gray-200 dark:border-zinc-700"
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 4 },
@@ -31,7 +31,7 @@ export default function ExerciseSearchBar({
       >
         <Ionicons name="search" size={20} color="#9ca3af" />
         <TextInput
-          className="flex-1 ml-3 text-base-content bg-transparent text-base"
+          className="flex-1 ml-3 text-zinc-900 dark:text-white bg-transparent text-base"
           placeholder="Search exercises..."
           placeholderTextColor="#9ca3af"
           value={searchValue}

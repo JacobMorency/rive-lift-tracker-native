@@ -70,7 +70,7 @@ export default function SetInputForm({
   };
   return (
     <View
-      className="bg-base-200 rounded-xl p-4 mb-4"
+      className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-4"
       style={{
         shadowColor: "#000",
         shadowOffset: {
@@ -83,14 +83,14 @@ export default function SetInputForm({
       }}
     >
       <View className="mb-3 flex-row items-center justify-between">
-        <Text className="text-lg font-bold text-base-content">
+        <Text className="text-lg font-bold text-zinc-900 dark:text-white">
           Set {currentSet.set_number}
         </Text>
         <View className="flex-row items-center gap-2">
           <TouchableOpacity
             onPress={() => setShowPartials(!showPartials)}
             className={`px-2 py-1 rounded flex-row items-center gap-1 ${
-              showPartials ? "bg-primary" : "bg-base-300"
+              showPartials ? "bg-[#ff4b8c] dark:bg-[#ff6fa1]" : "bg-gray-100 dark:bg-zinc-700"
             }`}
           >
             <Ionicons
@@ -100,7 +100,7 @@ export default function SetInputForm({
             />
             <Text
               className={`${
-                showPartials ? "text-primary-content" : "text-base-content"
+                showPartials ? "text-white" : "text-zinc-900 dark:text-white"
               } text-xs font-medium`}
             >
               {showPartials ? "Hide Partials" : "Show Partials"}
@@ -112,7 +112,7 @@ export default function SetInputForm({
       <View className="gap-3">
         {/* Quick Rep Buttons */}
         <View className="mb-2">
-          <Text className="text-xs text-muted mb-1">Quick Reps</Text>
+          <Text className="text-xs text-gray-500 dark:text-gray-400 mb-1">Quick Reps</Text>
           <View className="flex-row gap-2">
             {quickReps.map((reps) => (
               <TouchableOpacity
@@ -120,15 +120,15 @@ export default function SetInputForm({
                 onPress={() => handleQuickRep(reps)}
                 className={`px-3 py-2 rounded-lg border ${
                   isQuickRepSelected(reps)
-                    ? "bg-primary border-primary"
-                    : "bg-base-300 border-transparent"
+                    ? "bg-[#ff4b8c] dark:bg-[#ff6fa1] border-primary"
+                    : "bg-gray-100 dark:bg-zinc-700 border-transparent"
                 }`}
               >
                 <Text
                   className={`text-sm font-semibold ${
                     isQuickRepSelected(reps)
-                      ? "text-primary-content"
-                      : "text-base-content"
+                      ? "text-white"
+                      : "text-zinc-900 dark:text-white"
                   }`}
                 >
                   {reps}
@@ -188,15 +188,15 @@ export default function SetInputForm({
         {showPartials && (
           <View className="flex-1">
             <View className="mb-1">
-              <Text className="text-sm font-semibold text-base-content">
+              <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
                 Partials
               </Text>
             </View>
             <View
               className={`rounded-xl flex-row items-center ${
                 currentSet.partialReps !== null && currentSet.partialReps > 0
-                  ? "bg-primary/10 border-2 border-primary"
-                  : "bg-base-300 border-2 border-transparent"
+                  ? "bg-[#ff4b8c] dark:bg-[#ff6fa1]/10 border-2 border-primary"
+                  : "bg-gray-100 dark:bg-zinc-700 border-2 border-transparent"
               }`}
             >
               <TouchableOpacity
@@ -220,7 +220,7 @@ export default function SetInputForm({
                 />
               </TouchableOpacity>
               <TextInput
-                className="flex-1 text-center py-2 text-lg font-bold text-base-content"
+                className="flex-1 text-center py-2 text-lg font-bold text-zinc-900 dark:text-white"
                 value={
                   currentSet.partialReps !== null
                     ? currentSet.partialReps.toString()
@@ -279,8 +279,8 @@ export default function SetInputForm({
           <TouchableOpacity
             className={`w-6 h-6 rounded border-2 items-center justify-center ${
               currentSet.is_unilateral
-                ? "bg-primary border-primary"
-                : "border-base-content/30"
+                ? "bg-[#ff4b8c] dark:bg-[#ff6fa1] border-[#ff4b8c] dark:border-[#ff6fa1]"
+                : "border-zinc-900/30 dark:border-white/30"
             }`}
             onPress={() =>
               setCurrentSet({
@@ -293,7 +293,7 @@ export default function SetInputForm({
               <Ionicons name="checkmark" size={16} color="white" />
             )}
           </TouchableOpacity>
-          <Text className="text-sm text-base-content">Unilateral (L/R)</Text>
+          <Text className="text-sm text-zinc-900 dark:text-white">Unilateral (L/R)</Text>
         </View>
       </View>
 
@@ -301,7 +301,7 @@ export default function SetInputForm({
       <View className="flex-row gap-3 mt-6">
         <TouchableOpacity
           className={`flex-1 py-4 rounded-xl flex-row items-center justify-center ${
-            isSetComplete ? "bg-primary" : "bg-base-300"
+            isSetComplete ? "bg-[#ff4b8c] dark:bg-[#ff6fa1]" : "bg-gray-100 dark:bg-zinc-700"
           }`}
           style={{
             shadowColor: isSetComplete ? "#ff4b8c" : "transparent",
@@ -320,7 +320,7 @@ export default function SetInputForm({
           />
           <Text
             className={`text-center font-bold ml-2 ${
-              isSetComplete ? "text-primary-content" : "text-muted"
+              isSetComplete ? "text-white" : "text-gray-500 dark:text-gray-400"
             }`}
           >
             Add Set
@@ -328,7 +328,7 @@ export default function SetInputForm({
         </TouchableOpacity>
         {hasSets && (
           <TouchableOpacity
-            className="px-6 py-4 border-2 border-primary rounded-xl flex-row items-center bg-primary/5"
+            className="px-6 py-4 border-2 border-primary rounded-xl flex-row items-center bg-[#ff4b8c] dark:bg-[#ff6fa1]/5"
             onPress={onCopyLastSet}
             style={{
               shadowColor: "#ff4b8c",

@@ -67,10 +67,10 @@ export default function DateRangePicker({
     <>
       <TouchableOpacity
         onPress={() => setIsModalOpen(true)}
-        className="flex-row items-center bg-base-300 px-3 py-2 rounded-lg"
+        className="flex-row items-center bg-gray-100 dark:bg-zinc-700 px-3 py-2 rounded-lg"
       >
         <Ionicons name="calendar-outline" size={16} color="#6b7280" />
-        <Text className="text-sm font-medium text-base-content ml-2">
+        <Text className="text-sm font-medium text-zinc-900 dark:text-white ml-2">
           {getDisplayText()}
         </Text>
         <Ionicons
@@ -88,9 +88,9 @@ export default function DateRangePicker({
         onRequestClose={() => setIsModalOpen(false)}
       >
         <View className="flex-1 bg-black/50 justify-center items-center px-4">
-          <View className="bg-base-100 rounded-xl p-6 w-full max-w-sm">
+          <View className="bg-white dark:bg-zinc-900 rounded-xl p-6 w-full max-w-sm">
             <View className="flex-row items-center justify-between mb-4">
-              <Text className="text-lg font-semibold text-base-content">
+              <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
                 Select Time Period
               </Text>
               <TouchableOpacity
@@ -108,15 +108,15 @@ export default function DateRangePicker({
                   onPress={() => handlePresetSelect(preset)}
                   className={`flex-row items-center justify-between py-3 px-2 rounded-lg mb-1 ${
                     selectedRange.type === preset.type
-                      ? "bg-primary/10"
+                      ? "bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10"
                       : "bg-transparent"
                   }`}
                 >
                   <Text
                     className={`text-base ${
                       selectedRange.type === preset.type
-                        ? "text-primary font-semibold"
-                        : "text-base-content"
+                        ? "text-[#ff4b8c] dark:text-[#ff6fa1] font-semibold"
+                        : "text-zinc-900 dark:text-white"
                     }`}
                   >
                     {preset.label}
@@ -128,8 +128,8 @@ export default function DateRangePicker({
               ))}
             </ScrollView>
 
-            <View className="mt-4 pt-4 border-t border-base-300">
-              <Text className="text-xs text-muted text-center">
+            <View className="mt-4 pt-4 border-t border-gray-200 dark:border-zinc-700">
+              <Text className="text-xs text-gray-500 dark:text-gray-400 text-center">
                 Custom range selection coming soon
               </Text>
             </View>

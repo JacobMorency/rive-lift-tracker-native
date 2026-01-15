@@ -37,12 +37,12 @@ export default function DateSelection({
     <View className="mb-4">
       <View className="flex-row gap-3">
         <View className="flex-1">
-          <Text className="text-base-content font-medium mb-2">Start Date</Text>
+          <Text className="text-zinc-900 dark:text-white font-medium mb-2">Start Date</Text>
           <TouchableOpacity
-            className="bg-base-200 rounded-lg p-3 flex-row items-center justify-between"
+            className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 flex-row items-center justify-between"
             onPress={onStartDatePress}
           >
-            <Text className="text-base-content">
+            <Text className="text-zinc-900 dark:text-white">
               {parseLocalDate(startDate).toLocaleDateString()}
             </Text>
             <Ionicons name="calendar-outline" size={20} color="#6b7280" />
@@ -69,14 +69,14 @@ export default function DateSelection({
           )}
         </View>
         <View className="flex-1">
-          <Text className="text-base-content font-medium mb-2">
+          <Text className="text-zinc-900 dark:text-white font-medium mb-2">
             End Date (Optional)
           </Text>
           <TouchableOpacity
-            className="bg-base-200 rounded-lg p-3 flex-row items-center justify-between"
+            className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 flex-row items-center justify-between"
             onPress={onEndDatePress}
           >
-            <Text className="text-base-content">
+            <Text className="text-zinc-900 dark:text-white">
               {endDate
                 ? parseLocalDate(endDate).toLocaleDateString()
                 : "No end date"}
@@ -104,7 +104,7 @@ export default function DateSelection({
             />
           )}
           {recurrenceType !== "once" && !endDate && (
-            <Text className="text-xs text-base-content/60 mt-1">
+            <Text className="text-xs text-zinc-900 dark:text-white/60 mt-1">
               Will default to end of {new Date().getFullYear()}
             </Text>
           )}

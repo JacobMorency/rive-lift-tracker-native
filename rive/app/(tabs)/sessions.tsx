@@ -240,7 +240,7 @@ export default function SessionsPage() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-base-100">
+      <View className="flex-1 bg-white dark:bg-zinc-900">
         <Header
           title="Sessions"
           subtitle={userData ? "Track your workout sessions" : undefined}
@@ -249,14 +249,14 @@ export default function SessionsPage() {
         {/* Loading */}
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#ff4b8c" />
-          <Text className="text-muted mt-2">Loading sessions...</Text>
+          <Text className="text-gray-500 dark:text-gray-400 mt-2">Loading sessions...</Text>
         </View>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-base-100">
+    <View className="flex-1 bg-white dark:bg-zinc-900">
       <Header
         title="Sessions"
         subtitle={userData ? "Track your workout sessions" : undefined}
@@ -275,15 +275,15 @@ export default function SessionsPage() {
 
             {/* Session List Title */}
             <View className="px-4 pt-4 pb-2 flex-row items-center justify-between">
-              <Text className="text-2xl font-bold text-base-content">
+              <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
                 Session List
               </Text>
               <TouchableOpacity
                 onPress={() => router.push("/schedule")}
-                className="flex-row items-center gap-1 px-3 py-1.5 bg-base-300 rounded-lg"
+                className="flex-row items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-zinc-700 rounded-lg"
               >
                 <Ionicons name="calendar-outline" size={16} color="#ff4b8c" />
-                <Text className="text-sm font-medium text-primary">
+                <Text className="text-sm font-medium text-[#ff4b8c] dark:text-[#ff6fa1]">
                   View Schedule
                 </Text>
               </TouchableOpacity>
@@ -315,7 +315,7 @@ export default function SessionsPage() {
 
       {/* Fixed Start New Session Button */}
       <View
-        className="absolute bottom-0 left-0 right-0 bg-base-100"
+        className="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900"
         style={{
           paddingBottom: insets.bottom,
           paddingTop: 12,
@@ -325,7 +325,7 @@ export default function SessionsPage() {
         }}
       >
         <TouchableOpacity
-          className="w-full py-4 rounded-xl bg-primary flex-row items-center justify-center"
+          className="w-full py-4 rounded-xl bg-[#ff4b8c] dark:bg-[#ff6fa1] flex-row items-center justify-center"
           onPress={handleNewSession}
           style={{
             shadowColor: "#ff4b8c",
@@ -336,7 +336,7 @@ export default function SessionsPage() {
           }}
         >
           <Ionicons name="fitness" size={24} color="#ffffff" />
-          <Text className="text-primary-content text-center font-bold ml-3 text-lg">
+          <Text className="text-white text-center font-bold ml-3 text-lg">
             Start New Session
           </Text>
         </TouchableOpacity>
