@@ -1,17 +1,22 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useColorScheme } from "react-native";
 import { useAuth } from "../../context/authcontext";
 import { supabase } from "../../lib/supabaseClient";
 import {
   getScheduledWorkoutsForDateRange,
   ScheduledWorkoutWithDate,
 } from "../../lib/scheduleUtils";
+import Card from "../ui/Card";
+import SectionHeader from "../ui/SectionHeader";
 
 export default function NextScheduledWorkout() {
   const { user } = useAuth();
   const router = useRouter();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const [nextWorkout, setNextWorkout] = useState<
     ScheduledWorkoutWithDate | null
   >(null);
@@ -107,71 +112,49 @@ export default function NextScheduledWorkout() {
     }
   };
 
-  // Don't render anything if loading and no workout yet
-  if (loading && !nextWorkout) {
-    return null;
-  }
-
   // Don't render anything if no workout scheduled
   if (!loading && !nextWorkout) {
     return null;
   }
 
   return (
-    <View
-      className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-4"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-      }}
-    >
-      <View className="flex-row items-center justify-between">
-        <View className="flex-1 mr-3">
-          <View className="flex-row items-center gap-2 mb-1">
-            <Ionicons name="calendar-outline" size={16} color="#ff4b8c" />
-            <Text className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-              Next Scheduled
-            </Text>
+    <View>
+      <SectionHeader icon="calendar-outline" title="Up Next" />
+      <Card
+        variant="elevated"
+        onPress={() =>
+          nextWorkout && handleStartSession(nextWorkout.schedule.workout_id)
+        }
+      >
+        <View className="flex-row items-center gap-4">
+          <View
+            className={`w-12 h-12 rounded-xl items-center justify-center ${
+              isDark ? "bg-[#ff6fa1]/20" : "bg-[#ff4b8c]/20"
+            }`}
+          >
+            <Ionicons
+              name="calendar"
+              size={24}
+              color={isDark ? "#ff6fa1" : "#ff4b8c"}
+            />
           </View>
-          <Text className="text-base font-semibold text-zinc-900 dark:text-white">
-            {nextWorkout?.workout_name}
-          </Text>
-          <Text className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            {nextWorkout ? formatDate(nextWorkout.scheduledDate) : ""}
-          </Text>
-        </View>
-        <TouchableOpacity
-          className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-lg px-4 py-2.5 flex-row items-center gap-2"
-          onPress={() =>
-            nextWorkout && handleStartSession(nextWorkout.schedule.workout_id)
-          }
-          disabled={loading || !nextWorkout}
-          style={{
-            shadowColor: "#ff4b8c",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.3,
-            shadowRadius: 4,
-            elevation: 4,
-          }}
-        >
-          {loading ? (
-            <ActivityIndicator size="small" color="#ffffff" />
-          ) : (
-            <>
-              <Ionicons name="play" size={16} color="#ffffff" />
-              <Text className="text-sm font-semibold text-white">
-                Start
+          <View className="flex-1">
+            <Text className="text-base font-bold text-zinc-900 dark:text-white">
+              {nextWorkout?.workout_name}
+            </Text>
+            <View className="flex-row items-center gap-2 mt-1">
+              <Ionicons
+                name="time-outline"
+                size={14}
+                color={isDark ? "#9ca3af" : "#6b7280"}
+              />
+              <Text className="text-sm text-gray-500 dark:text-gray-400">
+                {nextWorkout ? formatDate(nextWorkout.scheduledDate) : ""}
               </Text>
-            </>
-          )}
-        </TouchableOpacity>
-      </View>
+            </View>
+          </View>
+        </View>
+      </Card>
     </View>
   );
 }

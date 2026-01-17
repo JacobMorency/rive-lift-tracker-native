@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Modal } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+  useColorScheme,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import FilterButton from "./FilterButton";
 
@@ -32,7 +39,29 @@ export default function SessionFilters({
   onSortOrderChange,
   onClearAll,
 }: SessionFiltersProps) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const [showFilterModal, setShowFilterModal] = useState(false);
+
+  // Local state for modal selections (not applied until "Apply" is clicked)
+  const [localWorkout, setLocalWorkout] = useState<string | null>(
+    selectedWorkout
+  );
+  const [localDateRange, setLocalDateRange] =
+    useState<DateRangeFilter>(dateRange);
+  const [localStatusFilter, setLocalStatusFilter] =
+    useState<StatusFilter>(statusFilter);
+  const [localSortOrder, setLocalSortOrder] = useState<SortOrder>(sortOrder);
+
+  // Reset local state when modal opens or props change
+  useEffect(() => {
+    if (showFilterModal) {
+      setLocalWorkout(selectedWorkout);
+      setLocalDateRange(dateRange);
+      setLocalStatusFilter(statusFilter);
+      setLocalSortOrder(sortOrder);
+    }
+  }, [showFilterModal, selectedWorkout, dateRange, statusFilter, sortOrder]);
 
   const hasActiveFilters =
     selectedWorkout !== null || dateRange !== "all" || statusFilter !== "all";
@@ -43,6 +72,30 @@ export default function SessionFilters({
     if (dateRange !== "all") count++;
     if (statusFilter !== "all") count++;
     return count;
+  };
+
+  const handleApply = () => {
+    onWorkoutChange(localWorkout);
+    onDateRangeChange(localDateRange);
+    onStatusChange(localStatusFilter);
+    onSortOrderChange(localSortOrder);
+    setShowFilterModal(false);
+  };
+
+  const handleCancel = () => {
+    // Reset to original values
+    setLocalWorkout(selectedWorkout);
+    setLocalDateRange(dateRange);
+    setLocalStatusFilter(statusFilter);
+    setLocalSortOrder(sortOrder);
+    setShowFilterModal(false);
+  };
+
+  const handleClearAll = () => {
+    setLocalWorkout(null);
+    setLocalDateRange("all");
+    setLocalStatusFilter("all");
+    // Keep sort order when clearing filters
   };
 
   return (
@@ -98,9 +151,11 @@ export default function SessionFilters({
                 Filters
               </Text>
               <View className="flex-row items-center gap-3">
-                {hasActiveFilters && (
+                {(localWorkout !== null ||
+                  localDateRange !== "all" ||
+                  localStatusFilter !== "all") && (
                   <TouchableOpacity
-                    onPress={onClearAll}
+                    onPress={handleClearAll}
                     className="flex-row items-center gap-1"
                   >
                     <Ionicons name="close-circle" size={18} color="#ef4444" />
@@ -109,7 +164,7 @@ export default function SessionFilters({
                     </Text>
                   </TouchableOpacity>
                 )}
-                <TouchableOpacity onPress={() => setShowFilterModal(false)}>
+                <TouchableOpacity onPress={handleCancel}>
                   <Ionicons name="close" size={24} color="#6b7280" />
                 </TouchableOpacity>
               </View>
@@ -128,15 +183,15 @@ export default function SessionFilters({
                   <View className="flex-row gap-2">
                     <FilterButton
                       label="All Workouts"
-                      isSelected={selectedWorkout === null}
-                      onPress={() => onWorkoutChange(null)}
+                      isSelected={localWorkout === null}
+                      onPress={() => setLocalWorkout(null)}
                     />
                     {availableWorkouts.map((workout) => (
                       <FilterButton
                         key={workout}
                         label={workout}
-                        isSelected={selectedWorkout === workout}
-                        onPress={() => onWorkoutChange(workout)}
+                        isSelected={localWorkout === workout}
+                        onPress={() => setLocalWorkout(workout)}
                       />
                     ))}
                   </View>
@@ -161,8 +216,8 @@ export default function SessionFilters({
                       <FilterButton
                         key={range.key}
                         label={range.label}
-                        isSelected={dateRange === range.key}
-                        onPress={() => onDateRangeChange(range.key)}
+                        isSelected={localDateRange === range.key}
+                        onPress={() => setLocalDateRange(range.key)}
                       />
                     ))}
                   </View>
@@ -198,8 +253,8 @@ export default function SessionFilters({
                       <FilterButton
                         key={status.key}
                         label={status.label}
-                        isSelected={statusFilter === status.key}
-                        onPress={() => onStatusChange(status.key)}
+                        isSelected={localStatusFilter === status.key}
+                        onPress={() => setLocalStatusFilter(status.key)}
                         icon={status.icon}
                       />
                     ))}
@@ -215,21 +270,48 @@ export default function SessionFilters({
                 <View className="flex-row gap-2">
                   <FilterButton
                     label="Newest First"
-                    isSelected={sortOrder === "newest"}
-                    onPress={() => onSortOrderChange("newest")}
+                    isSelected={localSortOrder === "newest"}
+                    onPress={() => setLocalSortOrder("newest")}
                     icon="arrow-down"
                     flex={true}
                   />
                   <FilterButton
                     label="Oldest First"
-                    isSelected={sortOrder === "oldest"}
-                    onPress={() => onSortOrderChange("oldest")}
+                    isSelected={localSortOrder === "oldest"}
+                    onPress={() => setLocalSortOrder("oldest")}
                     icon="arrow-up"
                     flex={true}
                   />
                 </View>
               </View>
             </ScrollView>
+
+            {/* Apply Button Footer */}
+            <View
+              className="px-4 py-4 border-t border-gray-200 dark:border-zinc-700"
+              style={{
+                paddingBottom: 20,
+              }}
+            >
+              <TouchableOpacity
+                className={`w-full py-4 rounded-xl flex-row items-center justify-center ${
+                  isDark ? "bg-[#ff6fa1]" : "bg-[#ff4b8c]"
+                }`}
+                onPress={handleApply}
+                style={{
+                  shadowColor: isDark ? "#ff6fa1" : "#ff4b8c",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 8,
+                }}
+              >
+                <Ionicons name="checkmark-circle" size={20} color="#ffffff" />
+                <Text className="text-white font-bold ml-2 text-lg">
+                  Apply Filters
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

@@ -18,7 +18,7 @@ export default function SessionList({
   contentContainerStyle,
 }: SessionListProps) {
   const renderItem = ({ item }: { item: Session }) => (
-    <View className="px-4 mb-4">
+    <View className="px-4 mb-3">
       <SessionCard
         session={item}
         onPress={() => onSessionSelect(item.id)}

@@ -15,6 +15,7 @@ import SessionFilters, {
 import UpcomingWorkouts from "../components/sessions/UpcomingWorkouts";
 import NextScheduledWorkout from "../components/sessions/NextScheduledWorkout";
 import Header from "../components/header";
+import SectionHeader from "../components/ui/SectionHeader";
 
 type Session = {
   id: string;
@@ -271,43 +272,47 @@ export default function SessionsPage() {
         ListHeaderComponent={() => (
           <>
             {/* Next Scheduled Workout */}
-            <View className="px-4 pt-4">
+            <View className="px-4 pt-6">
               <NextScheduledWorkout />
             </View>
 
-            {/* Session List Title */}
-            <View className="px-4 pt-4 pb-2 flex-row items-center justify-between">
-              <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
-                Session List
-              </Text>
-              <TouchableOpacity
-                onPress={() => router.push("/schedule")}
-                className="flex-row items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-zinc-700 rounded-lg"
-              >
-                <Ionicons name="calendar-outline" size={16} color="#ff4b8c" />
-                <Text className="text-sm font-medium text-[#ff4b8c] dark:text-[#ff6fa1]">
-                  View Schedule
-                </Text>
-              </TouchableOpacity>
+            {/* Section Divider */}
+            <View className="h-px bg-gray-200 dark:bg-zinc-700 my-6 mx-4" />
+
+            {/* Sessions Section */}
+            <View className="px-4">
+              <SectionHeader
+                icon="barbell-outline"
+                title="Sessions"
+                badge={
+                  filteredSessions.length > 0
+                    ? filteredSessions.length
+                    : undefined
+                }
+                action={{
+                  label: "View Schedule",
+                  onPress: () => router.push("/schedule"),
+                }}
+              />
+
+              {/* Upcoming Workouts */}
+              {/* Feature flag: Set to true to show upcoming workouts */}
+              {false && <UpcomingWorkouts />}
+
+              {/* Session Filters */}
+              <SessionFilters
+                availableWorkouts={availableWorkouts}
+                selectedWorkout={selectedWorkout}
+                dateRange={dateRange}
+                statusFilter={statusFilter}
+                sortOrder={sortOrder}
+                onWorkoutChange={setSelectedWorkout}
+                onDateRangeChange={setDateRange}
+                onStatusChange={setStatusFilter}
+                onSortOrderChange={setSortOrder}
+                onClearAll={handleClearAllFilters}
+              />
             </View>
-
-            {/* Upcoming Workouts */}
-            {/* Feature flag: Set to true to show upcoming workouts */}
-            {false && <UpcomingWorkouts />}
-
-            {/* Session Filters */}
-            <SessionFilters
-              availableWorkouts={availableWorkouts}
-              selectedWorkout={selectedWorkout}
-              dateRange={dateRange}
-              statusFilter={statusFilter}
-              sortOrder={sortOrder}
-              onWorkoutChange={setSelectedWorkout}
-              onDateRangeChange={setDateRange}
-              onStatusChange={setStatusFilter}
-              onSortOrderChange={setSortOrder}
-              onClearAll={handleClearAllFilters}
-            />
           </>
         )}
         contentContainerStyle={{
