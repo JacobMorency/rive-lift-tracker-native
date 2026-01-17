@@ -184,13 +184,18 @@ export default function SessionDetailPage() {
           }
 
           // Fetch muscle groups for all exercises
-          const { getExercisesWithMuscleGroups } = await import("../lib/muscleGroupUtils");
-          const muscleGroupMap = await getExercisesWithMuscleGroups(exerciseIds);
+          const { getExercisesWithMuscleGroups } = await import(
+            "../lib/muscleGroupUtils"
+          );
+          const muscleGroupMap =
+            await getExercisesWithMuscleGroups(exerciseIds);
 
           const exerciseMap = new Map<number, RawExercise>();
           exercisesData?.forEach((exercise) => {
             const muscleGroups = muscleGroupMap.get(exercise.id) || [];
-            const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+            const primaryMuscleGroup =
+              muscleGroups.find((mg) => mg.is_primary)?.name ||
+              muscleGroups[0]?.name;
             exerciseMap.set(exercise.id, {
               ...exercise,
               muscleGroups,
@@ -310,14 +315,18 @@ export default function SessionDetailPage() {
       }
 
       // Fetch muscle groups for all exercises
-      const { getExercisesWithMuscleGroups } = await import("../lib/muscleGroupUtils");
+      const { getExercisesWithMuscleGroups } = await import(
+        "../lib/muscleGroupUtils"
+      );
       const muscleGroupMap = await getExercisesWithMuscleGroups(allExerciseIds);
 
       // Create a map of exercise IDs to exercise details
       const exerciseMap = new Map<number, RawExercise>();
       exercisesData?.forEach((exercise) => {
         const muscleGroups = muscleGroupMap.get(exercise.id) || [];
-        const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+        const primaryMuscleGroup =
+          muscleGroups.find((mg) => mg.is_primary)?.name ||
+          muscleGroups[0]?.name;
         exerciseMap.set(exercise.id, {
           ...exercise,
           muscleGroups,
@@ -1065,13 +1074,17 @@ export default function SessionDetailPage() {
           className="bg-gray-50 dark:bg-zinc-800 px-4 border-b border-gray-200 dark:border-zinc-700"
           style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
         >
-          <Text className="text-2xl font-bold text-zinc-900 dark:text-white">Session</Text>
+          <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
+            Session
+          </Text>
         </View>
 
         {/* Loading */}
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#ff4b8c" />
-          <Text className="text-gray-500 dark:text-gray-400 mt-2">Loading session...</Text>
+          <Text className="text-gray-500 dark:text-gray-400 mt-2">
+            Loading session...
+          </Text>
         </View>
       </View>
     );

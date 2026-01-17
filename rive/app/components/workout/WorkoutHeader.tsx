@@ -101,11 +101,12 @@ export default function WorkoutHeader({
         <View className="bg-gray-100 dark:bg-zinc-700 rounded-lg p-3">
           <View className="flex-row items-center gap-2">
             <Ionicons name="document-text" size={14} color="#9ca3af" />
-            <Text className="text-xs text-gray-500 dark:text-gray-400">Has description</Text>
+            <Text className="text-xs text-gray-500 dark:text-gray-400">
+              Has description
+            </Text>
           </View>
         </View>
       )}
     </View>
   );
 }
-

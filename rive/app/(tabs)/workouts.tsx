@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 import SelectWorkoutModal from "../components/selectworkoutmodal";
@@ -12,8 +11,9 @@ import {
   getScheduledWorkoutsForDateRange,
   ScheduledWorkoutWithDate,
 } from "../lib/scheduleUtils";
-import QuickActions from "../components/dashboard/QuickActions";
+import ContextualSuggestions from "../components/dashboard/ContextualSuggestions";
 import TemplatesSection from "../components/dashboard/TemplatesSection";
+import StartSessionCTA from "../components/dashboard/StartSessionCTA";
 
 export default function DashboardPage() {
   const [isSelectWorkoutModalOpen, setIsSelectWorkoutModalOpen] =
@@ -157,18 +157,28 @@ export default function DashboardPage() {
 
       {/* Content */}
       <ScrollView
-        className="flex-1 px-4 py-6"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        className="flex-1 px-4"
+        contentContainerStyle={{
+          paddingTop: 24,
+          paddingBottom: insets.bottom + 100, // Space for fixed CTA
+        }}
+        showsVerticalScrollIndicator={false}
       >
-        {/* Quick Actions */}
-        <QuickActions
-          onStartSession={handleStartSession}
-          scheduledWorkout={nextScheduledWorkout}
-        />
+        {/* Contextual Suggestions - Shows upcoming workouts */}
+        <ContextualSuggestions onStartWorkout={handleStartSession} />
 
-        {/* Workout Templates - Prominent Section */}
-        <TemplatesSection />
+        {/* Section Divider */}
+        <View className="h-px bg-gray-200 dark:bg-zinc-700 my-6" />
+
+        {/* Workout Templates Section */}
+        <TemplatesSection onTemplateSelect={handleWorkoutSelect} />
       </ScrollView>
+
+      {/* Fixed Bottom CTA */}
+      <StartSessionCTA
+        onStartSession={handleStartSession}
+        scheduledWorkout={nextScheduledWorkout}
+      />
 
       {/* Modals */}
       <SelectWorkoutModal

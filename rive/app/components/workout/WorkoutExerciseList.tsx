@@ -18,7 +18,9 @@ export default function WorkoutExerciseList({
   return (
     <View>
       <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-xl font-bold text-zinc-900 dark:text-white">Exercises</Text>
+        <Text className="text-xl font-bold text-zinc-900 dark:text-white">
+          Exercises
+        </Text>
         <View className="bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10 px-3 py-1 rounded-full">
           <Text className="text-sm font-medium text-primary">
             {workoutDetails.exercises.length} total
@@ -60,4 +62,3 @@ export default function WorkoutExerciseList({
     </View>
   );
 }
-

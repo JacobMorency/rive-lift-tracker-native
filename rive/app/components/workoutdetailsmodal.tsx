@@ -109,14 +109,18 @@ const WorkoutDetailsModal = ({
       console.log("Exercises data:", exercisesData);
 
       // Fetch muscle groups for all exercises
-      const { getExercisesWithMuscleGroups } = await import("../lib/muscleGroupUtils");
+      const { getExercisesWithMuscleGroups } = await import(
+        "../lib/muscleGroupUtils"
+      );
       const muscleGroupMap = await getExercisesWithMuscleGroups(exerciseIds);
 
       // Create a map of exercise IDs to exercise details
       const exerciseMap = new Map();
       exercisesData?.forEach((exercise) => {
         const muscleGroups = muscleGroupMap.get(exercise.id) || [];
-        const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+        const primaryMuscleGroup =
+          muscleGroups.find((mg) => mg.is_primary)?.name ||
+          muscleGroups[0]?.name;
         exerciseMap.set(exercise.id, {
           ...exercise,
           muscleGroups,
@@ -452,7 +456,7 @@ const WorkoutDetailsModal = ({
               }}
             >
               <Ionicons name="add-circle" size={20} color="#ffffff" />
-              <Text className="text-[#ff4b8c] dark:text-[#ff6fa1]-content font-bold ml-2 text-lg">
+              <Text className="text-white font-bold ml-2 text-lg">
                 Add Exercises
               </Text>
             </TouchableOpacity>

@@ -90,7 +90,9 @@ export default function ExerciseListItem({
             <View className="flex-row items-center gap-2 mt-1">
               {exercise.primaryMuscleGroup && (
                 <View className="bg-gray-100 dark:bg-zinc-700 px-2 py-1 rounded-full">
-                  <Text className="text-xs text-gray-500 dark:text-gray-400">{exercise.primaryMuscleGroup}</Text>
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">
+                    {exercise.primaryMuscleGroup}
+                  </Text>
                 </View>
               )}
             </View>
@@ -105,7 +107,10 @@ export default function ExerciseListItem({
                   size={14}
                   color="#ff4b8c"
                 />
-                <Text className="text-xs text-gray-500 dark:text-gray-400 flex-1" numberOfLines={1}>
+                <Text
+                  className="text-xs text-gray-500 dark:text-gray-400 flex-1"
+                  numberOfLines={1}
+                >
                   {exercise.notes}
                 </Text>
               </TouchableOpacity>
@@ -117,7 +122,9 @@ export default function ExerciseListItem({
                 activeOpacity={0.7}
               >
                 <Ionicons name="add-circle-outline" size={14} color="#6b7280" />
-                <Text className="text-xs text-gray-500 dark:text-gray-400">Add notes</Text>
+                <Text className="text-xs text-gray-500 dark:text-gray-400">
+                  Add notes
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -137,7 +144,10 @@ export default function ExerciseListItem({
         presentationStyle="pageSheet"
         onRequestClose={() => setIsModalOpen(false)}
       >
-        <View className="flex-1 bg-white dark:bg-zinc-900" style={{ paddingTop: insets.top }}>
+        <View
+          className="flex-1 bg-white dark:bg-zinc-900"
+          style={{ paddingTop: insets.top }}
+        >
           {/* Header */}
           <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-700">
             <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
@@ -180,9 +190,7 @@ export default function ExerciseListItem({
                     onPress={handleSave}
                     className="px-4 py-2 rounded-lg bg-primary"
                   >
-                    <Text className="text-sm font-medium text-white">
-                      Save
-                    </Text>
+                    <Text className="text-sm font-medium text-white">Save</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -220,9 +228,7 @@ export default function ExerciseListItem({
                         size={18}
                         color="#ffffff"
                       />
-                      <Text className="text-white font-medium">
-                        Add Notes
-                      </Text>
+                      <Text className="text-white font-medium">Add Notes</Text>
                     </TouchableOpacity>
                   </>
                 )}

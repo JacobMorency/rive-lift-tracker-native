@@ -49,7 +49,8 @@ export default function TemplateCard({
               </Text>
             )}
             <Text className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {workout.exercise_count} exercises
+              {workout.exercise_count} exercise
+              {workout.exercise_count !== 1 ? "s" : ""}
             </Text>
           </View>
           <View className="flex-row gap-2">
@@ -71,4 +72,3 @@ export default function TemplateCard({
     </View>
   );
 }
-

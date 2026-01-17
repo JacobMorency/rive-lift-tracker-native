@@ -249,7 +249,9 @@ export default function SessionsPage() {
         {/* Loading */}
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#ff4b8c" />
-          <Text className="text-gray-500 dark:text-gray-400 mt-2">Loading sessions...</Text>
+          <Text className="text-gray-500 dark:text-gray-400 mt-2">
+            Loading sessions...
+          </Text>
         </View>
       </View>
     );
