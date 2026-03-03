@@ -31,7 +31,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="workouts"
         options={{
-          title: "Dashboard",
+          title: "Home",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
@@ -50,6 +50,14 @@ export default function TabLayout() {
         name="stats"
         options={{
           title: "Stats",
+          // Exclude from tab bar entirely
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="templates"
+        options={{
+          title: "Templates",
           // Exclude from tab bar entirely
           href: null,
         }}

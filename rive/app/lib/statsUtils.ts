@@ -198,7 +198,8 @@ export const getUserStats = async (
         started_at,
         ended_at,
         completed,
-        workouts!inner(name)
+        name,
+        workouts(name)
       `
       )
       .eq("user_id", userId)
@@ -558,7 +559,7 @@ const getRecentSessionStats = async (
 
     return {
       id: session.id,
-      workout_name: session.workouts.name,
+      workout_name: session.name || session.workouts?.name || "Session",
       started_at: session.started_at,
       ended_at: session.ended_at,
       total_volume: totalVolume,
@@ -1416,7 +1417,8 @@ export const getExerciseHistory = async (
         started_at,
         ended_at,
         completed,
-        workouts!inner(name)
+        name,
+        workouts(name)
       `
       )
       .eq("user_id", userId)

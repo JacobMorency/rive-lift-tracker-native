@@ -106,6 +106,26 @@ export default function ProfilePage() {
               </Text>
             </View>
             <View className="gap-2">
+              <TouchableOpacity
+                className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 flex-row items-center justify-between"
+                onPress={() => router.push("/(tabs)/templates")}
+              >
+                <View className="flex-row items-center gap-3">
+                  <View className="w-10 h-10 bg-[#ff4b8c]/20 dark:bg-[#ff6fa1]/20 rounded-lg items-center justify-center">
+                    <Ionicons name="barbell" size={20} color="#ff4b8c" />
+                  </View>
+                  <View>
+                    <Text className="text-zinc-900 dark:text-white font-medium">
+                      Workout Templates
+                    </Text>
+                    <Text className="text-gray-500 dark:text-gray-400 text-sm">
+                      Manage your workout templates
+                    </Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+              </TouchableOpacity>
+
               <TouchableOpacity className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4 flex-row items-center justify-between">
                 <View className="flex-row items-center gap-3">
                   <View className="w-10 h-10 bg-[#ff4b8c]/20 dark:bg-[#ff6fa1]/20 rounded-lg items-center justify-center">

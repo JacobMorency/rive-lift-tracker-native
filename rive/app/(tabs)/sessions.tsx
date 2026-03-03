@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
-import SelectWorkoutModal from "../components/selectworkoutmodal";
 import SessionList from "../components/sessions/SessionList";
 import SessionFilters, {
   DateRangeFilter,
@@ -30,14 +28,13 @@ type RawSession = {
   started_at: string;
   ended_at: string | null;
   completed: boolean;
-  workout_id: string;
+  workout_id: string | null;
+  name?: string;
 };
 
 export default function SessionsPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [isSelectWorkoutModalOpen, setIsSelectWorkoutModalOpen] =
-    useState(false);
 
   // Filter state
   const [selectedWorkout, setSelectedWorkout] = useState<string | null>(null);
@@ -54,10 +51,10 @@ export default function SessionsPage() {
 
     setLoading(true);
     try {
-      // First query: Get sessions
+      // First query: Get sessions (including name)
       const { data: rawSessionsData, error: sessionsError } = await supabase
         .from("workout_sessions")
-        .select("id, started_at, ended_at, completed, workout_id")
+        .select("id, started_at, ended_at, completed, workout_id, name")
         .eq("user_id", user.id)
         .order("started_at", { ascending: false });
 
@@ -71,7 +68,7 @@ export default function SessionsPage() {
         return;
       }
 
-      // Get unique workout IDs (filter out null values)
+      // Get unique workout IDs (filter out null values) for backward compatibility
       const workoutIds = [
         ...new Set(
           rawSessionsData
@@ -80,7 +77,7 @@ export default function SessionsPage() {
         ),
       ];
 
-      // Only query workouts if we have valid IDs
+      // Only query workouts if we have valid IDs (for backward compatibility)
       let workoutsData = null;
       if (workoutIds.length > 0) {
         const { data, error: workoutsError } = await supabase
@@ -95,20 +92,28 @@ export default function SessionsPage() {
         workoutsData = data;
       }
 
-      // Create a map of workout IDs to names
+      // Create a map of workout IDs to names (for backward compatibility)
       const workoutMap = new Map<string, string>();
       workoutsData?.forEach((workout) => {
         workoutMap.set(workout.id, workout.name);
       });
 
-      // Transform the data
+      // Transform the data - use session.name if available, otherwise workout.name
       const transformedSessions = rawSessionsData.map(
-        (session: RawSession) => ({
+        (session: RawSession & { name?: string }) => ({
           id: session.id,
-          name: workoutMap.get(session.workout_id) || "Unknown Workout",
+          name:
+            session.name ||
+            (session.workout_id ? workoutMap.get(session.workout_id) : null) ||
+            new Date(session.started_at).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            }),
           started_at: session.started_at,
           ended_at: session.ended_at,
           completed: session.completed || false,
+          workout_id: session.workout_id || null,
         })
       );
 
@@ -126,39 +131,9 @@ export default function SessionsPage() {
     }
   }, [user, fetchSessions]);
 
-  const handleNewSession = () => {
-    setIsSelectWorkoutModalOpen(true);
-  };
-
-  const handleWorkoutSelect = async (workoutId: string) => {
-    if (!user) return;
-
-    try {
-      // Create a new session
-      const { data, error } = await supabase
-        .from("workout_sessions")
-        .insert([
-          {
-            user_id: user.id,
-            workout_id: workoutId,
-            started_at: new Date().toISOString(),
-            completed: false,
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error creating session:", error.message);
-        return;
-      }
-
-      // Navigate to the session detail page
-      router.push(`/session/${data.id}`);
-    } catch (error) {
-      console.error("Error creating session:", error);
-    }
-  };
+  // Future: Add "Repeat Session" functionality
+  // This would allow users to duplicate a completed session
+  // const handleRepeatSession = async (sessionId: string) => { ... };
 
   const handleSessionSelect = (sessionId: string) => {
     router.push(`/session/${sessionId}`);
@@ -316,44 +291,8 @@ export default function SessionsPage() {
           </>
         )}
         contentContainerStyle={{
-          paddingBottom: insets.bottom + 100,
+          paddingBottom: insets.bottom + 20,
         }}
-      />
-
-      {/* Fixed Start New Session Button */}
-      <View
-        className="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900"
-        style={{
-          paddingBottom: insets.bottom,
-          paddingTop: 12,
-          paddingHorizontal: 16,
-          borderTopWidth: 1,
-          borderTopColor: "rgba(0,0,0,0.1)",
-        }}
-      >
-        <TouchableOpacity
-          className="w-full py-4 rounded-xl bg-[#ff4b8c] dark:bg-[#ff6fa1] flex-row items-center justify-center"
-          onPress={handleNewSession}
-          style={{
-            shadowColor: "#ff4b8c",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 8,
-          }}
-        >
-          <Ionicons name="fitness" size={24} color="#ffffff" />
-          <Text className="text-white text-center font-bold ml-3 text-lg">
-            Start New Session
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Select Workout Modal */}
-      <SelectWorkoutModal
-        isOpen={isSelectWorkoutModalOpen}
-        onClose={() => setIsSelectWorkoutModalOpen(false)}
-        onWorkoutSelect={handleWorkoutSelect}
       />
     </View>
   );

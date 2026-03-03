@@ -36,14 +36,8 @@ export default function SessionList({
           No Sessions Yet
         </Text>
         <Text className="text-center text-gray-500 dark:text-gray-400 mb-6 max-w-xs">
-          Ready to begin your fitness journey? Let's start with your first session!
+          Ready to begin your fitness journey? Go to Home to start your first session!
         </Text>
-        <View className="flex-row items-center gap-2">
-          <Ionicons name="arrow-up" size={16} color="#ff4b8c" />
-          <Text className="text-sm font-medium text-[#ff4b8c] dark:text-[#ff6fa1]">
-            Tap "Start New Session" above
-          </Text>
-        </View>
       </View>
     </View>
   );
