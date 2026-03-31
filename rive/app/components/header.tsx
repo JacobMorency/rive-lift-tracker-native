@@ -1,18 +1,14 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import AppText from "./ui/AppText";
 
 type HeaderProps = {
   title: string;
-  subtitle?: string;
   rightComponent?: React.ReactNode;
 };
 
-export default function Header({
-  title,
-  subtitle,
-  rightComponent,
-}: HeaderProps) {
+export default function Header({ title, rightComponent }: HeaderProps) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -22,9 +18,9 @@ export default function Header({
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-1">
-          <Text className="text-2xl font-bold text-text dark:text-text-dark">
+          <AppText variant="subheader" tone="default">
             {title}
-          </Text>
+          </AppText>
         </View>
         {rightComponent && <View className="ml-4">{rightComponent}</View>}
       </View>
