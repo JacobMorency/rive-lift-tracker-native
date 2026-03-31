@@ -39,6 +39,17 @@ module.exports = {
         warning: "#facc15",
         error: "#ef4444",
       },
+      fontSize: {
+        "ds-header": ["30px", { lineHeight: "36px", fontWeight: "800" }],
+        "ds-subheader": ["20px", { lineHeight: "28px", fontWeight: "700" }],
+        "ds-body": ["16px", { lineHeight: "24px", fontWeight: "500" }],
+        "ds-caption": ["12px", { lineHeight: "16px", fontWeight: "600" }],
+      },
+      borderRadius: {
+        "ds-card": "16px",
+        "ds-control": "12px",
+        "ds-tag": "8px",
+      },
     },
   },
   plugins: [],
