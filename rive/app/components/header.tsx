@@ -14,7 +14,7 @@ export default function Header({ title, rightComponent }: HeaderProps) {
   return (
     <View
       className="bg-background dark:bg-chrome-dark px-4 border-b border-border dark:border-border-dark shadow-sm dark:shadow-lg"
-      style={{ paddingTop: insets.top, paddingBottom: 16 }}
+      style={{ paddingTop: insets.top, paddingBottom: 8 }}
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-1">

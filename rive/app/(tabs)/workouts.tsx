@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../context/authcontext";
@@ -11,9 +11,10 @@ import {
   getScheduledWorkoutsForDateRange,
   ScheduledWorkoutWithDate,
 } from "../lib/scheduleUtils";
-import ContextualSuggestions from "../components/dashboard/ContextualSuggestions";
-import TemplatesSection from "../components/dashboard/TemplatesSection";
-import StartSessionCTA from "../components/dashboard/StartSessionCTA";
+import WorkoutVaultList from "../components/dashboard/WorkoutVaultList";
+import QuickActionsRow from "../components/dashboard/QuickActionsRow";
+import NextUpCard from "../components/dashboard/NextUpCard";
+import AppText from "../components/ui/AppText";
 
 export default function DashboardPage() {
   const [isSelectWorkoutModalOpen, setIsSelectWorkoutModalOpen] =
@@ -39,7 +40,7 @@ export default function DashboardPage() {
       const workouts = await getScheduledWorkoutsForDateRange(
         user.id,
         today,
-        endDate
+        endDate,
       );
 
       // Sort by date, then by workout name
@@ -147,38 +148,38 @@ export default function DashboardPage() {
   };
 
   return (
-    <View className="flex-1 bg-white dark:bg-zinc-900">
-      <Header
-        title="Dashboard"
-        subtitle={
-          userData ? `Welcome back, ${userData.first_name}! 💪` : undefined
-        }
-      />
+    <View className="flex-1 bg-background dark:bg-background-dark">
+      <Header title="RIVE" />
 
-      {/* Content */}
       <ScrollView
         className="flex-1 px-4"
         contentContainerStyle={{
           paddingTop: 24,
-          paddingBottom: insets.bottom + 100, // Space for fixed CTA
+          paddingBottom: insets.bottom + 140,
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Contextual Suggestions - Shows upcoming workouts */}
-        <ContextualSuggestions onStartWorkout={handleStartSession} />
+        <View className="mb-6">
+          <AppText variant="header">Dashboard</AppText>
+          {userData?.first_name && (
+            <AppText variant="caption" tone="muted" className="normal-case">
+              Welcome back, {userData.first_name}!
+            </AppText>
+          )}
+        </View>
 
-        {/* Section Divider */}
-        <View className="h-px bg-gray-200 dark:bg-zinc-700 my-6" />
+        <NextUpCard
+          nextScheduledWorkout={nextScheduledWorkout}
+          onStartSession={handleStartSession}
+        />
 
-        {/* Workout Templates Section */}
-        <TemplatesSection onTemplateSelect={handleWorkoutSelect} />
+        <QuickActionsRow
+          onStartSession={handleStartSession}
+          scheduledWorkout={nextScheduledWorkout}
+        />
+
+        <WorkoutVaultList onTemplateSelect={handleWorkoutSelect} />
       </ScrollView>
-
-      {/* Fixed Bottom CTA */}
-      <StartSessionCTA
-        onStartSession={handleStartSession}
-        scheduledWorkout={nextScheduledWorkout}
-      />
 
       {/* Modals */}
       <SelectWorkoutModal

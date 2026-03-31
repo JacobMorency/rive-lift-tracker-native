@@ -1,13 +1,20 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  useColorScheme,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useColorScheme } from "react-native";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useAuth } from "../../context/authcontext";
 import { supabase } from "../../lib/supabaseClient";
 import AddWorkoutModal from "../addworkoutmodal";
 import WorkoutDetailsModal from "../workoutdetailsmodal";
 import Card from "../ui/Card";
-import SectionHeader from "../ui/SectionHeader";
+import AppText from "../ui/AppText";
+import AppCard from "../ui/AppCard";
 
 type WorkoutTemplate = {
   id: string;
@@ -24,23 +31,23 @@ type WorkoutTemplate = {
   averageDuration?: number; // in minutes, from historical data
 };
 
-type TemplatesSectionProps = {
+type WorkoutVaultListProps = {
   onTemplateSelect?: (templateId: string) => void;
 };
 
-export default function TemplatesSection({
+export default function WorkoutVaultList({
   onTemplateSelect,
-}: TemplatesSectionProps) {
+}: WorkoutVaultListProps) {
   const { user } = useAuth();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
-    null
+    null,
   );
   const [workoutTemplates, setWorkoutTemplates] = useState<WorkoutTemplate[]>(
-    []
+    [],
   );
   const [loading, setLoading] = useState(false);
 
@@ -64,7 +71,7 @@ export default function TemplatesSection({
               category
             )
           )
-        `
+        `,
         )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
@@ -81,10 +88,10 @@ export default function TemplatesSection({
             ?.flatMap(
               (workout) =>
                 workout.workout_exercises?.map(
-                  (we: any) => we.exercise_library?.id
-                ) || []
+                  (we: any) => we.exercise_library?.id,
+                ) || [],
             )
-            .filter((id): id is number => id !== undefined) || []
+            .filter((id): id is number => id !== undefined) || [],
         ),
       ];
 
@@ -130,7 +137,7 @@ export default function TemplatesSection({
           // Calculate average duration per workout
           workoutSessions.forEach((sessions, workoutId) => {
             const completedSessions = sessions.filter(
-              (s: any) => s.started_at && s.ended_at
+              (s: any) => s.started_at && s.ended_at,
             );
             if (completedSessions.length > 0) {
               const totalDuration = completedSessions.reduce(
@@ -139,11 +146,11 @@ export default function TemplatesSection({
                   const end = new Date(s.ended_at);
                   return sum + (end.getTime() - start.getTime()) / (1000 * 60); // minutes
                 },
-                0
+                0,
               );
               averageDurationMap.set(
                 workoutId,
-                Math.round(totalDuration / completedSessions.length)
+                Math.round(totalDuration / completedSessions.length),
               );
             }
           });
@@ -221,14 +228,6 @@ export default function TemplatesSection({
     fetchWorkoutTemplates();
   };
 
-  const handleStartWithTemplate = (templateId: string) => {
-    if (onTemplateSelect) {
-      onTemplateSelect(templateId);
-    } else {
-      handleViewWorkoutDetails(templateId);
-    }
-  };
-
   const formatLastUsed = (dateString: string | null | undefined): string => {
     if (!dateString) return "Never";
     const date = new Date(dateString);
@@ -244,33 +243,41 @@ export default function TemplatesSection({
 
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays}d ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
     return date.toLocaleDateString("en-US", {
       month: "short",
       year: "numeric",
     });
   };
 
-  const formatTime = (minutes: number): string => {
-    if (minutes < 60) return `${minutes}m`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-  };
-
   return (
     <>
       <View>
-        {/* Header */}
-        <SectionHeader
-          icon="barbell"
-          title="Workout Templates"
-          badge={
-            workoutTemplates.length > 0 ? workoutTemplates.length : undefined
-          }
-        />
+        <AppText variant="subheader" tone="default">
+          Workout Vault
+        </AppText>
+        <View className="flex-row items-center justify-between mb-4">
+          <AppText variant="caption" tone="muted">
+            Workout Templates
+          </AppText>
+          <TouchableOpacity
+            onPress={() => setIsAddModalOpen(true)}
+            activeOpacity={0.8}
+            className="flex-row items-center justify-center"
+          >
+            <Ionicons
+              name="add-circle-outline"
+              size={16}
+              color={isDark ? "#ff6fa1" : "#ff4b8c"}
+              style={{ marginRight: 6 }}
+            />
+            <AppText variant="caption" tone="primary" className="normal-case">
+              Create New
+            </AppText>
+          </TouchableOpacity>
+        </View>
 
         {/* Content */}
         {loading ? (
@@ -287,26 +294,6 @@ export default function TemplatesSection({
           </Card>
         ) : (
           <>
-            <TouchableOpacity
-              className={`rounded-xl p-4 mb-4 flex-row items-center justify-center ${
-                isDark ? "bg-[#ff6fa1]" : "bg-[#ff4b8c]"
-              }`}
-              onPress={() => setIsAddModalOpen(true)}
-              activeOpacity={0.8}
-              style={{
-                shadowColor: isDark ? "#ff6fa1" : "#ff4b8c",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.3,
-                shadowRadius: 4,
-                elevation: 4,
-              }}
-            >
-              <Ionicons name="add-circle" size={22} color="#ffffff" />
-              <Text className="text-white font-bold text-base ml-2">
-                Create New Workout Template
-              </Text>
-            </TouchableOpacity>
-
             {workoutTemplates.length === 0 ? (
               <Card>
                 <View className="items-center py-12">
@@ -322,94 +309,45 @@ export default function TemplatesSection({
             ) : (
               <View className="gap-3">
                 {workoutTemplates.map((template) => (
-                  <Card
+                  <AppCard
                     key={template.id}
-                    variant="elevated"
                     onPress={() => handleViewWorkoutDetails(template.id)}
                   >
-                    <View className="gap-3">
-                      {/* Header Row */}
-                      <View className="flex-row items-start justify-between">
-                        <View className="flex-1">
-                          <Text className="text-lg font-bold text-zinc-900 dark:text-white">
-                            {template.name}
-                          </Text>
-                          {template.description && (
-                            <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                              {template.description}
-                            </Text>
-                          )}
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-row gap-4">
+                        <View>
+                          <AppCard surface="alt" radius="tag">
+                            <FontAwesome5 name="dumbbell" color="#ff4b8c" />
+                          </AppCard>
                         </View>
-                        <Ionicons
-                          name="chevron-forward"
-                          size={20}
-                          color="#9ca3af"
-                        />
-                      </View>
-
-                      {/* Metadata Row */}
-                      <View className="flex-row flex-wrap items-center gap-3">
-                        <View className="flex-row items-center gap-1.5">
-                          <Ionicons name="list" size={14} color="#9ca3af" />
-                          <Text className="text-xs text-gray-500 dark:text-gray-400">
+                        <View>
+                          <AppText variant="body" className="font-bold">
+                            {template.name}
+                          </AppText>
+                          <AppText
+                            variant="caption"
+                            tone="muted"
+                            className="normal-case"
+                          >
                             {template.exercises.length}{" "}
                             {template.exercises.length === 1
-                              ? "exercise"
-                              : "exercises"}
-                          </Text>
+                              ? "Exercise"
+                              : "Exercises"}{" "}
+                            {template.lastUsedDate
+                              ? `• Last: ${formatLastUsed(template.lastUsedDate)}`
+                              : ""}
+                          </AppText>
                         </View>
-                        {template.lastUsedDate && (
-                          <View className="flex-row items-center gap-1.5">
-                            <Ionicons
-                              name="calendar-outline"
-                              size={14}
-                              color="#9ca3af"
-                            />
-                            <Text className="text-xs text-gray-500 dark:text-gray-400">
-                              {formatLastUsed(template.lastUsedDate)}
-                            </Text>
-                          </View>
-                        )}
-                        {template.estimatedTime && (
-                          <View className="flex-row items-center gap-1.5">
-                            <Ionicons
-                              name="time-outline"
-                              size={14}
-                              color="#9ca3af"
-                            />
-                            <Text className="text-xs text-gray-500 dark:text-gray-400">
-                              ~{formatTime(template.estimatedTime)}
-                            </Text>
-                          </View>
-                        )}
                       </View>
-
-                      {/* Start Button */}
-                      <TouchableOpacity
-                        className={`rounded-lg p-3 flex-row items-center justify-center gap-2 mt-1 ${
-                          isDark ? "bg-[#ff6fa1]/20" : "bg-[#ff4b8c]/20"
-                        }`}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          handleStartWithTemplate(template.id);
-                        }}
-                        activeOpacity={0.7}
-                      >
+                      <View>
                         <Ionicons
-                          name="play-circle"
+                          name="chevron-forward"
                           size={18}
-                          color={isDark ? "#ff6fa1" : "#ff4b8c"}
+                          color="#a1a1aa"
                         />
-                        <Text
-                          className={`text-sm font-semibold ${
-                            isDark ? "text-[#ff6fa1]" : "text-[#ff4b8c]"
-                          }`}
-                        >
-                          Start with this template
-                        </Text>
-                      </TouchableOpacity>
+                      </View>
                     </View>
-                  </Card>
+                  </AppCard>
                 ))}
               </View>
             )}
