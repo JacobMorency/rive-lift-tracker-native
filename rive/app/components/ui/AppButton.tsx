@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View, ViewStyle } from "react-native";
 import AppText from "./AppText";
 
 type AppButtonTone = "primary" | "neutral";
@@ -13,6 +13,8 @@ type AppButtonProps = {
   fullWidth?: boolean;
   onPress?: () => void;
   className?: string;
+  style?: ViewStyle;
+  accessibilityLabel?: string;
 };
 
 const toneClasses: Record<AppButtonTone, string> = {
@@ -35,6 +37,8 @@ export default function AppButton({
   fullWidth = false,
   onPress,
   className = "",
+  style,
+  accessibilityLabel,
 }: AppButtonProps) {
   const resolvedClassName =
     `${toneClasses[tone]} ${sizeClasses[size]} ${
@@ -44,8 +48,11 @@ export default function AppButton({
   return (
     <TouchableOpacity
       className={resolvedClassName}
+      style={style}
       onPress={onPress}
       activeOpacity={0.85}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
     >
       {icon ? (
         <View className={label ? "mr-2" : ""}>{icon}</View>

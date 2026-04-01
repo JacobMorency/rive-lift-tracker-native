@@ -155,7 +155,6 @@ export default function DashboardPage() {
         className="flex-1 px-4"
         contentContainerStyle={{
           paddingTop: 24,
-          paddingBottom: insets.bottom + 140,
         }}
         showsVerticalScrollIndicator={false}
       >

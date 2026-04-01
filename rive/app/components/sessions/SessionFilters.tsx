@@ -8,6 +8,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AppText from "../ui/AppText";
 import FilterButton from "./FilterButton";
 
 export type DateRangeFilter = "all" | "week" | "month" | "year";
@@ -25,6 +26,8 @@ type SessionFiltersProps = {
   onStatusChange: (status: StatusFilter) => void;
   onSortOrderChange: (order: SortOrder) => void;
   onClearAll: () => void;
+  /** Full-width row (default) or compact pill for toolbar rows */
+  triggerVariant?: "full" | "compact";
 };
 
 export default function SessionFilters({
@@ -38,6 +41,7 @@ export default function SessionFilters({
   onStatusChange,
   onSortOrderChange,
   onClearAll,
+  triggerVariant = "full",
 }: SessionFiltersProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -98,43 +102,69 @@ export default function SessionFilters({
     // Keep sort order when clearing filters
   };
 
+  const filterTrigger = (
+    <TouchableOpacity
+      className={
+        triggerVariant === "compact"
+          ? `flex-row items-center gap-2 rounded-full border px-3 py-1.5 bg-surfaceAlt dark:bg-surfaceAlt-dark ${
+              hasActiveFilters
+                ? "border-primary dark:border-primary-dark"
+                : "border-border dark:border-border-dark"
+            }`
+          : "flex-row items-center justify-between bg-gray-50 dark:bg-zinc-800 rounded-xl px-4 py-3"
+      }
+      onPress={() => setShowFilterModal(true)}
+      style={
+        triggerVariant === "compact"
+          ? undefined
+          : {
+              shadowColor: hasActiveFilters ? "#ff4b8c" : "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: hasActiveFilters ? 0.3 : 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+              borderWidth: hasActiveFilters ? 1 : 0,
+              borderColor: hasActiveFilters ? "#ff4b8c" : "transparent",
+            }
+      }
+      activeOpacity={0.85}
+    >
+      <View className="flex-row items-center gap-2">
+        <Ionicons
+          name="filter"
+          size={triggerVariant === "compact" ? 16 : 20}
+          color={hasActiveFilters ? "#ff4b8c" : isDark ? "#a1a1aa" : "#6b7280"}
+        />
+        {triggerVariant === "compact" ? (
+          <AppText variant="caption" tone="muted" className="normal-case font-semibold">
+            Filters
+          </AppText>
+        ) : (
+          <Text className="text-base font-medium text-zinc-900 dark:text-white">
+            Filters
+          </Text>
+        )}
+        {hasActiveFilters && (
+          <View className="bg-primary dark:bg-primary-dark rounded-full px-2 py-0.5 min-w-[20px] items-center justify-center">
+            <Text className="text-xs font-bold text-white">
+              {getFilterCount()}
+            </Text>
+          </View>
+        )}
+      </View>
+      {triggerVariant === "full" ? (
+        <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+      ) : null}
+    </TouchableOpacity>
+  );
+
   return (
     <>
-      {/* Filter Icon Button */}
-      <View className="px-4 py-3">
-        <TouchableOpacity
-          className="flex-row items-center justify-between bg-gray-50 dark:bg-zinc-800 rounded-xl px-4 py-3"
-          onPress={() => setShowFilterModal(true)}
-          style={{
-            shadowColor: hasActiveFilters ? "#ff4b8c" : "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: hasActiveFilters ? 0.3 : 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-            borderWidth: hasActiveFilters ? 1 : 0,
-            borderColor: hasActiveFilters ? "#ff4b8c" : "transparent",
-          }}
-        >
-          <View className="flex-row items-center gap-2">
-            <Ionicons
-              name="filter"
-              size={20}
-              color={hasActiveFilters ? "#ff4b8c" : "#6b7280"}
-            />
-            <Text className="text-base font-medium text-zinc-900 dark:text-white">
-              Filters
-            </Text>
-            {hasActiveFilters && (
-              <View className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-full px-2 py-0.5 min-w-[20px] items-center justify-center">
-                <Text className="text-xs font-bold text-white">
-                  {getFilterCount()}
-                </Text>
-              </View>
-            )}
-          </View>
-          <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
-        </TouchableOpacity>
-      </View>
+      {triggerVariant === "compact" ? (
+        filterTrigger
+      ) : (
+        <View className="px-4 py-3">{filterTrigger}</View>
+      )}
 
       {/* Filter Modal */}
       <Modal
@@ -144,9 +174,9 @@ export default function SessionFilters({
         onRequestClose={() => setShowFilterModal(false)}
       >
         <View className="flex-1 bg-black/50 justify-end">
-          <View className="bg-gray-50 dark:bg-zinc-800 rounded-t-3xl max-h-[85%]">
+          <View className="bg-background dark:bg-background-dark rounded-t-3xl max-h-[85%]">
             {/* Header */}
-            <View className="px-4 py-4 border-b border-gray-200 dark:border-zinc-700 flex-row items-center justify-between">
+            <View className="px-4 py-4 border-b border-border dark:border-border-dark flex-row items-center justify-between">
               <Text className="text-xl font-bold text-zinc-900 dark:text-white">
                 Filters
               </Text>
@@ -288,15 +318,13 @@ export default function SessionFilters({
 
             {/* Apply Button Footer */}
             <View
-              className="px-4 py-4 border-t border-gray-200 dark:border-zinc-700"
+              className="px-4 py-4 border-t border-border dark:border-border-dark"
               style={{
                 paddingBottom: 20,
               }}
             >
               <TouchableOpacity
-                className={`w-full py-4 rounded-xl flex-row items-center justify-center ${
-                  isDark ? "bg-[#ff6fa1]" : "bg-[#ff4b8c]"
-                }`}
+                className="w-full py-4 rounded-ds-control flex-row items-center justify-center bg-primary dark:bg-primary-dark"
                 onPress={handleApply}
                 style={{
                   shadowColor: isDark ? "#ff6fa1" : "#ff4b8c",

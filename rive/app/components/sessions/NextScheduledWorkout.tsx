@@ -1,25 +1,24 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text } from "react-native";
+import { View, ActivityIndicator, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useColorScheme } from "react-native";
 import { useAuth } from "../../context/authcontext";
 import { supabase } from "../../lib/supabaseClient";
 import {
   getScheduledWorkoutsForDateRange,
   ScheduledWorkoutWithDate,
 } from "../../lib/scheduleUtils";
-import Card from "../ui/Card";
-import SectionHeader from "../ui/SectionHeader";
+import AppCard from "../ui/AppCard";
+import AppText from "../ui/AppText";
+import AppButton from "../ui/AppButton";
 
 export default function NextScheduledWorkout() {
   const { user } = useAuth();
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const [nextWorkout, setNextWorkout] = useState<
-    ScheduledWorkoutWithDate | null
-  >(null);
+  const [nextWorkout, setNextWorkout] =
+    useState<ScheduledWorkoutWithDate | null>(null);
   const [loading, setLoading] = useState(false);
 
   const fetchNextWorkout = useCallback(async () => {
@@ -30,17 +29,15 @@ export default function NextScheduledWorkout() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      // Look ahead 30 days to find the next workout
       const endDate = new Date(today);
       endDate.setDate(endDate.getDate() + 30);
 
       const workouts = await getScheduledWorkoutsForDateRange(
         user.id,
         today,
-        endDate
+        endDate,
       );
 
-      // Sort by date, then by workout name
       workouts.sort((a, b) => {
         if (a.scheduledDate !== b.scheduledDate) {
           return a.scheduledDate.localeCompare(b.scheduledDate);
@@ -48,7 +45,6 @@ export default function NextScheduledWorkout() {
         return a.workout_name.localeCompare(b.workout_name);
       });
 
-      // Take only the first workout (next scheduled)
       setNextWorkout(workouts.length > 0 ? workouts[0] : null);
     } catch (error) {
       console.error("Error fetching next scheduled workout:", error);
@@ -74,14 +70,14 @@ export default function NextScheduledWorkout() {
 
     if (date.getTime() === today.getTime()) {
       return "Today";
-    } else if (date.getTime() === tomorrow.getTime()) {
-      return "Tomorrow";
-    } else {
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
     }
+    if (date.getTime() === tomorrow.getTime()) {
+      return "Tomorrow";
+    }
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   const handleStartSession = async (workoutId: string) => {
@@ -112,50 +108,78 @@ export default function NextScheduledWorkout() {
     }
   };
 
-  // Don't render anything if no workout scheduled
-  if (!loading && !nextWorkout) {
+  if (loading) {
+    return (
+      <View className="mb-6">
+        <AppCard
+          radius="large"
+          className="border border-primary/10 dark:border-primary-dark/20 p-6"
+        >
+          <View className="items-center justify-center py-6">
+            <ActivityIndicator
+              size="small"
+              color={isDark ? "#ff6fa1" : "#ff4b8c"}
+            />
+          </View>
+        </AppCard>
+      </View>
+    );
+  }
+
+  if (!nextWorkout) {
     return null;
   }
 
   return (
-    <View>
-      <SectionHeader icon="calendar-outline" title="Up Next" />
-      <Card
-        variant="elevated"
-        onPress={() =>
-          nextWorkout && handleStartSession(nextWorkout.schedule.workout_id)
-        }
-      >
-        <View className="flex-row items-center gap-4">
-          <View
-            className={`w-12 h-12 rounded-xl items-center justify-center ${
-              isDark ? "bg-[#ff6fa1]/20" : "bg-[#ff4b8c]/20"
-            }`}
-          >
+    <View className="mb-6">
+      <AppCard radius="large" className="p-6">
+        <View className="flex-row justify-between items-start mb-5">
+          <View className="flex-1 mr-3">
+            <AppText variant="caption" tone="primary" className="mb-1">
+              Up next
+            </AppText>
+            <AppText variant="subheader" className="mb-1">
+              {nextWorkout.workout_name}
+            </AppText>
+            <AppText variant="caption" tone="muted" className="normal-case">
+              Scheduled for {formatDate(nextWorkout.scheduledDate)}
+            </AppText>
+          </View>
+          <View className="w-12 h-12 rounded-full bg-surfaceAlt dark:bg-surfaceAlt-dark items-center justify-center">
             <Ionicons
-              name="calendar"
+              name="calendar-outline"
               size={24}
               color={isDark ? "#ff6fa1" : "#ff4b8c"}
             />
           </View>
-          <View className="flex-1">
-            <Text className="text-base font-bold text-zinc-900 dark:text-white">
-              {nextWorkout?.workout_name}
-            </Text>
-            <View className="flex-row items-center gap-2 mt-1">
-              <Ionicons
-                name="time-outline"
-                size={14}
-                color={isDark ? "#9ca3af" : "#6b7280"}
-              />
-              <Text className="text-sm text-gray-500 dark:text-gray-400">
-                {nextWorkout ? formatDate(nextWorkout.scheduledDate) : ""}
-              </Text>
-            </View>
-          </View>
         </View>
-      </Card>
+
+        <View className="flex-row items-center gap-3">
+          <View className="flex-1">
+            <AppButton
+              label="Start session"
+              tone="primary"
+              size="lg"
+              fullWidth
+              onPress={() =>
+                handleStartSession(nextWorkout.schedule.workout_id)
+              }
+            />
+          </View>
+          <AppButton
+            tone="neutral"
+            size="icon"
+            onPress={() => router.push("/schedule")}
+            icon={
+              <Ionicons
+                name="ellipsis-horizontal"
+                size={22}
+                color={isDark ? "#f5f5f5" : "#111113"}
+              />
+            }
+          />
+        </View>
+      </AppCard>
     </View>
   );
 }
-
