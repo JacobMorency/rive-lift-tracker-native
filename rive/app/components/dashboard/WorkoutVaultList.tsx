@@ -33,10 +33,13 @@ type WorkoutTemplate = {
 
 type WorkoutVaultListProps = {
   onTemplateSelect?: (templateId: string) => void;
+  /** Increment to refetch templates (e.g. after creating a workout from another entry point). */
+  vaultRefreshKey?: number;
 };
 
 export default function WorkoutVaultList({
   onTemplateSelect,
+  vaultRefreshKey = 0,
 }: WorkoutVaultListProps) {
   const { user } = useAuth();
   const colorScheme = useColorScheme();
@@ -204,7 +207,7 @@ export default function WorkoutVaultList({
     if (user) {
       fetchWorkoutTemplates();
     }
-  }, [user, fetchWorkoutTemplates]);
+  }, [user, fetchWorkoutTemplates, vaultRefreshKey]);
 
   const handleViewWorkoutDetails = (workoutId: string) => {
     setSelectedWorkoutId(workoutId);

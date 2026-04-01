@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, ScrollView, Text } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
-import SelectWorkoutModal from "../components/selectworkoutmodal";
+import SelectWorkoutModal from "../components/SelectWorkoutModal";
+import AddWorkoutModal from "../components/addworkoutmodal";
 import Header from "../components/header";
 import {
   getTodaysScheduledWorkouts,
@@ -19,11 +19,12 @@ import AppText from "../components/ui/AppText";
 export default function DashboardPage() {
   const [isSelectWorkoutModalOpen, setIsSelectWorkoutModalOpen] =
     useState(false);
+  const [isAddWorkoutModalOpen, setIsAddWorkoutModalOpen] = useState(false);
+  const [vaultRefreshKey, setVaultRefreshKey] = useState(0);
   const [nextScheduledWorkout, setNextScheduledWorkout] =
     useState<ScheduledWorkoutWithDate | null>(null);
   const { user, userData } = useAuth();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   // Fetch next scheduled workout
   const fetchNextScheduledWorkout = useCallback(async () => {
@@ -177,7 +178,10 @@ export default function DashboardPage() {
           scheduledWorkout={nextScheduledWorkout}
         />
 
-        <WorkoutVaultList onTemplateSelect={handleWorkoutSelect} />
+        <WorkoutVaultList
+          onTemplateSelect={handleWorkoutSelect}
+          vaultRefreshKey={vaultRefreshKey}
+        />
       </ScrollView>
 
       {/* Modals */}
@@ -185,6 +189,18 @@ export default function DashboardPage() {
         isOpen={isSelectWorkoutModalOpen}
         onClose={() => setIsSelectWorkoutModalOpen(false)}
         onWorkoutSelect={handleWorkoutSelect}
+        onNewTemplatePress={() => {
+          setIsSelectWorkoutModalOpen(false);
+          setIsAddWorkoutModalOpen(true);
+        }}
+      />
+
+      <AddWorkoutModal
+        isOpen={isAddWorkoutModalOpen}
+        onClose={() => {
+          setIsAddWorkoutModalOpen(false);
+          setVaultRefreshKey((k) => k + 1);
+        }}
       />
     </View>
   );

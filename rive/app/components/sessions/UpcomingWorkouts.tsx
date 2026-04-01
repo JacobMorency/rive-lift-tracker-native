@@ -35,7 +35,7 @@ export default function UpcomingWorkouts() {
       const workouts = await getScheduledWorkoutsForDateRange(
         user.id,
         today,
-        endDate
+        endDate,
       );
 
       // Sort by date, then by workout name
@@ -129,7 +129,7 @@ export default function UpcomingWorkouts() {
       acc[workout.scheduledDate].push(workout);
       return acc;
     },
-    {} as Record<string, ScheduledWorkoutWithDate[]>
+    {} as Record<string, ScheduledWorkoutWithDate[]>,
   );
 
   const sortedDates = Object.keys(groupedWorkouts).sort();
@@ -181,9 +181,7 @@ export default function UpcomingWorkouts() {
               className="px-3 py-1.5 bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-lg flex-row items-center gap-1"
             >
               <Ionicons name="add" size={14} color="#ffffff" />
-              <Text className="text-xs font-medium text-white">
-                Schedule
-              </Text>
+              <Text className="text-xs font-medium text-white">Schedule</Text>
             </TouchableOpacity>
             {upcomingWorkouts.length > 0 && (
               <TouchableOpacity
@@ -204,7 +202,9 @@ export default function UpcomingWorkouts() {
           <View className="mt-3">
             {loading ? (
               <View className="py-4 items-center">
-                <Text className="text-xs text-gray-500 dark:text-gray-400">Loading...</Text>
+                <Text className="text-xs text-gray-500 dark:text-gray-400">
+                  Loading...
+                </Text>
               </View>
             ) : upcomingWorkouts.length === 0 ? (
               <View className="py-4 items-center">

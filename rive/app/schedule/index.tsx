@@ -11,7 +11,11 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/authcontext";
-import { getUserSchedules, ScheduledWorkout, deleteSchedule } from "../lib/scheduleUtils";
+import {
+  getUserSchedules,
+  ScheduledWorkout,
+  deleteSchedule,
+} from "../lib/scheduleUtils";
 import ScheduleCard from "../components/schedules/ScheduleCard";
 import ScheduleWorkoutModal from "../components/scheduleworkoutmodal";
 import Header from "../components/header";
@@ -23,7 +27,8 @@ export default function SchedulePage() {
   const [schedules, setSchedules] = useState<ScheduledWorkout[]>([]);
   const [loading, setLoading] = useState(true);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState<ScheduledWorkout | null>(null);
+  const [editingSchedule, setEditingSchedule] =
+    useState<ScheduledWorkout | null>(null);
 
   const fetchSchedules = useCallback(async () => {
     if (!user) return;
@@ -73,7 +78,7 @@ export default function SchedulePage() {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -119,7 +124,9 @@ export default function SchedulePage() {
       {loading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#ff4b8c" />
-          <Text className="text-gray-500 dark:text-gray-400 mt-2">Loading schedules...</Text>
+          <Text className="text-gray-500 dark:text-gray-400 mt-2">
+            Loading schedules...
+          </Text>
         </View>
       ) : schedules.length === 0 ? (
         <ScrollView
@@ -136,8 +143,8 @@ export default function SchedulePage() {
               No Schedules Yet
             </Text>
             <Text className="text-sm text-gray-500 dark:text-gray-400 text-center mt-2 mb-6">
-              Create your first workout schedule to start planning your
-              workouts ahead of time.
+              Create your first workout schedule to start planning your workouts
+              ahead of time.
             </Text>
             <TouchableOpacity
               onPress={() => setIsScheduleModalOpen(true)}
@@ -213,5 +220,3 @@ export default function SchedulePage() {
     </View>
   );
 }
-
-

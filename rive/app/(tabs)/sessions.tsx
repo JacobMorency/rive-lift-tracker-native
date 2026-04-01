@@ -10,7 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
-import SelectWorkoutModal from "../components/selectworkoutmodal";
+import SelectWorkoutModal from "../components/SelectWorkoutModal";
 import SessionFilters, {
   DateRangeFilter,
   StatusFilter,
@@ -329,6 +329,10 @@ export default function SessionsPage() {
         isOpen={isSelectWorkoutModalOpen}
         onClose={() => setIsSelectWorkoutModalOpen(false)}
         onWorkoutSelect={handleWorkoutSelect}
+        onNewTemplatePress={() => {
+          setIsSelectWorkoutModalOpen(false);
+          router.push("/(tabs)/workouts");
+        }}
       />
     </View>
   );
