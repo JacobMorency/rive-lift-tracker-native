@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
-import ExerciseSelector from "./exerciseselector";
+import ExerciseSelector from "./ExerciseSelector";
 import CreateWorkoutForm from "./workout/CreateWorkoutForm";
 
 type AddWorkoutModalProps = {

@@ -15,7 +15,7 @@ import {
   addExerciseToTemplate,
   removeExerciseFromTemplate,
 } from "../lib/templateUtils";
-import ExerciseSelector from "./exerciseselector";
+import ExerciseSelector from "./ExerciseSelector";
 import { Exercise, WorkoutDetails } from "./workout/types";
 import WorkoutHeader from "./workout/WorkoutHeader";
 import WorkoutExerciseList from "./workout/WorkoutExerciseList";
@@ -36,7 +36,7 @@ const WorkoutDetailsModal = ({
   onWorkoutDeleted,
 }: WorkoutDetailsModalProps) => {
   const [workoutDetails, setWorkoutDetails] = useState<WorkoutDetails | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState(false);
   const [showExerciseSelector, setShowExerciseSelector] = useState(false);
@@ -74,7 +74,7 @@ const WorkoutDetailsModal = ({
       if (workoutExercisesError) {
         console.error(
           "Error fetching workout exercises:",
-          workoutExercisesError.message
+          workoutExercisesError.message,
         );
         return;
       }
@@ -181,7 +181,7 @@ const WorkoutDetailsModal = ({
           workoutId,
           exercise.id,
           (workoutDetails?.exercises.length || 0) +
-            selectedExercises.indexOf(exercise)
+            selectedExercises.indexOf(exercise),
         );
       }
 
@@ -196,7 +196,7 @@ const WorkoutDetailsModal = ({
 
   const handleRemoveExercise = async (
     exerciseId: number,
-    exerciseName: string
+    exerciseName: string,
   ) => {
     if (!workoutId) return;
 
@@ -222,7 +222,7 @@ const WorkoutDetailsModal = ({
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -261,7 +261,7 @@ const WorkoutDetailsModal = ({
 
       // Update local state
       setWorkoutDetails((prev) =>
-        prev ? { ...prev, name: editingName.trim() } : null
+        prev ? { ...prev, name: editingName.trim() } : null,
       );
       setIsEditingName(false);
       onWorkoutUpdated?.();
@@ -278,7 +278,7 @@ const WorkoutDetailsModal = ({
 
   const handleNotesUpdate = async (
     workoutExerciseId: string,
-    notes: string
+    notes: string,
   ) => {
     if (!workoutExerciseId) return;
 
@@ -302,7 +302,7 @@ const WorkoutDetailsModal = ({
           exercises: prev.exercises.map((ex) =>
             ex.workoutExerciseId === workoutExerciseId
               ? { ...ex, notes: notes.trim() || null }
-              : ex
+              : ex,
           ),
         };
       });
@@ -347,7 +347,7 @@ const WorkoutDetailsModal = ({
             }
           },
         },
-      ]
+      ],
     );
   };
 

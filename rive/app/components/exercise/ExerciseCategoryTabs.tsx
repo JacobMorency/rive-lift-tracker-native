@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AppText from "../ui/AppText";
 
 type ExerciseCategoryTabsProps = {
   selectedFilter: string;
@@ -18,16 +19,22 @@ export default function ExerciseCategoryTabs({
   return (
     <View className="mb-6">
       <View className="flex-row items-center justify-between mb-3">
-        <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
+        <AppText variant="caption" tone="muted">
           Filter by Category
-        </Text>
+        </AppText>
+
         {selectedCount > 0 && (
           <TouchableOpacity
             onPress={onClearAll}
             className="flex-row items-center gap-1"
           >
-            <Ionicons name="close-circle" size={16} color="#ef4444" />
-            <Text className="text-sm text-error">Clear All</Text>
+            <AppText
+              variant="body"
+              tone="primary"
+              className="normal-case text-xs"
+            >
+              CLEAR ALL
+            </AppText>
           </TouchableOpacity>
         )}
       </View>
@@ -35,59 +42,34 @@ export default function ExerciseCategoryTabs({
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View className="flex-row gap-3">
           <TouchableOpacity
-            className={`px-4 py-3 rounded-xl flex-row items-center gap-2 ${
-              selectedFilter === "" ? "bg-[#ff4b8c] dark:bg-[#ff6fa1]" : "bg-gray-100 dark:bg-zinc-700"
+            className={`px-6 rounded-full flex-row items-center ${
+              selectedFilter === ""
+                ? "bg-primary dark:bg-primary-dark"
+                : "bg-background dark:bg-surfaceAlt-dark text-textMuted dark:text-textMuted-dark"
             }`}
             onPress={() => onFilterChange("")}
-            style={{
-              shadowColor: selectedFilter === "" ? "#ff4b8c" : "transparent",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.2,
-              shadowRadius: 4,
-              elevation: 3,
-            }}
           >
-            <Ionicons
-              name="grid"
-              size={16}
-              color={selectedFilter === "" ? "#ffffff" : "#6b7280"}
-            />
-            <Text
-              className={`text-sm font-medium ${
-                selectedFilter === ""
-                  ? "text-white"
-                  : "text-zinc-900 dark:text-white"
-              }`}
-            >
+            <AppText variant="caption" className="font-bold">
               All
-            </Text>
+            </AppText>
           </TouchableOpacity>
 
           {["Chest", "Back", "Legs", "Arms"].map((filter) => (
             <TouchableOpacity
               key={filter}
-              className={`px-4 py-3 rounded-xl ${
-                selectedFilter === filter ? "bg-[#ff4b8c] dark:bg-[#ff6fa1]" : "bg-gray-100 dark:bg-zinc-700"
+              className={`px-6 py-1 rounded-full ${
+                selectedFilter === filter
+                  ? "bg-primary dark:bg-primary-dark"
+                  : "bg-surfaceAlt dark:bg-surfaceAlt-dark text-textMuted dark:text-textMuted-dark"
               }`}
               onPress={() => onFilterChange(filter)}
-              style={{
-                shadowColor:
-                  selectedFilter === filter ? "#ff4b8c" : "transparent",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.2,
-                shadowRadius: 4,
-                elevation: 3,
-              }}
             >
-              <Text
-                className={`text-sm font-medium ${
-                  selectedFilter === filter
-                    ? "text-white"
-                    : "text-zinc-900 dark:text-white"
-                }`}
+              <AppText
+                variant="caption"
+                className={`font-bold ${selectedFilter}`}
               >
                 {filter}
-              </Text>
+              </AppText>
             </TouchableOpacity>
           ))}
         </View>
@@ -95,4 +77,3 @@ export default function ExerciseCategoryTabs({
     </View>
   );
 }
-

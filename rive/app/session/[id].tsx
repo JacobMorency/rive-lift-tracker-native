@@ -15,7 +15,7 @@ import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 import { getLastSessionData } from "../lib/statsUtils";
 import ExerciseTracker from "../components/exercisetracker";
-import ExerciseSelector from "../components/exerciseselector";
+import ExerciseSelector from "../components/ExerciseSelector";
 import { Exercise as ExerciseSelectorExercise } from "../components/exercise/types";
 
 import { MuscleGroup } from "../lib/muscleGroupUtils";
@@ -82,7 +82,7 @@ export default function SessionDetailPage() {
     number | null
   >(null);
   const [exerciseProgress, setExerciseProgress] = useState<ExerciseProgress[]>(
-    []
+    [],
   );
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
@@ -136,7 +136,7 @@ export default function SessionDetailPage() {
       if (sessionExercisesError) {
         console.error(
           "Error fetching session exercises:",
-          sessionExercisesError.message
+          sessionExercisesError.message,
         );
         return;
       }
@@ -151,7 +151,7 @@ export default function SessionDetailPage() {
       if (workoutExercisesError) {
         console.error(
           "Error fetching workout exercises:",
-          workoutExercisesError.message
+          workoutExercisesError.message,
         );
         return;
       }
@@ -222,7 +222,7 @@ export default function SessionDetailPage() {
             })
             .filter(
               (exercise): exercise is NonNullable<typeof exercise> =>
-                exercise !== null
+                exercise !== null,
             )
             .sort((a, b) => {
               const aIndex =
@@ -252,7 +252,7 @@ export default function SessionDetailPage() {
           const loadedProgress = await loadExistingExerciseData(
             exercises,
             initialProgress,
-            finalSessionData
+            finalSessionData,
           );
           setExerciseProgress(loadedProgress);
           return;
@@ -348,7 +348,7 @@ export default function SessionDetailPage() {
         if (exercise) {
           // Check if this exercise has a session_exercises entry
           const sessionExercise = sessionExercisesData?.find(
-            (se) => se.exercise_id === we.exercise_id
+            (se) => se.exercise_id === we.exercise_id,
           );
 
           exerciseMapCombined.set(we.exercise_id, {
@@ -408,7 +408,7 @@ export default function SessionDetailPage() {
                 ?.order_index ?? 9999);
 
           return aOrderIndex - bOrderIndex;
-        }
+        },
       );
 
       // Initialize exercise progress
@@ -434,7 +434,7 @@ export default function SessionDetailPage() {
       const loadedProgress = await loadExistingExerciseData(
         exercises,
         initialProgress,
-        finalSessionData
+        finalSessionData,
       );
       setExerciseProgress(loadedProgress);
     } catch (error) {
@@ -447,7 +447,7 @@ export default function SessionDetailPage() {
   const loadExistingExerciseData = async (
     exercises: Exercise[],
     initialProgress: ExerciseProgress[],
-    sessionDataToUse: SessionData
+    sessionDataToUse: SessionData,
   ) => {
     if (!sessionDataToUse) {
       return initialProgress;
@@ -473,7 +473,7 @@ export default function SessionDetailPage() {
             right_reps,
             created_at
           )
-        `
+        `,
           )
           .eq("session_id", sessionDataToUse.id)
           .order("order_index");
@@ -481,7 +481,7 @@ export default function SessionDetailPage() {
       if (sessionExercisesError) {
         console.error(
           "Error loading session exercises:",
-          sessionExercisesError
+          sessionExercisesError,
         );
         return initialProgress;
       }
@@ -491,7 +491,7 @@ export default function SessionDetailPage() {
 
       sessionExercises?.forEach((sessionExercise) => {
         const exerciseIndex = exercises.findIndex(
-          (ex) => ex.id === sessionExercise.exercise_id
+          (ex) => ex.id === sessionExercise.exercise_id,
         );
 
         if (exerciseIndex !== -1) {
@@ -500,7 +500,7 @@ export default function SessionDetailPage() {
             sessionExercise.exercise_sets?.sort(
               (a: RawExerciseSet, b: RawExerciseSet) =>
                 new Date(a.created_at).getTime() -
-                new Date(b.created_at).getTime()
+                new Date(b.created_at).getTime(),
             ) || [];
 
           const sets = sortedSets.map((set: RawExerciseSet, index: number) => ({
@@ -538,7 +538,7 @@ export default function SessionDetailPage() {
       const lastSets = await getLastSessionData(
         user.id,
         sessionData.workout_id,
-        exercise.id
+        exercise.id,
       );
       setLastSessionSets(lastSets);
     }
@@ -723,7 +723,7 @@ export default function SessionDetailPage() {
   };
 
   const handleAddExercise = async (
-    selectedExercises: ExerciseSelectorExercise[]
+    selectedExercises: ExerciseSelectorExercise[],
   ) => {
     if (!sessionData || !user || selectedExercises.length === 0) return;
 
@@ -750,13 +750,13 @@ export default function SessionDetailPage() {
             await addExercisesToSession(selectedExercises, true);
           },
         },
-      ]
+      ],
     );
   };
 
   const addExercisesToSession = async (
     selectedExercises: ExerciseSelectorExercise[],
-    saveToTemplate: boolean
+    saveToTemplate: boolean,
   ) => {
     if (!sessionData || !user) return;
 
@@ -794,7 +794,7 @@ export default function SessionDetailPage() {
           session_id: sessionData.id,
           exercise_id: exercise.id,
           order_index: startOrderIndex + index,
-        })
+        }),
       );
 
       const { error: insertError } = await supabase
@@ -841,7 +841,7 @@ export default function SessionDetailPage() {
               await removeExerciseFromSession(exerciseIndex, exercise);
             },
           },
-        ]
+        ],
       );
     } else {
       await removeExerciseFromSession(exerciseIndex, exercise);
@@ -850,7 +850,7 @@ export default function SessionDetailPage() {
 
   const removeExerciseFromSession = async (
     exerciseIndex: number,
-    exercise: Exercise
+    exercise: Exercise,
   ) => {
     if (!sessionData) return;
 
@@ -921,7 +921,7 @@ export default function SessionDetailPage() {
       // After deletion, ensure remaining template exercises have session_exercises entries
       // This prevents them from reappearing when we fetch again
       const remainingExercises = sessionData.exercises.filter(
-        (_, index) => index !== exerciseIndex
+        (_, index) => index !== exerciseIndex,
       );
 
       // Get current session_exercises count to see if we need to create entries
@@ -931,19 +931,19 @@ export default function SessionDetailPage() {
         .eq("session_id", sessionData.id);
 
       const remainingSessionExerciseIds = new Set(
-        remainingSessionExercises?.map((se) => se.exercise_id) || []
+        remainingSessionExercises?.map((se) => se.exercise_id) || [],
       );
 
       // Create session_exercises entries for remaining template exercises that don't have them
       const exercisesToAdd = remainingExercises
         .filter(
           (ex) =>
-            !ex.sessionExerciseId && !remainingSessionExerciseIds.has(ex.id)
+            !ex.sessionExerciseId && !remainingSessionExerciseIds.has(ex.id),
         )
         .map((ex, idx) => {
           // Find the index in the original list (before removal)
           const originalIndex = sessionData.exercises.findIndex(
-            (e) => e.id === ex.id
+            (e) => e.id === ex.id,
           );
           const adjustedIndex =
             originalIndex < exerciseIndex ? originalIndex : originalIndex - 1;
@@ -961,7 +961,7 @@ export default function SessionDetailPage() {
       // Update local state
       const updatedExercises = remainingExercises;
       const updatedProgress = exerciseProgress.filter(
-        (_, index) => index !== exerciseIndex
+        (_, index) => index !== exerciseIndex,
       );
 
       setSessionData({
@@ -1008,7 +1008,7 @@ export default function SessionDetailPage() {
           style: "destructive",
           onPress: handleConfirmCancel,
         },
-      ]
+      ],
     );
   };
 

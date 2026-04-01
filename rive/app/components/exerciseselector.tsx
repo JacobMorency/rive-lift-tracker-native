@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabaseClient";
@@ -12,6 +7,9 @@ import { Exercise, ExerciseOption } from "./exercise/types";
 import ExerciseSearchBar from "./exercise/ExerciseSearchBar";
 import ExerciseCategoryTabs from "./exercise/ExerciseCategoryTabs";
 import ExerciseList from "./exercise/ExerciseList";
+import AppText from "./ui/AppText";
+import AppCard from "./ui/AppCard";
+import AppButton from "./ui/AppButton";
 
 type ExerciseSelectorProps = {
   onExerciseSelect: (exercises: Exercise[]) => void;
@@ -38,14 +36,14 @@ const ExerciseSelector = ({
   const [searchValue, setSearchValue] = useState<string>("");
   const [selectedFilter, setSelectedFilter] = useState<string>("");
   const [selectedExercises, setSelectedExercises] = useState<Exercise[]>(
-    initialSelectedExercises
+    initialSelectedExercises,
   );
   const [loading, setLoading] = useState(false);
   const insets = useSafeAreaInsets();
 
   const fetchExercises = async (
     searchTerm: string,
-    filter: string
+    filter: string,
   ): Promise<void> => {
     setLoading(true);
     try {
@@ -53,11 +51,17 @@ const ExerciseSelector = ({
       let exerciseIds: number[] | null = null;
 
       if (filter) {
-        const { getExercisesByMuscleGroups } = await import("../lib/muscleGroupUtils");
-        
+        const { getExercisesByMuscleGroups } = await import(
+          "../lib/muscleGroupUtils"
+        );
+
         if (filter === "Arms") {
           // Arms filter includes Biceps, Triceps, and Shoulders
-          exerciseIds = await getExercisesByMuscleGroups(["Biceps", "Triceps", "Shoulders"]);
+          exerciseIds = await getExercisesByMuscleGroups([
+            "Biceps",
+            "Triceps",
+            "Shoulders",
+          ]);
         } else {
           // Single muscle group filter
           exerciseIds = await getExercisesByMuscleGroups([filter]);
@@ -94,14 +98,18 @@ const ExerciseSelector = ({
 
       // Fetch muscle groups for the exercises
       if (data && data.length > 0) {
-        const { getExercisesWithMuscleGroups } = await import("../lib/muscleGroupUtils");
+        const { getExercisesWithMuscleGroups } = await import(
+          "../lib/muscleGroupUtils"
+        );
         const exerciseIds = data.map((ex) => ex.id);
         const muscleGroupMap = await getExercisesWithMuscleGroups(exerciseIds);
 
         // Combine exercise data with muscle groups
         const exercisesWithMuscleGroups = data.map((exercise) => {
           const muscleGroups = muscleGroupMap.get(exercise.id) || [];
-          const primaryMuscleGroup = muscleGroups.find((mg) => mg.is_primary)?.name || muscleGroups[0]?.name;
+          const primaryMuscleGroup =
+            muscleGroups.find((mg) => mg.is_primary)?.name ||
+            muscleGroups[0]?.name;
           return {
             ...exercise,
             muscleGroups,
@@ -134,7 +142,7 @@ const ExerciseSelector = ({
       .toLowerCase()
       .includes(searchValue.toLowerCase());
     const isExisting = existingExercises.some(
-      (existing) => existing.id === ex.id
+      (existing) => existing.id === ex.id,
     );
     return matchesSearch && !isExisting;
   });
@@ -142,14 +150,14 @@ const ExerciseSelector = ({
   // Handle exercise selection
   const handleExerciseToggleInternal = (exercise: Exercise): void => {
     const isAlreadySelected = selectedExercises.some(
-      (ex) => ex.id === exercise.id
+      (ex) => ex.id === exercise.id,
     );
 
     if (!isAlreadySelected) {
       setSelectedExercises((prev) => [...prev, exercise]);
     } else {
       setSelectedExercises((prev) =>
-        prev.filter((ex) => ex.id !== exercise.id)
+        prev.filter((ex) => ex.id !== exercise.id),
       );
     }
   };
@@ -164,60 +172,33 @@ const ExerciseSelector = ({
   };
 
   return (
-    <View className="flex-1 bg-white dark:bg-zinc-900">
-      {/* Enhanced Header */}
+    <View className="flex-1 bg-background dark:bg-background-dark">
       <View
-        className="bg-gray-50 dark:bg-zinc-800 px-4 py-4 border-b border-gray-200 dark:border-zinc-700"
-        style={{ paddingTop: insets.top + 16 }}
+        className="bg-chrome dark:bg-chrome-dark px-4 py-4"
+        style={{ paddingTop: insets.top, paddingBottom: 8 }}
       >
-        <View className="flex-row items-center justify-between mb-3">
+        <View className="flex-row items-center gap-2">
           <TouchableOpacity
             onPress={onClose}
-            className="w-10 h-10 items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-700"
+            className="w-10 h-10 items-center justify-center rounded-full"
           >
-            <Ionicons name="close" size={20} color="#6b7280" />
+            <Ionicons name="close" size={24} color="white" />
           </TouchableOpacity>
 
-          <View className="flex-1 items-center">
-            <Text className="text-xl font-bold text-zinc-900 dark:text-white">
+          <View>
+            <AppText variant="subheader">
               {workoutName ? `Add Exercises to "${workoutName}"` : title}
-            </Text>
-            {selectedExercises.length > 0 && (
-              <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {selectedExercises.length} exercise
-                {selectedExercises.length !== 1 ? "s" : ""} selected
-              </Text>
-            )}
+            </AppText>
           </View>
-
-          <TouchableOpacity
-            onPress={handleConfirm}
-            className="w-10 h-10 items-center justify-center rounded-full bg-[#ff4b8c] dark:bg-[#ff6fa1]"
-            style={{
-              shadowColor: "#ff4b8c",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-              elevation: 4,
-            }}
-          >
-            <Ionicons name="checkmark" size={20} color="#ffffff" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Progress Indicator */}
-        <View className="flex-row items-center gap-2">
-          <View className="flex-1 h-2 bg-gray-100 dark:bg-zinc-700 rounded-full overflow-hidden">
-            <View
-              className="h-full bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-full"
-              style={{ width: "100%" }}
-            />
-          </View>
-          <Text className="text-xs text-gray-500 dark:text-gray-400 ml-2">Step 2 of 2</Text>
         </View>
       </View>
 
       {/* Content */}
+      <ExerciseSearchBar
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+      />
+
       <ScrollView className="flex-1 p-4">
         <ExerciseCategoryTabs
           selectedFilter={selectedFilter}
@@ -234,11 +215,26 @@ const ExerciseSelector = ({
           onToggleExercise={handleExerciseToggle}
         />
       </ScrollView>
-
-      <ExerciseSearchBar
-        searchValue={searchValue}
-        onSearchChange={setSearchValue}
-      />
+      <View className="px-4 py-1 mb-4 mt-2">
+        <AppCard className="flex-row justify-between" surface="alt">
+          <View>
+            <AppText variant="caption" tone="muted">
+              Selection
+            </AppText>
+            <AppText className="font-bold text-sm">
+              {selectedExercises.length}{" "}
+              {selectedExercises.length === 1 ? "exercise" : "exercises"}{" "}
+              selected
+            </AppText>
+          </View>
+          <TouchableOpacity
+            className="bg-primary dark:bg-primary-dark rounded-full flex items-center justify-center px-8"
+            onPress={handleConfirm}
+          >
+            <AppText variant="caption">FINISH</AppText>
+          </TouchableOpacity>
+        </AppCard>
+      </View>
     </View>
   );
 };
