@@ -158,6 +158,7 @@ const AddWorkoutModal = ({ isOpen, onClose }: AddWorkoutModalProps) => {
           <CreateWorkoutForm
             workoutName={workoutName}
             description={description}
+            onClose={handleClose}
             errors={errors}
             loading={loading}
             onWorkoutNameChange={(text) => {

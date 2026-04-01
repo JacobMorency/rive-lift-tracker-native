@@ -7,10 +7,12 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AppText from "../ui/AppText";
 
 type CreateWorkoutFormProps = {
   workoutName: string;
   description: string;
+  onClose?: () => void;
   errors: { workoutName: string; description: string };
   loading: boolean;
   onWorkoutNameChange: (text: string) => void;
@@ -22,6 +24,7 @@ type CreateWorkoutFormProps = {
 export default function CreateWorkoutForm({
   workoutName,
   description,
+  onClose,
   errors,
   loading,
   onWorkoutNameChange,
@@ -32,48 +35,26 @@ export default function CreateWorkoutForm({
   return (
     <View className="flex-1">
       {/* Enhanced Header */}
-      <View className="bg-gray-50 dark:bg-zinc-800 px-4 py-4 border-b border-gray-200 dark:border-zinc-700">
-        <View className="flex-row items-center justify-between mb-3">
-          <View className="w-10 h-10" />
-          <Text className="text-xl font-bold text-zinc-900 dark:text-white">
-            New Workout
-          </Text>
+      <View className="bg-background dark:bg-background-dark px-4 py-4">
+        <View className="flex-row items-center justify-between">
+          <TouchableOpacity
+            onPress={onClose}
+            className="w-10 h-10 items-center justify-center rounded-full"
+          >
+            <Ionicons name="close" size={24} color="white" />
+          </TouchableOpacity>
+          <AppText variant="subheader">New Workout</AppText>
           <TouchableOpacity
             onPress={onSubmit}
             disabled={loading || !workoutName.trim()}
-            className={`w-10 h-10 items-center justify-center rounded-full ${
+            className={`items-center justify-center rounded-full ${
               loading || !workoutName.trim()
-                ? "bg-gray-100 dark:bg-zinc-700"
-                : "bg-[#ff4b8c] dark:bg-[#ff6fa1]"
+                ? "bg-surfaceAlt dark:bg-surfaceAlt-dark"
+                : "bg-primary dark:bg-primary-dark"
             }`}
-            style={{
-              shadowColor:
-                loading || !workoutName.trim()
-                  ? "transparent"
-                  : "#ff4b8c",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-              elevation: 4,
-            }}
           >
-            <Ionicons
-              name="checkmark"
-              size={20}
-              color={loading || !workoutName.trim() ? "#9ca3af" : "#ffffff"}
-            />
+            <AppText className="px-8 py-2 text-sm font-bold">NEXT</AppText>
           </TouchableOpacity>
-        </View>
-
-        {/* Progress Indicator */}
-        <View className="flex-row items-center gap-2">
-          <View className="flex-1 h-2 bg-gray-100 dark:bg-zinc-700 rounded-full overflow-hidden">
-            <View
-              className="h-full bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-full"
-              style={{ width: "50%" }}
-            />
-          </View>
-          <Text className="text-xs text-gray-500 dark:text-gray-400 ml-2">Step 1 of 2</Text>
         </View>
       </View>
 
@@ -96,7 +77,9 @@ export default function CreateWorkoutForm({
             <TextInput
               ref={workoutNameRef}
               className={`border-2 rounded-xl px-4 py-3 text-zinc-900 dark:text-white bg-gray-50 dark:bg-zinc-800 text-lg ${
-                errors.workoutName ? "border-error" : "border-gray-200 dark:border-zinc-700"
+                errors.workoutName
+                  ? "border-error"
+                  : "border-gray-200 dark:border-zinc-700"
               }`}
               placeholder="e.g., Upper Body Strength"
               placeholderTextColor="#9ca3af"
@@ -113,7 +96,9 @@ export default function CreateWorkoutForm({
                   Give your workout a memorable name
                 </Text>
               )}
-              <Text className="text-gray-500 dark:text-gray-400 text-sm">{workoutName.length}/50</Text>
+              <Text className="text-gray-500 dark:text-gray-400 text-sm">
+                {workoutName.length}/50
+              </Text>
             </View>
           </View>
 
@@ -126,11 +111,15 @@ export default function CreateWorkoutForm({
               <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
                 Description
               </Text>
-              <Text className="text-sm text-gray-500 dark:text-gray-400">(Optional)</Text>
+              <Text className="text-sm text-gray-500 dark:text-gray-400">
+                (Optional)
+              </Text>
             </View>
             <TextInput
               className={`border-2 rounded-xl px-4 py-3 text-zinc-900 dark:text-white bg-gray-50 dark:bg-zinc-800 text-base min-h-[100px] ${
-                errors.description ? "border-error" : "border-gray-200 dark:border-zinc-700"
+                errors.description
+                  ? "border-error"
+                  : "border-gray-200 dark:border-zinc-700"
               }`}
               placeholder="Describe your workout goals, focus areas, or any special notes..."
               placeholderTextColor="#9ca3af"
@@ -159,4 +148,3 @@ export default function CreateWorkoutForm({
     </View>
   );
 }
-
