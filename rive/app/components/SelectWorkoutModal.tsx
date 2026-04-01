@@ -144,17 +144,6 @@ export default function SelectWorkoutModal({
 
             <View className="flex-1 min-w-0">
               <AppText variant="subheader">Select workout</AppText>
-              {!loading && workoutTemplates.length > 0 ? (
-                <AppText
-                  variant="caption"
-                  tone="muted"
-                  className="normal-case mt-1"
-                >
-                  {`${workoutTemplates.length} template${
-                    workoutTemplates.length !== 1 ? "s" : ""
-                  } available`}
-                </AppText>
-              ) : null}
             </View>
           </View>
         </View>
