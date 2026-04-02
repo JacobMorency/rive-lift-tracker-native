@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, TouchableOpacity, ScrollView, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AppText from "../ui/AppText";
 import { ExerciseSet as StatsExerciseSet } from "../../lib/statsUtils";
 import { ExerciseSet } from "./types";
 import SetComparison from "./SetComparison";
@@ -16,6 +17,9 @@ export default function ProgressComparisonPanel({
   currentSet,
   sets,
 }: ProgressComparisonPanelProps) {
+  const colorScheme = useColorScheme();
+  const primaryIcon =
+    colorScheme === "dark" ? "#ff6fa1" : "#ff4b8c";
   const [showAllSets, setShowAllSets] = useState<boolean>(false);
   
   const currentSetNumber = currentSet.set_number || 1;
@@ -41,30 +45,18 @@ export default function ProgressComparisonPanel({
   const needsScrolling = showAllSets && lastSessionSets.length > 3;
 
   return (
-    <View
-      className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-4 mb-4"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-      }}
-    >
-      <View className="flex-row items-center justify-between mb-3">
-        <View className="flex-row items-center">
+    <View className="bg-surfaceAlt dark:bg-surfaceAlt-dark rounded-ds-card border border-border dark:border-border-dark p-4 mb-4">
+      <View className="flex-row items-center justify-between mb-3 gap-2">
+        <View className="flex-row items-center gap-2 flex-1 min-w-0">
           <Ionicons name="trending-up" size={16} color="#10b981" />
-          <Text className="text-sm font-semibold text-zinc-900 dark:text-white ml-2">
-            Compare to Last Session
-          </Text>
+          <AppText variant="caption" tone="default" className="font-bold normal-case tracking-normal">
+            Compare to last session
+          </AppText>
         </View>
         {lastSessionSets.length > 0 && lastSessionSets[0].created_at && (
-          <Text className="text-xs text-gray-500 dark:text-gray-400">
+          <AppText variant="caption" tone="primary" className="shrink-0 normal-case tracking-normal">
             {new Date(lastSessionSets[0].created_at).toLocaleDateString()}
-          </Text>
+          </AppText>
         )}
       </View>
 
@@ -120,16 +112,16 @@ export default function ProgressComparisonPanel({
           {hasMoreSets && (
             <TouchableOpacity
               onPress={() => setShowAllSets(!showAllSets)}
-              className="flex-row items-center justify-center gap-1 py-2 rounded-lg bg-gray-50 dark:bg-zinc-800"
+              className="flex-row items-center justify-center gap-1 py-2 rounded-ds-control bg-surface dark:bg-surface-dark border border-border dark:border-border-dark"
             >
               <Ionicons
                 name={showAllSets ? "remove-circle-outline" : "add-circle-outline"}
                 size={16}
-                color="#ff4b8c"
+                color={primaryIcon}
               />
-              <Text className="text-primary text-sm font-medium">
-                {showAllSets ? "Hide Additional Sets" : "Show All Sets"}
-              </Text>
+              <AppText variant="body" tone="primary" className="text-sm font-medium">
+                {showAllSets ? "Hide additional sets" : "Show all sets"}
+              </AppText>
             </TouchableOpacity>
           )}
 
@@ -137,9 +129,9 @@ export default function ProgressComparisonPanel({
           {sets.length > 0 && (
             <View>
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Overall Progress
-                </Text>
+                <AppText variant="caption" tone="muted" className="normal-case tracking-normal">
+                  Overall progress
+                </AppText>
                 <View className="flex-row items-center gap-2">
                   {(() => {
                     const totalLastVolume = lastSessionSets.reduce(
@@ -178,20 +170,24 @@ export default function ProgressComparisonPanel({
                     return (
                       <>
                         <View className="flex-row items-center gap-1">
-                          <Text className="text-xs text-gray-500 dark:text-gray-400">Volume:</Text>
-                          <Text
+                          <AppText variant="caption" tone="muted" className="normal-case tracking-normal">
+                            Volume:
+                          </AppText>
+                          <AppText
+                            variant="body"
+                            tone="default"
                             className={`text-sm font-semibold ${
                               volumeProgress === "up"
                                 ? "text-success"
                                 : volumeProgress === "down"
                                   ? "text-error"
                                   : volumeProgress === "neutral"
-                                    ? "text-gray-500 dark:text-gray-400"
-                                    : "text-zinc-900 dark:text-white"
+                                    ? "text-textMuted dark:text-textMuted-dark"
+                                    : "text-text dark:text-text-dark"
                             }`}
                           >
                             {totalCurrentVolume.toLocaleString()} lbs
-                          </Text>
+                          </AppText>
                         </View>
                         {volumeProgress === "up" && (
                           <Ionicons

@@ -1,10 +1,12 @@
 import React from "react";
-import { View, Text, TouchableOpacity, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ExerciseSet } from "./types";
 import RepsInput from "./RepsInput";
 import WeightInput from "./WeightInput";
 import WeightIncrementTabs from "./WeightIncrementTabs";
+import AppButton from "../ui/AppButton";
+import AppText from "../ui/AppText";
 
 type SetInputFormProps = {
   currentSet: ExerciseSet;
@@ -33,7 +35,11 @@ export default function SetInputForm({
   onCopyLastSet,
   hasSets,
 }: SetInputFormProps) {
-  // Check if set is complete (allow weight to be 0 for bodyweight exercises)
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const primary = isDark ? "#ff6fa1" : "#ff4b8c";
+  const mutedIcon = isDark ? "#a1a1aa" : "#6b7280";
+
   const isSetComplete = currentSet.is_unilateral
     ? currentSet.left_reps !== null &&
       currentSet.right_reps !== null &&
@@ -44,12 +50,10 @@ export default function SetInputForm({
       currentSet.weight !== null &&
       currentSet.weight >= 0;
 
-  // Quick rep presets
   const quickReps = [5, 8, 10, 12, 15];
 
   const handleQuickRep = (reps: number) => {
     if (currentSet.is_unilateral) {
-      // For unilateral, set both left and right reps to the same value
       setCurrentSet({
         ...currentSet,
         left_reps: reps,
@@ -60,85 +64,70 @@ export default function SetInputForm({
     }
   };
 
-  // Check if a quick rep is selected for highlighting
   const isQuickRepSelected = (reps: number) => {
     if (currentSet.is_unilateral) {
       return currentSet.left_reps === reps && currentSet.right_reps === reps;
-    } else {
-      return currentSet.reps === reps;
     }
+    return currentSet.reps === reps;
   };
+
   return (
-    <View
-      className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-4"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 4,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 8,
-      }}
-    >
-      <View className="mb-3 flex-row items-center justify-between">
-        <Text className="text-lg font-bold text-zinc-900 dark:text-white">
+    <View className="bg-surfaceAlt dark:bg-surfaceAlt-dark rounded-ds-card border border-border dark:border-border-dark p-4 mb-4">
+      <View className="mb-3 flex-row items-center justify-between gap-2">
+        <AppText variant="caption" tone="primary" className="font-bold tracking-widest">
           Set {currentSet.set_number}
-        </Text>
-        <View className="flex-row items-center gap-2">
-          <TouchableOpacity
-            onPress={() => setShowPartials(!showPartials)}
-            className={`px-2 py-1 rounded flex-row items-center gap-1 ${
-              showPartials ? "bg-[#ff4b8c] dark:bg-[#ff6fa1]" : "bg-gray-100 dark:bg-zinc-700"
-            }`}
+        </AppText>
+        <TouchableOpacity
+          onPress={() => setShowPartials(!showPartials)}
+          className={`px-3 py-1.5 rounded-full flex-row items-center gap-1 border ${
+            showPartials
+              ? "bg-primary/15 dark:bg-primary-dark/15 border-primary dark:border-primary-dark"
+              : "bg-surface dark:bg-surface-dark border-border dark:border-border-dark"
+          }`}
+        >
+          <Ionicons
+            name={showPartials ? "eye-off-outline" : "eye-outline"}
+            size={14}
+            color={showPartials ? primary : mutedIcon}
+          />
+          <AppText
+            variant="caption"
+            tone={showPartials ? "primary" : "default"}
+            className="normal-case tracking-normal"
           >
-            <Ionicons
-              name={showPartials ? "eye-off-outline" : "eye-outline"}
-              size={14}
-              color={showPartials ? "#ffffff" : "#6b7280"}
-            />
-            <Text
-              className={`${
-                showPartials ? "text-white" : "text-zinc-900 dark:text-white"
-              } text-xs font-medium`}
-            >
-              {showPartials ? "Hide Partials" : "Show Partials"}
-            </Text>
-          </TouchableOpacity>
-        </View>
+            {showPartials ? "Hide partials" : "Show partials"}
+          </AppText>
+        </TouchableOpacity>
       </View>
 
       <View className="gap-3">
-        {/* Quick Rep Buttons */}
-        <View className="mb-2">
-          <Text className="text-xs text-gray-500 dark:text-gray-400 mb-1">Quick Reps</Text>
-          <View className="flex-row gap-2">
+        <View className="mb-1">
+          <AppText variant="caption" tone="muted" className="normal-case tracking-normal mb-2">
+            Quick reps
+          </AppText>
+          <View className="flex-row flex-wrap gap-2">
             {quickReps.map((reps) => (
               <TouchableOpacity
                 key={reps}
                 onPress={() => handleQuickRep(reps)}
-                className={`px-3 py-2 rounded-lg border ${
+                className={`px-4 py-2 rounded-full border ${
                   isQuickRepSelected(reps)
-                    ? "bg-[#ff4b8c] dark:bg-[#ff6fa1] border-primary"
-                    : "bg-gray-100 dark:bg-zinc-700 border-transparent"
+                    ? "border-primary dark:border-primary-dark bg-primary/10 dark:bg-primary-dark/10"
+                    : "border-border dark:border-border-dark bg-surface dark:bg-surface-dark"
                 }`}
               >
-                <Text
-                  className={`text-sm font-semibold ${
-                    isQuickRepSelected(reps)
-                      ? "text-white"
-                      : "text-zinc-900 dark:text-white"
-                  }`}
+                <AppText
+                  variant="body"
+                  tone={isQuickRepSelected(reps) ? "primary" : "default"}
+                  className="text-sm font-bold"
                 >
                   {reps}
-                </Text>
+                </AppText>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* Reps - Conditional based on unilateral */}
         {currentSet.is_unilateral ? (
           <View className="gap-3">
             <RepsInput
@@ -153,8 +142,6 @@ export default function SetInputForm({
               }
               variant="form"
             />
-
-            {/* Weight (shown for unilateral as well) */}
             <WeightInput
               value={currentSet.weight}
               textInputValue={weightInput}
@@ -165,14 +152,12 @@ export default function SetInputForm({
             />
           </View>
         ) : (
-          /* Regular Reps & Weight Inline */
           <View className="flex-row gap-3">
             <RepsInput
               value={currentSet.reps}
               onChange={(val) => setCurrentSet({ ...currentSet, reps: val })}
               variant="form"
             />
-
             <WeightInput
               value={currentSet.weight}
               textInputValue={weightInput}
@@ -184,19 +169,16 @@ export default function SetInputForm({
           </View>
         )}
 
-        {/* Partial Reps (toggleable) */}
         {showPartials && (
           <View className="flex-1">
-            <View className="mb-1">
-              <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
-                Partials
-              </Text>
-            </View>
+            <AppText variant="caption" tone="muted" className="normal-case tracking-normal mb-1">
+              Partials
+            </AppText>
             <View
-              className={`rounded-xl flex-row items-center ${
+              className={`rounded-ds-control flex-row items-center border-2 ${
                 currentSet.partialReps !== null && currentSet.partialReps > 0
-                  ? "bg-[#ff4b8c] dark:bg-[#ff6fa1]/10 border-2 border-primary"
-                  : "bg-gray-100 dark:bg-zinc-700 border-2 border-transparent"
+                  ? "bg-primary/10 dark:bg-primary-dark/10 border-primary dark:border-primary-dark"
+                  : "bg-surface dark:bg-surface-dark border-transparent"
               }`}
             >
               <TouchableOpacity
@@ -214,13 +196,13 @@ export default function SetInputForm({
                   color={
                     currentSet.partialReps !== null &&
                     currentSet.partialReps > 0
-                      ? "#ff4b8c"
-                      : "#6b7280"
+                      ? primary
+                      : mutedIcon
                   }
                 />
               </TouchableOpacity>
               <TextInput
-                className="flex-1 text-center py-2 text-lg font-bold text-zinc-900 dark:text-white"
+                className="flex-1 text-center py-2 text-lg font-bold text-text dark:text-text-dark"
                 value={
                   currentSet.partialReps !== null
                     ? currentSet.partialReps.toString()
@@ -237,7 +219,7 @@ export default function SetInputForm({
                   }
                 }}
                 placeholder="0"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={mutedIcon}
                 keyboardType="numeric"
                 returnKeyType="done"
                 blurOnSubmit={true}
@@ -257,8 +239,8 @@ export default function SetInputForm({
                   color={
                     currentSet.partialReps !== null &&
                     currentSet.partialReps > 0
-                      ? "#ff4b8c"
-                      : "#6b7280"
+                      ? primary
+                      : mutedIcon
                   }
                 />
               </TouchableOpacity>
@@ -267,20 +249,18 @@ export default function SetInputForm({
         )}
       </View>
 
-      {/* Weight Increment Tabs */}
       <WeightIncrementTabs
         value={weightIncrement}
         onChange={setWeightIncrement}
       />
 
-      {/* Unilateral Toggle */}
       <View className="mt-6">
         <View className="flex-row items-center gap-3">
           <TouchableOpacity
             className={`w-6 h-6 rounded border-2 items-center justify-center ${
               currentSet.is_unilateral
-                ? "bg-[#ff4b8c] dark:bg-[#ff6fa1] border-[#ff4b8c] dark:border-[#ff6fa1]"
-                : "border-zinc-900/30 dark:border-white/30"
+                ? "bg-primary dark:bg-primary-dark border-primary dark:border-primary-dark"
+                : "border-border dark:border-border-dark"
             }`}
             onPress={() =>
               setCurrentSet({
@@ -290,60 +270,45 @@ export default function SetInputForm({
             }
           >
             {currentSet.is_unilateral && (
-              <Ionicons name="checkmark" size={16} color="white" />
+              <Ionicons name="checkmark" size={16} color="#ffffff" />
             )}
           </TouchableOpacity>
-          <Text className="text-sm text-zinc-900 dark:text-white">Unilateral (L/R)</Text>
+          <AppText variant="body" tone="default" className="text-sm">
+            Unilateral (L/R)
+          </AppText>
         </View>
       </View>
 
-      {/* Action Buttons */}
-      <View className="flex-row gap-3 mt-6">
-        <TouchableOpacity
-          className={`flex-1 py-4 rounded-xl flex-row items-center justify-center ${
-            isSetComplete ? "bg-[#ff4b8c] dark:bg-[#ff6fa1]" : "bg-gray-100 dark:bg-zinc-700"
-          }`}
-          style={{
-            shadowColor: isSetComplete ? "#ff4b8c" : "transparent",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: isSetComplete ? 0.3 : 0,
-            shadowRadius: 8,
-            elevation: isSetComplete ? 8 : 0,
-          }}
-          onPress={onAddSet}
+      <View className="gap-3 mt-6">
+        <AppButton
+          tone="primary"
+          size="lg"
+          fullWidth
           disabled={!isSetComplete}
-        >
-          <Ionicons
-            name="add-circle"
-            size={20}
-            color={isSetComplete ? "#ffffff" : "#6b7280"}
-          />
-          <Text
-            className={`text-center font-bold ml-2 ${
-              isSetComplete ? "text-white" : "text-gray-500 dark:text-gray-400"
-            }`}
-          >
-            Add Set
-          </Text>
-        </TouchableOpacity>
-        {hasSets && (
+          onPress={onAddSet}
+          label="Add set"
+          icon={
+            <Ionicons
+              name="add-circle"
+              size={20}
+              color={isSetComplete ? "#ffffff" : mutedIcon}
+            />
+          }
+          accessibilityLabel="Add set"
+        />
+        {hasSets ? (
           <TouchableOpacity
-            className="px-6 py-4 border-2 border-primary rounded-xl flex-row items-center bg-[#ff4b8c] dark:bg-[#ff6fa1]/5"
             onPress={onCopyLastSet}
-            style={{
-              shadowColor: "#ff4b8c",
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.2,
-              shadowRadius: 4,
-              elevation: 3,
-            }}
+            accessibilityRole="button"
+            accessibilityLabel="Copy last set"
+            className="w-full flex-row items-center justify-center px-5 py-4 rounded-ds-control border-2 border-primary dark:border-primary-dark bg-primary/5 dark:bg-primary-dark/10 active:opacity-90"
           >
-            <Ionicons name="copy-outline" size={20} color="#ff4b8c" />
-            <Text className="text-primary text-center ml-2 font-semibold">
-              Copy Last
-            </Text>
+            <Ionicons name="copy-outline" size={20} color={primary} />
+            <AppText variant="body" tone="primary" className="font-semibold ml-2">
+              Copy last
+            </AppText>
           </TouchableOpacity>
-        )}
+        ) : null}
       </View>
     </View>
   );

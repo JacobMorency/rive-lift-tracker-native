@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ExerciseSet } from "./types";
 import SetCard from "./SetCard";
+import AppText from "../ui/AppText";
 
 type CompletedSetsListProps = {
   sets: ExerciseSet[];
@@ -31,6 +32,11 @@ export default function CompletedSetsList({
   onStartEdit,
   onRemoveSet,
 }: CompletedSetsListProps) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const chevronColor = isDark ? "#a1a1aa" : "#6b7280";
+  const primaryIcon = isDark ? "#ff6fa1" : "#ff4b8c";
+
   // Get sets to display (last 3 or all if showAllSets is true, in reverse order)
   const getDisplaySets = () => {
     if (!sets || sets.length === 0) return [];
@@ -44,45 +50,31 @@ export default function CompletedSetsList({
   if (sets.length === 0) return null;
 
   return (
-    <View
-      className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-6"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 4,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 8,
-      }}
-    >
-      <View className="flex-row items-center justify-between mb-4">
-        <View className="flex-row items-center">
-          <Ionicons name="checkmark-circle" size={20} color="#10b981" />
-          <Text className="text-lg font-bold text-zinc-900 dark:text-white ml-2">
-            Completed Sets
-          </Text>
+    <View className="bg-surfaceAlt dark:bg-surfaceAlt-dark rounded-ds-card border border-border dark:border-border-dark p-5 mb-4">
+      <View className="flex-row items-center justify-between mb-4 gap-2">
+        <View className="flex-row items-center gap-2 flex-1 min-w-0">
+          <AppText variant="subheader" tone="default" className="font-bold">
+            Completed sets
+          </AppText>
         </View>
-        <View className="flex-row items-center gap-2">
-          <View className="bg-success/10 px-3 py-1 rounded-full">
-            <Text className="text-success text-sm font-bold">
-              {sets.length}
-            </Text>
-          </View>
+        <View className="flex-row items-center gap-2 shrink-0">
           {sets.length > 3 && (
             <TouchableOpacity
               onPress={() => setShowAllSets(!showAllSets)}
-              className="bg-gray-100 dark:bg-zinc-700 px-3 py-1 rounded-full"
+              className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark px-3 py-1 rounded-full"
             >
               <View className="flex-row items-center gap-1">
-                <Text className="text-zinc-900 dark:text-white text-sm font-medium">
-                  {showAllSets ? "Show Less" : "Show All"}
-                </Text>
+                <AppText
+                  variant="body"
+                  tone="default"
+                  className="text-sm font-medium"
+                >
+                  {showAllSets ? "Show less" : "Show all"}
+                </AppText>
                 <Ionicons
                   name={showAllSets ? "chevron-up" : "chevron-down"}
                   size={14}
-                  color="#6b7280"
+                  color={chevronColor}
                 />
               </View>
             </TouchableOpacity>
@@ -116,4 +108,3 @@ export default function CompletedSetsList({
     </View>
   );
 }
-

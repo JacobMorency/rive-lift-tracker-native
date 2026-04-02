@@ -11,6 +11,7 @@ type AppButtonProps = {
   size?: AppButtonSize;
   icon?: React.ReactNode;
   fullWidth?: boolean;
+  disabled?: boolean;
   onPress?: () => void;
   className?: string;
   style?: ViewStyle;
@@ -35,6 +36,7 @@ export default function AppButton({
   size = "md",
   icon,
   fullWidth = false,
+  disabled = false,
   onPress,
   className = "",
   style,
@@ -43,14 +45,17 @@ export default function AppButton({
   const resolvedClassName =
     `${toneClasses[tone]} ${sizeClasses[size]} ${
       fullWidth ? "w-full" : ""
-    } flex-row items-center justify-center ${className}`.trim();
+    } flex-row items-center justify-center ${
+      disabled ? "opacity-45" : ""
+    } ${className}`.trim();
 
   return (
     <TouchableOpacity
       className={resolvedClassName}
       style={style}
       onPress={onPress}
-      activeOpacity={0.85}
+      disabled={disabled}
+      activeOpacity={disabled ? 1 : 0.85}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
     >

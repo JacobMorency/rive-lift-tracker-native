@@ -1,9 +1,15 @@
 import React from "react";
-import { View, Text, TouchableOpacity, TextInput } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  TextInput,
+  useColorScheme,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ExerciseSet } from "./types";
 import RepsInput from "./RepsInput";
 import WeightInput from "./WeightInput";
+import AppText from "../ui/AppText";
 
 type SetCardProps = {
   set: ExerciseSet;
@@ -28,76 +34,64 @@ export default function SetCard({
   onEdit,
   onDelete,
 }: SetCardProps) {
+  const colorScheme = useColorScheme();
+  const mutedIcon = colorScheme === "dark" ? "#a1a1aa" : "#6b7280";
+
   if (isEditing && editingSet) {
+    const saveDisabled = editingSet.is_unilateral
+      ? editingSet.left_reps === null ||
+        editingSet.right_reps === null ||
+        editingSet.weight === null ||
+        editingSet.weight < 0
+      : editingSet.reps === null ||
+        editingSet.reps === 0 ||
+        editingSet.weight === null ||
+        editingSet.weight < 0;
+
     return (
-      <View
-        className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-4"
-        style={{
-          shadowColor: "#000",
-          shadowOffset: {
-            width: 0,
-            height: 2,
-          },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          elevation: 3,
-        }}
-      >
+      <View className="bg-surface dark:bg-surface-dark rounded-ds-card border border-border dark:border-border-dark p-4">
         <View className="gap-4">
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
               <View className="bg-warning w-8 h-8 rounded-full items-center justify-center">
-                <Text className="text-white text-sm font-bold">
+                <AppText
+                  variant="body"
+                  tone="inverse"
+                  className="text-sm font-bold"
+                >
                   {editingSet.set_number || 0}
-                </Text>
+                </AppText>
               </View>
-              <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
-                Editing Set
-              </Text>
+              <AppText
+                variant="body"
+                tone="default"
+                className="text-sm font-semibold"
+              >
+                Editing set
+              </AppText>
             </View>
             <View className="flex-row items-center gap-2">
               <TouchableOpacity
                 onPress={onSave}
-                disabled={
-                  editingSet.is_unilateral
-                    ? editingSet.left_reps === null ||
-                      editingSet.right_reps === null ||
-                      editingSet.weight === null ||
-                      editingSet.weight < 0
-                    : editingSet.reps === null ||
-                        editingSet.reps === 0 ||
-                        editingSet.weight === null ||
-                        editingSet.weight < 0
-                }
+                disabled={saveDisabled}
                 className={`w-8 h-8 items-center justify-center rounded-full ${
-                  editingSet.is_unilateral
-                    ? editingSet.left_reps === null ||
-                        editingSet.right_reps === null ||
-                        editingSet.weight === null ||
-                        editingSet.weight < 0
-                      ? "bg-gray-100 dark:bg-zinc-700"
-                      : "bg-success"
-                    : editingSet.reps === null ||
-                        editingSet.reps === 0 ||
-                        editingSet.weight === null ||
-                        editingSet.weight < 0
-                      ? "bg-gray-100 dark:bg-zinc-700"
-                      : "bg-success"
+                  saveDisabled
+                    ? "bg-surfaceAlt dark:bg-surfaceAlt-dark"
+                    : "bg-success"
                 }`}
               >
                 <Ionicons name="checkmark" size={16} color="#ffffff" />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={onCancel}
-                className="w-8 h-8 items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-700"
+                className="w-8 h-8 items-center justify-center rounded-full bg-surfaceAlt dark:bg-surfaceAlt-dark"
               >
-                <Ionicons name="close" size={16} color="#6b7280" />
+                <Ionicons name="close" size={16} color={mutedIcon} />
               </TouchableOpacity>
             </View>
           </View>
 
           <View className="gap-3">
-            {/* Edit Reps */}
             {editingSet.is_unilateral ? (
               <RepsInput
                 isUnilateral={true}
@@ -119,20 +113,22 @@ export default function SetCard({
               />
             )}
 
-            {/* Edit Weight */}
             <WeightInput
               value={editingSet.weight}
-              onChange={(val) =>
-                setEditingSet({ ...editingSet, weight: val })
-              }
+              onChange={(val) => setEditingSet({ ...editingSet, weight: val })}
               weightIncrement={weightIncrement}
               variant="edit"
             />
 
-            {/* Edit Partials */}
             <View>
-              <Text className="text-xs text-gray-500 dark:text-gray-400 mb-1">Partials</Text>
-              <View className="flex-row items-center bg-gray-50 dark:bg-zinc-800 rounded-lg">
+              <AppText
+                variant="caption"
+                tone="muted"
+                className="normal-case tracking-normal mb-1"
+              >
+                Partials
+              </AppText>
+              <View className="flex-row items-center bg-surfaceAlt dark:bg-surfaceAlt-dark rounded-ds-control border border-border dark:border-border-dark">
                 <TouchableOpacity
                   className="px-3 py-2"
                   onPress={() => {
@@ -145,10 +141,10 @@ export default function SetCard({
                     }
                   }}
                 >
-                  <Ionicons name="remove" size={16} color="#6b7280" />
+                  <Ionicons name="remove" size={16} color={mutedIcon} />
                 </TouchableOpacity>
                 <TextInput
-                  className="flex-1 text-center py-2 text-base font-bold text-zinc-900 dark:text-white"
+                  className="flex-1 text-center py-2 text-base font-bold text-text dark:text-text-dark"
                   value={editingSet?.partialReps?.toString() || ""}
                   onChangeText={(value) => {
                     if (value === "" || value === "-") {
@@ -167,7 +163,7 @@ export default function SetCard({
                     }
                   }}
                   placeholder="0"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor={mutedIcon}
                   keyboardType="numeric"
                   returnKeyType="done"
                   blurOnSubmit={true}
@@ -181,7 +177,7 @@ export default function SetCard({
                     });
                   }}
                 >
-                  <Ionicons name="add" size={16} color="#6b7280" />
+                  <Ionicons name="add" size={16} color={mutedIcon} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -191,70 +187,112 @@ export default function SetCard({
     );
   }
 
-  // Display Mode
   return (
-    <View
-      className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-4"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-      }}
-    >
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center gap-4">
-          <View className="bg-success w-8 h-8 rounded-full items-center justify-center">
-            <Text className="text-white text-sm font-bold">
+    <View className="bg-surface dark:bg-surface-dark rounded-ds-card border border-border dark:border-border-dark p-4">
+      <View className="flex-row items-center justify-between gap-2">
+        <View className="flex-row items-center gap-4 flex-1 min-w-0">
+          <View className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark w-8 h-8 rounded-full items-center justify-center">
+            <AppText
+              variant="body"
+              tone="default"
+              className="text-sm font-bold"
+            >
               {set.set_number || 0}
-            </Text>
+            </AppText>
           </View>
-          <View className="flex-row items-center gap-4">
+          <View className="flex-row items-center gap-4 flex-wrap">
             {set.is_unilateral ? (
               <View className="items-center">
-                <Text className="text-xs text-gray-500 dark:text-gray-400">Reps</Text>
+                <AppText
+                  variant="caption"
+                  tone="muted"
+                  className="normal-case tracking-normal"
+                >
+                  Reps
+                </AppText>
                 <View className="flex-row gap-2">
-                  <Text className="text-base font-bold text-zinc-900 dark:text-white">
+                  <AppText
+                    variant="body"
+                    tone="default"
+                    className="text-base font-bold"
+                  >
                     L: {set.left_reps || 0}
-                  </Text>
-                  <Text className="text-base font-bold text-zinc-900 dark:text-white">
+                  </AppText>
+                  <AppText
+                    variant="body"
+                    tone="default"
+                    className="text-base font-bold"
+                  >
                     R: {set.right_reps || 0}
-                  </Text>
+                  </AppText>
                 </View>
               </View>
             ) : (
               <View className="items-center">
-                <Text className="text-xs text-gray-500 dark:text-gray-400">Reps</Text>
-                <Text className="text-base font-bold text-zinc-900 dark:text-white">
+                <AppText
+                  variant="caption"
+                  tone="muted"
+                  className="normal-case tracking-normal"
+                >
+                  Reps
+                </AppText>
+                <AppText
+                  variant="body"
+                  tone="default"
+                  className="text-base font-bold"
+                >
                   {set.reps || 0}
-                </Text>
+                </AppText>
               </View>
             )}
             <View className="items-center">
-              <Text className="text-xs text-gray-500 dark:text-gray-400">Weight</Text>
-              <Text className="text-base font-bold text-zinc-900 dark:text-white">
+              <AppText
+                variant="caption"
+                tone="muted"
+                className="normal-case tracking-normal"
+              >
+                Weight
+              </AppText>
+              <AppText
+                variant="body"
+                tone="default"
+                className="text-base font-bold"
+              >
                 {set.weight || 0} lbs
-              </Text>
+              </AppText>
             </View>
             {(set.partialReps ?? 0) > 0 && (
               <View className="items-center">
-                <Text className="text-xs text-gray-500 dark:text-gray-400">Partials</Text>
-                <Text className="text-base font-bold text-warning">
+                <AppText
+                  variant="caption"
+                  tone="muted"
+                  className="normal-case tracking-normal"
+                >
+                  Partials
+                </AppText>
+                <AppText
+                  variant="body"
+                  className="text-base font-bold text-warning"
+                >
                   +{set.partialReps || 0}
-                </Text>
+                </AppText>
               </View>
             )}
           </View>
         </View>
-        <View className="flex-row items-center gap-2">
-          <TouchableOpacity onPress={onEdit} className="p-2">
-            <Ionicons name="create-outline" size={18} color="#6b7280" />
+        <View className="flex-row items-center gap-1 shrink-0">
+          <TouchableOpacity
+            onPress={onEdit}
+            className="p-2"
+            accessibilityLabel="Edit set"
+          >
+            <Ionicons name="create-outline" size={18} color={mutedIcon} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={onDelete} className="p-2">
+          <TouchableOpacity
+            onPress={onDelete}
+            className="p-2"
+            accessibilityLabel="Delete set"
+          >
             <Ionicons name="trash-outline" size={18} color="#ef4444" />
           </TouchableOpacity>
         </View>
@@ -262,4 +300,3 @@ export default function SetCard({
     </View>
   );
 }
-

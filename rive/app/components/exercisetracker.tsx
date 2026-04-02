@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, TouchableOpacity, ScrollView, Alert, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,6 +9,7 @@ import ProgressComparisonPanel from "./exercisetracker/ProgressComparisonPanel";
 import SetInputForm from "./exercisetracker/SetInputForm";
 import CompletedSetsList from "./exercisetracker/CompletedSetsList";
 import ExerciseNotes from "./exercisetracker/ExerciseNotes";
+import AppText from "./ui/AppText";
 
 type Exercise = {
   id: number;
@@ -53,9 +54,12 @@ const ExerciseTracker = ({
   const [editingSet, setEditingSet] = useState<ExerciseSet | null>(null);
   const [showPartials, setShowPartials] = useState<boolean>(false);
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const iconMuted = isDark ? "#a3a3a3" : "#737373";
+  const iconStrong = isDark ? "#f5f5f5" : "#111113";
 
   const handleAddSet = () => {
-    // Check if set is complete based on unilateral setting (allow weight to be 0 for bodyweight)
     const isComplete = currentSet.is_unilateral
       ? currentSet.left_reps !== null &&
         currentSet.right_reps !== null &&
@@ -76,15 +80,13 @@ const ExerciseTracker = ({
     const newSet = { ...currentSet };
     setSets([...sets, newSet]);
 
-    // Auto-copy last set for next set (smart default)
     const nextSetNumber = sets.length + 2;
     const copiedSet = {
       ...newSet,
       set_number: nextSetNumber,
-      // Keep same values to reduce friction
       reps: newSet.reps,
       weight: newSet.weight,
-      partialReps: null, // Reset partials for new set
+      partialReps: null,
       left_reps: newSet.left_reps,
       right_reps: newSet.right_reps,
     };
@@ -110,12 +112,8 @@ const ExerciseTracker = ({
         right_reps: lastSet.right_reps,
       });
       setWeightInput(lastSet.weight !== null ? lastSet.weight.toString() : "");
-
-      // No auto-focus - users can use buttons
     }
   };
-
-  // Note: weight input is updated directly by button handlers and copy/reset actions
 
   const removeSet = (index: number) => {
     const newSets = sets.filter((_, i) => i !== index);
@@ -129,7 +127,6 @@ const ExerciseTracker = ({
 
   const saveEditedSet = () => {
     if (editingSetIndex !== null && editingSet) {
-      // Check if set is complete based on unilateral setting (allow weight to be 0 for bodyweight)
       const isComplete = editingSet.is_unilateral
         ? editingSet.left_reps !== null &&
           editingSet.right_reps !== null &&
@@ -165,47 +162,69 @@ const ExerciseTracker = ({
       .join(" ");
   };
 
+  const title = formatExerciseName(exercise.name);
+
   return (
-    <View className="flex-1 bg-white dark:bg-zinc-900">
-      {/* Header */}
+    <View className="flex-1 bg-background dark:bg-background-dark">
       <View
-        className="flex-row items-center justify-between px-4 pb-4 border-b border-gray-200 dark:border-zinc-700"
-        style={{ paddingTop: insets.top + 16 }}
+        className="border-b border-border dark:border-border-dark px-4"
+        style={{ paddingTop: insets.top + 8, paddingBottom: 12 }}
       >
-        <TouchableOpacity
-          onPress={onBack}
-          className="w-8 h-8 items-center justify-center"
-        >
-          <Ionicons name="close" size={24} color="#6b7280" />
-        </TouchableOpacity>
+        <View className="flex-row items-center justify-between gap-3">
+          <TouchableOpacity
+            onPress={onBack}
+            accessibilityLabel="Back"
+            className="w-10 h-10 items-center justify-center rounded-full bg-surfaceAlt dark:bg-surfaceAlt-dark active:opacity-80"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="arrow-back" size={22} color={iconStrong} />
+          </TouchableOpacity>
 
-        <View className="flex-1 items-center">
-          <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
-            {formatExerciseName(exercise.name)}
-          </Text>
-          {exercise.primaryMuscleGroup && (
-            <Text className="text-sm text-gray-500 dark:text-gray-400">{exercise.primaryMuscleGroup}</Text>
-          )}
+          <View className="flex-1 min-w-0">
+            <AppText variant="caption" tone="primary" className="mb-0.5">
+              Back
+            </AppText>
+            <AppText
+              variant="subheader"
+              tone="default"
+              numberOfLines={1}
+              className="font-bold"
+            >
+              {title}
+            </AppText>
+            {exercise.primaryMuscleGroup ? (
+              <AppText variant="caption" tone="muted" numberOfLines={1}>
+                {exercise.primaryMuscleGroup}
+              </AppText>
+            ) : null}
+          </View>
+
+          <TouchableOpacity
+            className={`w-10 h-10 items-center justify-center rounded-full ${
+              sets.length === 0
+                ? "bg-surfaceAlt dark:bg-surfaceAlt-dark"
+                : "bg-primary dark:bg-primary-dark"
+            }`}
+            onPress={handleComplete}
+            disabled={sets.length === 0}
+            accessibilityLabel="Complete exercise"
+          >
+            <Ionicons
+              name="checkmark"
+              size={22}
+              color={sets.length === 0 ? iconMuted : "#ffffff"}
+            />
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity
-          className={`w-8 h-8 items-center justify-center rounded-full ${
-            sets.length === 0 ? "bg-gray-100 dark:bg-zinc-700" : "bg-[#ff4b8c] dark:bg-[#ff6fa1]"
-          }`}
-          onPress={handleComplete}
-          disabled={sets.length === 0}
-        >
-          <Ionicons
-            name="checkmark"
-            size={20}
-            color={sets.length === 0 ? "#9ca3af" : "#ffffff"}
-          />
-        </TouchableOpacity>
       </View>
 
       <ScrollView
-        className="flex-1 p-4"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        className="flex-1"
+        contentContainerStyle={{
+          paddingHorizontal: 24,
+          paddingTop: 16,
+          paddingBottom: insets.bottom + 24,
+        }}
       >
         <ProgressComparisonPanel
           lastSessionSets={lastSessionSets}
@@ -217,7 +236,7 @@ const ExerciseTracker = ({
           notes={exercise.notes}
           workoutExerciseId={exercise.workoutExerciseId}
           onNotesUpdate={onNotesUpdate || (() => {})}
-          exerciseName={formatExerciseName(exercise.name)}
+          exerciseName={title}
         />
 
         <SetInputForm
