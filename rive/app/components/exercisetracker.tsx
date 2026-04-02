@@ -14,6 +14,7 @@ type Exercise = {
   id: number;
   name: string;
   category: string;
+  primaryMuscleGroup?: string;
   notes?: string | null;
   workoutExerciseId?: string;
 };
