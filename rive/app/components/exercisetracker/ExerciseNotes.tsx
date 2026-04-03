@@ -62,46 +62,45 @@ export default function ExerciseNotes({
   };
 
   return (
-    <View className="mb-3 border-b border-border dark:border-border-dark pb-3">
+    <View className="mb-4 rounded-2xl border border-border dark:border-border-dark bg-surfaceAlt dark:bg-surfaceAlt-dark p-4">
       <TouchableOpacity
         onPress={toggleExpanded}
-        className="flex-row items-center justify-between gap-2 py-1"
+        className="flex-row items-center justify-between gap-2"
         accessibilityRole="button"
         accessibilityLabel={
           expanded ? "Collapse exercise note" : "Expand exercise note"
         }
         accessibilityState={{ expanded }}
       >
-        <View className="flex-1 min-w-0">
-          <AppText
-            variant="caption"
-            tone="muted"
-            className="normal-case tracking-normal"
-          >
-            Note
-          </AppText>
-          {!expanded ? (
+        <View className="flex-row items-center gap-3 flex-1 min-w-0">
+          <Ionicons name="document-text-outline" size={22} color={mutedIcon} />
+          <View className="flex-1 min-w-0">
             <AppText
-              variant="body"
-              tone={hasNotes ? "default" : "muted"}
-              numberOfLines={1}
-              className="text-sm leading-5 mt-0.5"
+              variant="caption"
+              tone="muted"
+              className="font-bold tracking-widest normal-case"
             >
-              {hasNotes ? editedNotes : PLACEHOLDER}
+              Note
             </AppText>
-          ) : null}
+            {!expanded ? (
+              <AppText
+                variant="body"
+                tone={hasNotes ? "default" : "muted"}
+                numberOfLines={1}
+                className="text-xs font-semibold mt-0.5 normal-case"
+              >
+                {hasNotes ? editedNotes : PLACEHOLDER}
+              </AppText>
+            ) : null}
+          </View>
         </View>
-        <Ionicons
-          name={expanded ? "chevron-up" : "chevron-down"}
-          size={20}
-          color={chevronColor}
-        />
+        <Ionicons name="chevron-forward" size={20} color={chevronColor} />
       </TouchableOpacity>
 
       {expanded ? (
         <TextInput
           ref={inputRef}
-          className="bg-surfaceAlt dark:bg-surfaceAlt-dark rounded-ds-control border border-border dark:border-border-dark px-3 py-2.5 text-text dark:text-text-dark text-sm leading-5 min-h-[72px] mt-2"
+          className="bg-surface dark:bg-surface-dark rounded-xl border border-border dark:border-border-dark px-3 py-2.5 text-text dark:text-text-dark text-sm leading-5 min-h-[72px] mt-3"
           placeholder={PLACEHOLDER}
           placeholderTextColor={mutedIcon}
           value={editedNotes}

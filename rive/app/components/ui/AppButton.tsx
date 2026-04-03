@@ -42,12 +42,11 @@ export default function AppButton({
   style,
   accessibilityLabel,
 }: AppButtonProps) {
-  const resolvedClassName =
-    `${toneClasses[tone]} ${sizeClasses[size]} ${
-      fullWidth ? "w-full" : ""
-    } flex-row items-center justify-center ${
-      disabled ? "opacity-45" : ""
-    } ${className}`.trim();
+  const resolvedClassName = `${toneClasses[tone]} ${sizeClasses[size]} ${
+    fullWidth ? "w-full" : ""
+  } flex-row items-center justify-center ${
+    disabled ? "opacity-45" : ""
+  } ${className}`.trim();
 
   return (
     <TouchableOpacity
@@ -59,9 +58,7 @@ export default function AppButton({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
     >
-      {icon ? (
-        <View className={label ? "mr-2" : ""}>{icon}</View>
-      ) : null}
+      {icon ? <View className={label ? "mr-2" : ""}>{icon}</View> : null}
       {label ? (
         <AppText
           variant="body"
@@ -74,4 +71,3 @@ export default function AppButton({
     </TouchableOpacity>
   );
 }
-

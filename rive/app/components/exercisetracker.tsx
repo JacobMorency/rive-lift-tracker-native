@@ -1,15 +1,40 @@
-import React, { useState } from "react";
-import { View, TouchableOpacity, ScrollView, Alert, useColorScheme } from "react-native";
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+} from "react";
+import {
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  useColorScheme,
+  Platform,
+  ActionSheetIOS,
+  findNodeHandle,
+  type LayoutChangeEvent,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ExerciseSet as StatsExerciseSet } from "../lib/statsUtils";
 import { ExerciseSet } from "./exercisetracker/types";
-import ProgressComparisonPanel from "./exercisetracker/ProgressComparisonPanel";
+import ComparisonBento from "./exercisetracker/ComparisonBento";
 import SetInputForm from "./exercisetracker/SetInputForm";
 import CompletedSetsList from "./exercisetracker/CompletedSetsList";
 import ExerciseNotes from "./exercisetracker/ExerciseNotes";
+import ExerciseNumericPad from "./exercisetracker/ExerciseNumericPad";
 import AppText from "./ui/AppText";
+import type { PadField } from "./exercisetracker/exercisePadUtils";
+import {
+  appendPadKey,
+  applyBufferToSet,
+  parseWeightBuffer,
+  valueToBuffer,
+  EXERCISE_PAD_EXTRA_PADDING,
+} from "./exercisetracker/exercisePadUtils";
 
 type Exercise = {
   id: number;
@@ -29,6 +54,23 @@ type ExerciseTrackerProps = {
   onNotesUpdate?: (notes: string) => void;
 };
 
+type PadContext = { type: "active" } | { type: "edit"; index: number };
+
+const SCROLL_SECTION_TOP_INSET = 8;
+
+function lastSessionLineForSet(
+  lastSessionSets: StatsExerciseSet[],
+  setNum: number,
+): string | null {
+  const i = setNum - 1;
+  if (i < 0 || i >= lastSessionSets.length) return null;
+  const s = lastSessionSets[i];
+  if (s.is_unilateral) {
+    return `Last: L ${s.left_reps ?? "—"} · R ${s.right_reps ?? "—"} @ ${s.weight ?? "—"} lbs`;
+  }
+  return `Last: ${s.weight ?? "—"} lbs · ${s.reps ?? "—"} reps`;
+}
+
 const ExerciseTracker = ({
   exercise,
   onComplete,
@@ -47,28 +89,167 @@ const ExerciseTracker = ({
     left_reps: null,
     right_reps: null,
   });
-  const [weightIncrement, setWeightIncrement] = useState<number>(5);
-  const [weightInput, setWeightInput] = useState<string>("");
   const [showAllSets, setShowAllSets] = useState<boolean>(false);
   const [editingSetIndex, setEditingSetIndex] = useState<number | null>(null);
   const [editingSet, setEditingSet] = useState<ExerciseSet | null>(null);
   const [showPartials, setShowPartials] = useState<boolean>(false);
+
+  const [padContext, setPadContext] = useState<PadContext>({ type: "active" });
+  const [padOpen, setPadOpen] = useState(false);
+  const [padField, setPadField] = useState<PadField>("weight");
+  const [padBuffer, setPadBuffer] = useState<string>("");
+
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollContentRef = useRef<View>(null);
+  const editSectionRef = useRef<View>(null);
+  const [activeSetSectionLayout, setActiveSetSectionLayout] = useState({
+    y: 0,
+    height: 0,
+  });
+
+  const handleActiveSetSectionLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      const { y, height } = e.nativeEvent.layout;
+      setActiveSetSectionLayout({ y, height });
+    },
+    [],
+  );
+
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const iconMuted = isDark ? "#a3a3a3" : "#737373";
-  const iconStrong = isDark ? "#f5f5f5" : "#111113";
+  const primaryIcon = isDark ? "#ff6fa1" : "#ff4b8c";
+
+  const setNumRef = useRef(currentSet.set_number);
+  useEffect(() => {
+    if (setNumRef.current !== currentSet.set_number) {
+      setNumRef.current = currentSet.set_number;
+      setPadContext({ type: "active" });
+      setPadOpen(false);
+      setPadField("weight");
+      setPadBuffer("");
+    }
+  }, [currentSet.set_number]);
+
+  const onFocusPadField = useCallback(
+    (field: PadField) => {
+      if (padContext.type === "active") {
+        const merged = padOpen
+          ? applyBufferToSet(currentSet, padField, padBuffer)
+          : currentSet;
+        setCurrentSet(merged);
+        setPadField(field);
+        setPadBuffer(valueToBuffer(field, merged));
+        setPadOpen(true);
+      } else if (editingSet) {
+        const merged = padOpen
+          ? applyBufferToSet(editingSet, padField, padBuffer)
+          : editingSet;
+        setEditingSet(merged);
+        setPadField(field);
+        setPadBuffer(valueToBuffer(field, merged));
+        setPadOpen(true);
+      }
+    },
+    [padContext.type, currentSet, editingSet, padField, padBuffer, padOpen],
+  );
+
+  useLayoutEffect(() => {
+    if (!padOpen) return;
+
+    const scrollToY = (y: number) => {
+      scrollViewRef.current?.scrollTo({
+        y: Math.max(0, y - SCROLL_SECTION_TOP_INSET),
+        animated: true,
+      });
+    };
+
+    if (padContext.type === "active") {
+      scrollToY(activeSetSectionLayout.y);
+      return;
+    }
+
+    if (padContext.type === "edit") {
+      const editView = editSectionRef.current;
+      const contentView = scrollContentRef.current;
+      if (!editView || !contentView) return;
+
+      const contentNode = findNodeHandle(contentView);
+      if (contentNode == null) return;
+
+      editView.measureLayout(
+        contentNode,
+        (_x, top) => {
+          scrollToY(top);
+        },
+        () => {},
+      );
+    }
+  }, [
+    padOpen,
+    padContext.type,
+    activeSetSectionLayout.y,
+    padField,
+    editingSetIndex,
+  ]);
+
+  const handlePadDone = useCallback(() => {
+    if (padContext.type === "active") {
+      setCurrentSet((s) => applyBufferToSet(s, padField, padBuffer));
+    } else if (editingSet) {
+      setEditingSet((es) => (es ? applyBufferToSet(es, padField, padBuffer) : null));
+    }
+    setPadOpen(false);
+  }, [padContext.type, padField, padBuffer, editingSet]);
+
+  const handlePadClear = useCallback(() => {
+    setPadBuffer("");
+    if (padContext.type === "active") {
+      setCurrentSet((s) => applyBufferToSet(s, padField, ""));
+    } else {
+      setEditingSet((es) => (es ? applyBufferToSet(es, padField, "") : null));
+    }
+  }, [padContext.type, padField]);
+
+  const handlePadDigit = useCallback(
+    (digit: string) => {
+      setPadBuffer((b) => appendPadKey(b, digit, padField));
+    },
+    [padField],
+  );
+
+  const handlePadBackspace = useCallback(() => {
+    setPadBuffer((b) => appendPadKey(b, "backspace", padField));
+  }, [padField]);
+
+  const handleWeightNudge = useCallback(
+    (delta: number) => {
+      const base =
+        parseWeightBuffer(padBuffer) ??
+        (padContext.type === "edit" && editingSet
+          ? editingSet.weight
+          : currentSet.weight) ??
+        0;
+      const next = Math.max(0, Math.floor((base + delta) * 10) / 10);
+      setPadBuffer(next === 0 ? "" : String(next));
+    },
+    [padBuffer, padContext.type, editingSet, currentSet.weight],
+  );
 
   const handleAddSet = () => {
-    const isComplete = currentSet.is_unilateral
-      ? currentSet.left_reps !== null &&
-        currentSet.right_reps !== null &&
-        currentSet.weight !== null &&
-        currentSet.weight >= 0
-      : currentSet.reps !== null &&
-        currentSet.reps !== 0 &&
-        currentSet.weight !== null &&
-        currentSet.weight >= 0;
+    const merged = padOpen
+      ? applyBufferToSet(currentSet, padField, padBuffer)
+      : currentSet;
+    const isComplete = merged.is_unilateral
+      ? merged.left_reps !== null &&
+        merged.right_reps !== null &&
+        merged.weight !== null &&
+        merged.weight >= 0
+      : merged.reps !== null &&
+        merged.reps !== 0 &&
+        merged.weight !== null &&
+        merged.weight >= 0;
 
     if (!isComplete) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -77,82 +258,104 @@ const ExerciseTracker = ({
     }
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const newSet = { ...currentSet };
-    setSets([...sets, newSet]);
+    const newSet = { ...merged };
+    setSets((prev) => [...prev, newSet]);
 
-    const nextSetNumber = sets.length + 2;
-    const copiedSet = {
+    const copiedSet: ExerciseSet = {
       ...newSet,
-      set_number: nextSetNumber,
-      reps: newSet.reps,
-      weight: newSet.weight,
+      set_number: merged.set_number + 1,
       partialReps: null,
-      left_reps: newSet.left_reps,
-      right_reps: newSet.right_reps,
     };
 
     setCurrentSet(copiedSet);
-    setWeightInput(newSet.weight !== null ? newSet.weight.toString() : "");
+    setPadOpen(false);
+    setPadField("weight");
+    setPadBuffer(valueToBuffer("weight", copiedSet));
   };
 
   const handleComplete = () => {
+    const merged = padOpen
+      ? applyBufferToSet(currentSet, padField, padBuffer)
+      : currentSet;
+    setCurrentSet(merged);
+    setPadOpen(false);
     onComplete(sets);
   };
 
   const handleCopyLastSet = () => {
-    if (sets.length > 0) {
-      const lastSet = sets[sets.length - 1];
-      setCurrentSet({
-        reps: lastSet.reps,
-        weight: lastSet.weight,
-        partialReps: lastSet.partialReps,
-        set_number: sets.length + 1,
-        is_unilateral: lastSet.is_unilateral,
-        left_reps: lastSet.left_reps,
-        right_reps: lastSet.right_reps,
-      });
-      setWeightInput(lastSet.weight !== null ? lastSet.weight.toString() : "");
-    }
-  };
-
-  const removeSet = (index: number) => {
-    const newSets = sets.filter((_, i) => i !== index);
-    setSets(newSets);
+    if (sets.length === 0) return;
+    const lastSet = sets[sets.length - 1];
+    const next: ExerciseSet = {
+      reps: lastSet.reps,
+      weight: lastSet.weight,
+      partialReps: lastSet.partialReps,
+      set_number: sets.length + 1,
+      is_unilateral: lastSet.is_unilateral,
+      left_reps: lastSet.left_reps,
+      right_reps: lastSet.right_reps,
+    };
+    setCurrentSet(next);
+    setPadContext({ type: "active" });
+    setPadOpen(false);
+    setPadField("weight");
+    setPadBuffer(valueToBuffer("weight", next));
   };
 
   const startEditingSet = (set: ExerciseSet, originalIndex: number) => {
+    if (padContext.type === "active" && padOpen) {
+      setCurrentSet((s) => applyBufferToSet(s, padField, padBuffer));
+    }
+    setPadOpen(false);
     setEditingSetIndex(originalIndex);
     setEditingSet({ ...set });
+    setPadContext({ type: "edit", index: originalIndex });
+    setPadField("weight");
+    setPadBuffer(valueToBuffer("weight", set));
   };
 
   const saveEditedSet = () => {
-    if (editingSetIndex !== null && editingSet) {
-      const isComplete = editingSet.is_unilateral
-        ? editingSet.left_reps !== null &&
-          editingSet.right_reps !== null &&
-          editingSet.weight !== null &&
-          editingSet.weight >= 0
-        : editingSet.reps !== null &&
-          editingSet.reps !== 0 &&
-          editingSet.weight !== null &&
-          editingSet.weight >= 0;
+    if (editingSetIndex === null || !editingSet) return;
+    const merged = applyBufferToSet(editingSet, padField, padBuffer);
+    const isComplete = merged.is_unilateral
+      ? merged.left_reps !== null &&
+        merged.right_reps !== null &&
+        merged.weight !== null &&
+        merged.weight >= 0
+      : merged.reps !== null &&
+        merged.reps !== 0 &&
+        merged.weight !== null &&
+        merged.weight >= 0;
 
-      if (!isComplete) {
-        Alert.alert("Incomplete Set", "Please enter all required values");
-        return;
-      }
-
-      const newSets = [...sets];
-      newSets[editingSetIndex] = { ...editingSet };
-      setSets(newSets);
-      setEditingSetIndex(null);
-      setEditingSet(null);
+    if (!isComplete) {
+      Alert.alert("Incomplete Set", "Please enter all required values");
+      return;
     }
+
+    const newSets = [...sets];
+    newSets[editingSetIndex] = { ...merged };
+    setSets(newSets);
+    setEditingSetIndex(null);
+    setEditingSet(null);
+    setPadContext({ type: "active" });
+    setPadOpen(false);
+    setPadField("weight");
+    setPadBuffer(valueToBuffer("weight", currentSet));
   };
 
   const cancelEditingSet = () => {
     setEditingSetIndex(null);
     setEditingSet(null);
+    setPadContext({ type: "active" });
+    setPadOpen(false);
+    setPadField("weight");
+    setPadBuffer(valueToBuffer("weight", currentSet));
+  };
+
+  const removeSet = (index: number) => {
+    if (editingSetIndex !== null) {
+      cancelEditingSet();
+    }
+    setSets((prev) => prev.filter((_, i) => i !== index));
   };
 
   const formatExerciseName = (name: string) => {
@@ -163,110 +366,208 @@ const ExerciseTracker = ({
   };
 
   const title = formatExerciseName(exercise.name);
+  const categoryLabel =
+    exercise.category || exercise.primaryMuscleGroup || "Exercise";
+
+  const openMoreMenu = () => {
+    const opts = ["Cancel"];
+    const handlers: (() => void)[] = [() => {}];
+    if (sets.length > 0) {
+      opts.push("Copy last set");
+      handlers.push(() => handleCopyLastSet());
+    }
+    opts.push(showPartials ? "Hide partials" : "Show partials");
+    handlers.push(() => setShowPartials(!showPartials));
+
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: opts,
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          handlers[buttonIndex]?.();
+        },
+      );
+    } else {
+      const buttons: {
+        text: string;
+        onPress?: () => void;
+        style?: "cancel";
+      }[] = [];
+      if (sets.length > 0) {
+        buttons.push({ text: "Copy last set", onPress: () => handleCopyLastSet() });
+      }
+      buttons.push({
+        text: showPartials ? "Hide partials" : "Show partials",
+        onPress: () => setShowPartials(!showPartials),
+      });
+      buttons.push({ text: "Cancel", style: "cancel" });
+      Alert.alert("More", undefined, buttons);
+    }
+  };
+
+  const padActive = padContext.type === "active";
+
+  const upcomingGhostLabel =
+    lastSessionSets.length > sets.length
+      ? lastSessionLineForSet(lastSessionSets, sets.length + 1)
+      : null;
 
   return (
     <View className="flex-1 bg-background dark:bg-background-dark">
       <View
-        className="border-b border-border dark:border-border-dark px-4"
-        style={{ paddingTop: insets.top + 8, paddingBottom: 12 }}
+        className="border-b border-border dark:border-border-dark px-4 bg-background dark:bg-background-dark"
+        style={{ paddingTop: insets.top + 8, paddingBottom: 10 }}
       >
-        <View className="flex-row items-center justify-between gap-3">
+        <View className="flex-row items-center justify-between">
           <TouchableOpacity
             onPress={onBack}
             accessibilityLabel="Back"
-            className="w-10 h-10 items-center justify-center rounded-full bg-surfaceAlt dark:bg-surfaceAlt-dark active:opacity-80"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Ionicons name="arrow-back" size={22} color={iconStrong} />
+            <Ionicons name="close" size={26} color={primaryIcon} />
           </TouchableOpacity>
-
-          <View className="flex-1 min-w-0">
-            <AppText variant="caption" tone="primary" className="mb-0.5">
-              Back
-            </AppText>
-            <AppText
-              variant="subheader"
-              tone="default"
-              numberOfLines={1}
-              className="font-bold"
+          <AppText variant="subheader" tone="default" className="font-bold">
+            Exercise
+          </AppText>
+          <View className="flex-row items-center gap-1">
+            <TouchableOpacity
+              onPress={openMoreMenu}
+              className="w-10 h-10 items-center justify-center"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              {title}
-            </AppText>
-            {exercise.primaryMuscleGroup ? (
-              <AppText variant="caption" tone="muted" numberOfLines={1}>
-                {exercise.primaryMuscleGroup}
-              </AppText>
-            ) : null}
+              <Ionicons name="ellipsis-vertical" size={22} color={primaryIcon} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              className={`w-10 h-10 items-center justify-center rounded-full ${
+                sets.length === 0
+                  ? "bg-surfaceAlt dark:bg-surfaceAlt-dark"
+                  : "bg-primary dark:bg-primary-dark"
+              }`}
+              onPress={handleComplete}
+              disabled={sets.length === 0}
+              accessibilityLabel="Complete exercise"
+            >
+              <Ionicons
+                name="checkmark"
+                size={22}
+                color={sets.length === 0 ? iconMuted : "#ffffff"}
+              />
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity
-            className={`w-10 h-10 items-center justify-center rounded-full ${
-              sets.length === 0
-                ? "bg-surfaceAlt dark:bg-surfaceAlt-dark"
-                : "bg-primary dark:bg-primary-dark"
-            }`}
-            onPress={handleComplete}
-            disabled={sets.length === 0}
-            accessibilityLabel="Complete exercise"
-          >
-            <Ionicons
-              name="checkmark"
-              size={22}
-              color={sets.length === 0 ? iconMuted : "#ffffff"}
-            />
-          </TouchableOpacity>
         </View>
       </View>
 
       <ScrollView
+        ref={scrollViewRef}
         className="flex-1"
         contentContainerStyle={{
           paddingHorizontal: 24,
           paddingTop: 16,
-          paddingBottom: insets.bottom + 24,
+          paddingBottom:
+            (padOpen ? EXERCISE_PAD_EXTRA_PADDING : 0) + insets.bottom + 8,
         }}
+        keyboardShouldPersistTaps="handled"
       >
-        <ProgressComparisonPanel
-          lastSessionSets={lastSessionSets}
-          currentSet={currentSet}
-          sets={sets}
-        />
+        <View ref={scrollContentRef} collapsable={false}>
+          <AppText variant="caption" tone="primary" className="normal-case mb-1 font-bold tracking-wide">
+            {categoryLabel}
+          </AppText>
+          <AppText variant="header" tone="default" className="font-bold mb-4 normal-case">
+            {title}
+          </AppText>
 
-        <ExerciseNotes
-          notes={exercise.notes}
-          workoutExerciseId={exercise.workoutExerciseId}
-          onNotesUpdate={onNotesUpdate || (() => {})}
-          exerciseName={title}
-        />
+          <ComparisonBento
+            lastSessionSets={lastSessionSets}
+            completedSets={sets}
+          />
 
-        <SetInputForm
-          currentSet={currentSet}
-          setCurrentSet={setCurrentSet}
-          weightInput={weightInput}
-          setWeightInput={setWeightInput}
-          weightIncrement={weightIncrement}
-          setWeightIncrement={setWeightIncrement}
-          showPartials={showPartials}
-          setShowPartials={setShowPartials}
-          onAddSet={handleAddSet}
-          onCopyLastSet={handleCopyLastSet}
-          hasSets={sets.length > 0}
-        />
+          <ExerciseNotes
+            notes={exercise.notes}
+            workoutExerciseId={exercise.workoutExerciseId}
+            onNotesUpdate={onNotesUpdate || (() => {})}
+            exerciseName={title}
+          />
 
-        <CompletedSetsList
-          sets={sets}
-          showAllSets={showAllSets}
-          setShowAllSets={setShowAllSets}
-          editingSetIndex={editingSetIndex}
-          editingSet={editingSet}
-          setEditingSet={setEditingSet}
-          weightIncrement={weightIncrement}
-          onSaveEdit={saveEditedSet}
-          onCancelEdit={cancelEditingSet}
-          onStartEdit={startEditingSet}
-          onRemoveSet={removeSet}
-        />
+          <View onLayout={handleActiveSetSectionLayout} collapsable={false}>
+            <SetInputForm
+              currentSet={currentSet}
+              setCurrentSet={setCurrentSet}
+              lastSessionLabel={lastSessionLineForSet(
+                lastSessionSets,
+                currentSet.set_number || 1,
+              )}
+              showPartials={showPartials}
+              setShowPartials={setShowPartials}
+              onAddSet={handleAddSet}
+              hasSets={sets.length > 0}
+              padActive={padActive}
+              padOpen={padOpen}
+              activePadField={padField}
+              padBuffer={padBuffer}
+              onFocusPadField={onFocusPadField}
+            />
+          </View>
+
+          {lastSessionSets.length > sets.length ? (
+            <View className="mb-4 rounded-[1.5rem] border border-border dark:border-border-dark bg-surfaceAlt/50 dark:bg-surfaceAlt-dark/40 p-5 opacity-50">
+              <AppText variant="subheader" tone="muted" className="font-bold mb-1">
+                Set {sets.length + 1}
+              </AppText>
+              {upcomingGhostLabel ? (
+                <AppText variant="caption" tone="muted" className="normal-case mb-3">
+                  {upcomingGhostLabel}
+                </AppText>
+              ) : null}
+              <View className="flex-row gap-3">
+                <View className="flex-1 h-12 rounded-xl bg-surface dark:bg-surface-dark items-center justify-center">
+                  <AppText variant="caption" tone="muted">
+                    — lbs
+                  </AppText>
+                </View>
+                <View className="flex-1 h-12 rounded-xl bg-surface dark:bg-surface-dark items-center justify-center">
+                  <AppText variant="caption" tone="muted">
+                    — reps
+                  </AppText>
+                </View>
+              </View>
+            </View>
+          ) : null}
+
+          <CompletedSetsList
+            sets={sets}
+            showAllSets={showAllSets}
+            setShowAllSets={setShowAllSets}
+            editingSetIndex={editingSetIndex}
+            editingSet={editingSet}
+            setEditingSet={setEditingSet}
+            onSaveEdit={saveEditedSet}
+            onCancelEdit={cancelEditingSet}
+            onStartEdit={startEditingSet}
+            onRemoveSet={removeSet}
+            padContext={padContext}
+            padOpen={padOpen}
+            padField={padField}
+            padBuffer={padBuffer}
+            onFocusEditField={onFocusPadField}
+            editSectionRef={editSectionRef}
+          />
+        </View>
       </ScrollView>
+
+      {padOpen ? (
+        <View className="absolute bottom-0 left-0 right-0">
+          <ExerciseNumericPad
+            activeField={padField}
+            onClear={handlePadClear}
+            onDone={handlePadDone}
+            onDigit={handlePadDigit}
+            onBackspace={handlePadBackspace}
+            onWeightNudge={handleWeightNudge}
+          />
+        </View>
+      ) : null}
     </View>
   );
 };
