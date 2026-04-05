@@ -2,13 +2,14 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  useColorScheme,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../context/authcontext";
+import AppText from "../ui/AppText";
+import AppCard from "../ui/AppCard";
 import {
   DateRange,
   getTrackedExercises,
@@ -26,7 +27,10 @@ type PRsTabProps = {
 
 export default function PRsTab({ dateRange }: PRsTabProps) {
   const { user } = useAuth();
-  const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const primary = isDark ? "#ff6fa1" : "#ff4b8c";
+  const mutedIcon = isDark ? "#a1a1aa" : "#6b7280";
 
   const [trackedExercises, setTrackedExercises] = useState<number[]>([]);
   const [trackedPRs, setTrackedPRs] = useState<TrackedPR[]>([]);
@@ -157,53 +161,58 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
   };
 
   return (
-    <ScrollView
-      className="flex-1 px-4 py-6"
-      contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
-    >
-      {/* Header Section */}
-      <View className="mb-6">
-        <View className="flex-row items-center justify-between mb-4">
-          <View>
-            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
-              Personal Records
-            </Text>
-            <Text className="text-sm text-gray-500 dark:text-gray-400">
-              Track your best performances
-            </Text>
+    <>
+      <View className="pb-2">
+        {/* Header Section */}
+        <View className="mb-6">
+          <View className="mb-4 flex-row items-center justify-between">
+            <View className="min-w-0 flex-1 pr-3">
+              <AppText variant="subheader" tone="default">
+                Personal records
+              </AppText>
+              <AppText variant="body" tone="muted" className="mt-1 normal-case">
+                Track your best performances
+              </AppText>
+            </View>
+            <TouchableOpacity
+              onPress={() => setIsSelectionModalOpen(true)}
+              className="rounded-ds-control bg-primary px-4 py-2 dark:bg-primary-dark"
+            >
+              <AppText variant="body" tone="inverse" className="font-semibold normal-case">
+                Manage
+              </AppText>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            onPress={() => setIsSelectionModalOpen(true)}
-            className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-lg px-4 py-2"
-          >
-            <Text className="text-[#ff4b8c] dark:text-[#ff6fa1]-content font-medium">Manage</Text>
-          </TouchableOpacity>
+
+          <AppCard className="p-4" surface="alt">
+            <View className="mb-2 flex-row items-center gap-2">
+              <Ionicons name="list" size={16} color={primary} />
+              <AppText variant="caption" tone="muted" className="normal-case">
+                Currently tracking
+              </AppText>
+            </View>
+            <AppText variant="header" tone="default">
+              {trackedExercises.length} exercise
+              {trackedExercises.length !== 1 ? "s" : ""}
+            </AppText>
+          </AppCard>
         </View>
 
-        <View className="bg-gray-100 dark:bg-zinc-700 rounded-lg p-4">
-          <View className="flex-row items-center gap-2 mb-2">
-            <Ionicons name="list" size={16} color="#ff4b8c" />
-            <Text className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Currently Tracking
-            </Text>
+        {/* Tracked PRs List */}
+        {loading ? (
+          <View className="items-center justify-center py-12">
+            <ActivityIndicator size="large" color={primary} />
+            <AppText variant="body" tone="muted" className="mt-2 normal-case">
+              Loading PRs…
+            </AppText>
           </View>
-          <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
-            {trackedExercises.length} exercise
-            {trackedExercises.length !== 1 ? "s" : ""}
-          </Text>
-        </View>
-      </View>
-
-      {/* Tracked PRs List */}
-      {loading ? (
-        <View className="flex-1 justify-center items-center py-12">
-          <ActivityIndicator size="large" color="#ff4b8c" />
-          <Text className="text-gray-500 dark:text-gray-400 mt-2">Loading PRs...</Text>
-        </View>
-      ) : trackedPRs.length > 0 ? (
+        ) : trackedPRs.length > 0 ? (
         <View className="gap-4">
           {trackedPRs.map((pr) => (
-            <View key={pr.exerciseId} className="bg-gray-100 dark:bg-zinc-700 rounded-xl p-6">
+            <View
+              key={pr.exerciseId}
+              className="rounded-ds-card border border-border bg-surface p-6 dark:border-border-dark dark:bg-surface-dark"
+            >
               {/* Exercise Header */}
               <TouchableOpacity
                 onPress={() =>
@@ -242,7 +251,7 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                       : "chevron-down"
                   }
                   size={20}
-                  color="#6b7280"
+                  color={mutedIcon}
                 />
               </TouchableOpacity>
 
@@ -287,7 +296,7 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
 
               {/* PR History and Progress Charts (Expandable) */}
               {expandedExercise === pr.exerciseId && (
-                <View className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
+                <View className="mt-4 border-t border-border pt-4 dark:border-border-dark">
                   {/* PR History */}
                   {pr.prHistory.length > 0 && (
                     <View className="mb-4">
@@ -366,7 +375,7 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                       return (
                         <View className="gap-4">
                           {/* Volume Progression Summary */}
-                          <View className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4">
+                          <View className="rounded-ds-control border border-border bg-surfaceAlt p-4 dark:border-border-dark dark:bg-surfaceAlt-dark">
                             <View className="flex-row items-center gap-2 mb-3">
                               <Ionicons name="trending-up" size={16} color="#10b981" />
                               <Text className="text-base font-semibold text-zinc-900 dark:text-white">
@@ -399,7 +408,7 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                                 </Text>
                               </View>
                               {progress.progression.volumePercentage !== 0 && (
-                                <View className="flex-row justify-between items-center mt-1 pt-2 border-t border-gray-200 dark:border-zinc-700">
+                                <View className="mt-1 flex-row items-center justify-between border-t border-border pt-2 dark:border-border-dark">
                                   <Text className="text-sm text-gray-500 dark:text-gray-400">
                                     Volume Change:
                                   </Text>
@@ -447,7 +456,7 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                           </View>
 
                           {/* Weight Progression Summary */}
-                          <View className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-4">
+                          <View className="rounded-ds-control border border-border bg-surfaceAlt p-4 dark:border-border-dark dark:bg-surfaceAlt-dark">
                             <View className="flex-row items-center gap-2 mb-3">
                               <Ionicons name="barbell" size={16} color="#ff4b8c" />
                               <Text className="text-base font-semibold text-zinc-900 dark:text-white">
@@ -472,7 +481,7 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
                                 </Text>
                               </View>
                               {progress.progression.weightPercentage !== 0 && (
-                                <View className="flex-row justify-between items-center mt-1 pt-2 border-t border-gray-200 dark:border-zinc-700">
+                                <View className="mt-1 flex-row items-center justify-between border-t border-border pt-2 dark:border-border-dark">
                                   <Text className="text-sm text-gray-500 dark:text-gray-400">
                                     Weight Change:
                                   </Text>
@@ -528,37 +537,37 @@ export default function PRsTab({ dateRange }: PRsTabProps) {
           ))}
         </View>
       ) : (
-        <View className="flex-1 justify-center items-center py-12">
+        <View className="items-center justify-center py-12">
           <View className="items-center">
-            <View className="w-20 h-20 bg-gray-100 dark:bg-zinc-700 rounded-full items-center justify-center mb-4">
-              <Ionicons name="trophy-outline" size={40} color="#9ca3af" />
+            <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-surfaceAlt dark:bg-surfaceAlt-dark">
+              <Ionicons name="trophy-outline" size={40} color={mutedIcon} />
             </View>
-            <Text className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
-              No PRs Tracked Yet
-            </Text>
-            <Text className="text-center text-gray-500 dark:text-gray-400 mb-6 max-w-xs">
-              Select exercises to start tracking your personal records and see
-              your progress over time.
-            </Text>
+            <AppText variant="header" tone="default" className="mb-2 text-center">
+              No PRs tracked yet
+            </AppText>
+            <AppText variant="body" tone="muted" className="mb-6 max-w-xs text-center normal-case">
+              Select exercises to start tracking your personal records and see your progress over
+              time.
+            </AppText>
             <TouchableOpacity
               onPress={() => setIsSelectionModalOpen(true)}
-              className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-lg px-6 py-3"
+              className="rounded-ds-control bg-primary px-6 py-3 dark:bg-primary-dark"
             >
-              <Text className="text-[#ff4b8c] dark:text-[#ff6fa1]-content font-semibold">
-                Select Exercises
-              </Text>
+              <AppText variant="body" tone="inverse" className="font-semibold normal-case">
+                Select exercises
+              </AppText>
             </TouchableOpacity>
           </View>
         </View>
       )}
+      </View>
 
-      {/* Exercise Selection Modal */}
       <ExerciseSelectionModal
         isOpen={isSelectionModalOpen}
         onClose={() => setIsSelectionModalOpen(false)}
         selectedExercises={trackedExercises}
         onSave={handleSaveTrackedExercises}
       />
-    </ScrollView>
+    </>
   );
 }

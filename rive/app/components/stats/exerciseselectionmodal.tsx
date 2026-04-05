@@ -1,24 +1,29 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   Modal,
   TouchableOpacity,
   ScrollView,
-  TextInput,
   ActivityIndicator,
+  useColorScheme,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/authcontext";
 import { getMostUsedExercises } from "../../lib/statsUtils";
-
 import { MuscleGroup } from "../../lib/muscleGroupUtils";
+import ExerciseSearchBar from "../exercise/ExerciseSearchBar";
+import AppText from "../ui/AppText";
+import AppCard from "../ui/AppCard";
+import StickyBottomPrimaryButton, {
+  STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,
+} from "../ui/StickyBottomPrimaryButton";
 
 type Exercise = {
   id: number;
   name: string;
   muscleGroups?: MuscleGroup[];
-  primaryMuscleGroup?: string; // Replaces category
+  primaryMuscleGroup?: string;
   usageCount: number;
 };
 
@@ -29,6 +34,12 @@ type ExerciseSelectionModalProps = {
   onSave: (exerciseIds: number[]) => void;
 };
 
+const formatExerciseName = (name: string) =>
+  name
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
 export default function ExerciseSelectionModal({
   isOpen,
   onClose,
@@ -36,12 +47,18 @@ export default function ExerciseSelectionModal({
   onSave,
 }: ExerciseSelectionModalProps) {
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const primaryGlow = isDark ? "#ff6fa1" : "#ff4b8c";
+  const mutedIcon = isDark ? "#a1a1aa" : "#6b7280";
+
   const [availableExercises, setAvailableExercises] = useState<Exercise[]>([]);
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [tempSelectedExercises, setTempSelectedExercises] = useState<number[]>(
-    []
+    [],
   );
 
   useEffect(() => {
@@ -55,10 +72,11 @@ export default function ExerciseSelectionModal({
     if (searchQuery.trim() === "") {
       setFilteredExercises(availableExercises);
     } else {
+      const q = searchQuery.toLowerCase();
       const filtered = availableExercises.filter(
         (exercise) =>
-          exercise.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (exercise.primaryMuscleGroup?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
+          exercise.name.toLowerCase().includes(q) ||
+          (exercise.primaryMuscleGroup?.toLowerCase().includes(q) ?? false),
       );
       setFilteredExercises(filtered);
     }
@@ -82,12 +100,9 @@ export default function ExerciseSelectionModal({
   const handleExerciseToggle = (exerciseId: number) => {
     setTempSelectedExercises((prev) => {
       if (prev.includes(exerciseId)) {
-        // Always allow removing exercises
         return prev.filter((id) => id !== exerciseId);
-      } else {
-        // No limit - allow adding any exercise
-        return [...prev, exerciseId];
       }
+      return [...prev, exerciseId];
     });
   };
 
@@ -102,122 +117,148 @@ export default function ExerciseSelectionModal({
     onClose();
   };
 
-  const getMuscleGroupColor = (muscleGroup: string) => {
-    return "#ff4b8c"; // All badges use primary color
-  };
+  const scrollBottomPadding =
+    STICKY_BOTTOM_PRIMARY_SCROLL_PADDING + Math.max(insets.bottom, 8);
 
   return (
-    <Modal visible={isOpen} animationType="slide" presentationStyle="pageSheet">
-      <View className="flex-1 bg-white dark:bg-zinc-900">
-        {/* Header */}
-        <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-700">
-          <TouchableOpacity onPress={handleCancel}>
-            <Text className="text-primary text-base font-medium">Cancel</Text>
-          </TouchableOpacity>
-          <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
-            Track PRs
-          </Text>
-          <TouchableOpacity onPress={handleSave}>
-            <Text className="text-primary text-base font-medium">Save</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Search Bar */}
-        <View className="p-4">
-          <View className="flex-row items-center bg-gray-100 dark:bg-zinc-700 rounded-lg px-3 py-2">
-            <Ionicons name="search" size={20} color="#9ca3af" />
-            <TextInput
-              className="flex-1 ml-2 text-zinc-900 dark:text-white"
-              placeholder="Search exercises..."
-              placeholderTextColor="#9ca3af"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
+    <Modal visible={isOpen} animationType="slide" presentationStyle="fullScreen">
+      <View className="flex-1 bg-background dark:bg-background-dark">
+        <View
+          className="border-b border-border bg-chrome px-4 dark:border-border-dark dark:bg-chrome-dark"
+          style={{ paddingTop: insets.top, paddingBottom: 8 }}
+        >
+          <View className="flex-row items-center gap-2">
+            <TouchableOpacity
+              onPress={handleCancel}
+              accessibilityLabel="Close"
+              className="h-10 w-10 items-center justify-center rounded-full active:opacity-80"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons
+                name="close"
+                size={24}
+                color={isDark ? "#f5f5f5" : "#111113"}
+              />
+            </TouchableOpacity>
+            <AppText
+              variant="subheader"
+              tone="default"
+              className="flex-1 font-bold tracking-tight"
+              numberOfLines={1}
+            >
+              Track PRs
+            </AppText>
           </View>
         </View>
 
-        {/* Selected Count */}
-        <View className="px-4 pb-2">
-          <Text className="text-sm text-gray-500 dark:text-gray-400">
-            {tempSelectedExercises.length} exercise
-            {tempSelectedExercises.length !== 1 ? "s" : ""} selected
-          </Text>
+        <ExerciseSearchBar
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          compact
+        />
+
+        <View className="px-4 pb-2 pt-1">
+          <AppCard surface="alt" className="flex-row items-center justify-between py-3">
+            <View>
+              <AppText variant="caption" tone="muted" className="normal-case">
+                Selection
+              </AppText>
+              <AppText variant="body" tone="default" className="font-semibold normal-case">
+                {tempSelectedExercises.length}{" "}
+                {tempSelectedExercises.length === 1 ? "exercise" : "exercises"}{" "}
+                selected
+              </AppText>
+            </View>
+          </AppCard>
         </View>
 
-        {/* Exercise List */}
-        <ScrollView className="flex-1 px-4">
+        <ScrollView
+          className="flex-1 px-4"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: scrollBottomPadding,
+          }}
+        >
           {loading ? (
-            <View className="flex-1 justify-center items-center py-12">
-              <ActivityIndicator size="large" color="#ff4b8c" />
-              <Text className="text-gray-500 dark:text-gray-400 mt-2">Loading exercises...</Text>
+            <View className="flex-1 items-center justify-center py-12">
+              <ActivityIndicator size="large" color={primaryGlow} />
+              <AppText variant="body" tone="muted" className="mt-3 text-center normal-case">
+                Loading exercises…
+              </AppText>
             </View>
           ) : filteredExercises.length > 0 ? (
-            <View className="gap-2 pb-4">
-              {filteredExercises.map((exercise) => (
-                <TouchableOpacity
-                  key={exercise.id}
-                  onPress={() => handleExerciseToggle(exercise.id)}
-                  className={`flex-row items-center justify-between p-4 rounded-lg border ${
-                    tempSelectedExercises.includes(exercise.id)
-                      ? "bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10 border-primary"
-                      : "bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700"
-                  }`}
-                >
-                  <View className="flex-1">
-                    <View className="flex-row items-center gap-2 mb-1">
-                      <Text className="text-base font-semibold text-zinc-900 dark:text-white">
-                        {exercise.name}
-                      </Text>
-                      {exercise.primaryMuscleGroup && (
-                        <View
-                          className="px-2 py-1 rounded-full"
-                          style={{
-                            backgroundColor:
-                              getMuscleGroupColor(exercise.primaryMuscleGroup) + "20",
-                          }}
-                        >
-                          <Text
-                            className="text-xs font-medium"
-                            style={{ color: getMuscleGroupColor(exercise.primaryMuscleGroup) }}
-                          >
-                            {exercise.primaryMuscleGroup}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text className="text-sm text-gray-500 dark:text-gray-400">
-                      Used {exercise.usageCount} times
-                    </Text>
-                  </View>
-                  <View
-                    className={`w-6 h-6 rounded-full border-2 items-center justify-center ${
-                      tempSelectedExercises.includes(exercise.id)
-                        ? "bg-[#ff4b8c] dark:bg-[#ff6fa1] border-[#ff4b8c] dark:border-[#ff6fa1]"
-                        : "border-gray-300 dark:border-zinc-600"
-                    }`}
+            <View className="gap-2 pb-2">
+              {filteredExercises.map((exercise) => {
+                const isSelected = tempSelectedExercises.includes(exercise.id);
+                return (
+                  <AppCard
+                    key={exercise.id}
+                    onPress={() => handleExerciseToggle(exercise.id)}
+                    className={
+                      isSelected ? "border border-primary dark:border-primary" : ""
+                    }
                   >
-                    {tempSelectedExercises.includes(exercise.id) && (
-                      <Ionicons name="checkmark" size={16} color="#ffffff" />
-                    )}
-                  </View>
-                </TouchableOpacity>
-              ))}
+                    <View className="flex-row items-center gap-4">
+                      <View className="min-w-0 flex-1">
+                        {exercise.primaryMuscleGroup ? (
+                          <View className="mb-1 flex-row flex-wrap items-center gap-2">
+                            <View className="rounded-full bg-primary/15 px-2 py-0.5 dark:bg-primary-dark/20">
+                              <AppText
+                                variant="caption"
+                                tone="primary"
+                                className="font-semibold normal-case"
+                              >
+                                {exercise.primaryMuscleGroup}
+                              </AppText>
+                            </View>
+                          </View>
+                        ) : null}
+                        <AppText variant="body" tone="default" className="font-bold">
+                          {formatExerciseName(exercise.name)}
+                        </AppText>
+                        <AppText variant="caption" tone="muted" className="mt-1 normal-case">
+                          Used {exercise.usageCount}{" "}
+                          {exercise.usageCount === 1 ? "time" : "times"}
+                        </AppText>
+                      </View>
+                      <View className="shrink-0 p-1">
+                        <Ionicons
+                          name={isSelected ? "checkmark-circle" : "add-circle-outline"}
+                          size={24}
+                          color={isSelected ? primaryGlow : mutedIcon}
+                        />
+                      </View>
+                    </View>
+                  </AppCard>
+                );
+              })}
             </View>
           ) : (
-            <View className="flex-1 justify-center items-center py-12">
-              <Ionicons name="barbell-outline" size={48} color="#9ca3af" />
-              <Text className="text-lg font-semibold text-zinc-900 dark:text-white mt-3 mb-2">
-                No Exercises Found
-              </Text>
-              <Text className="text-gray-500 dark:text-gray-400 text-center">
+            <View className="flex-1 items-center justify-center py-12">
+              <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-surface dark:bg-surface-dark">
+                <Ionicons name="barbell-outline" size={32} color={mutedIcon} />
+              </View>
+              <AppText variant="subheader" tone="default" className="mb-2 text-center">
+                No exercises found
+              </AppText>
+              <AppText variant="body" tone="muted" className="max-w-xs text-center normal-case">
                 {searchQuery
                   ? "Try adjusting your search terms"
                   : "Start tracking workouts to see exercises here"}
-              </Text>
+              </AppText>
             </View>
           )}
         </ScrollView>
 
+        <StickyBottomPrimaryButton
+          label="Save selection"
+          onPress={handleSave}
+          disabled={loading}
+          accessibilityLabel="Save PR exercise selection"
+          accessibilityHint="Saves the exercises you chose to track for personal records"
+        />
       </View>
     </Modal>
   );
