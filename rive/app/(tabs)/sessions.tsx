@@ -329,10 +329,6 @@ export default function SessionsPage() {
         isOpen={isSelectWorkoutModalOpen}
         onClose={() => setIsSelectWorkoutModalOpen(false)}
         onWorkoutSelect={handleWorkoutSelect}
-        onNewTemplatePress={() => {
-          setIsSelectWorkoutModalOpen(false);
-          router.push("/(tabs)/workouts");
-        }}
       />
     </View>
   );
