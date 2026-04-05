@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   ScrollView,
+  TouchableOpacity,
   ActivityIndicator,
   Alert,
   Modal,
@@ -23,6 +24,8 @@ import AppText from "../components/ui/AppText";
 import AppButton from "../components/ui/AppButton";
 
 import { MuscleGroup } from "../lib/muscleGroupUtils";
+
+const STICKY_SESSION_FINISH_FOOTER_SCROLL_PADDING = 72;
 
 type Exercise = {
   id: number;
@@ -88,6 +91,7 @@ export default function SessionDetailPage() {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+  const iconMuted = isDark ? "#a3a3a3" : "#737373";
   const { id } = useLocalSearchParams<{ id: string }>();
 
   useEffect(() => {
@@ -1000,9 +1004,10 @@ export default function SessionDetailPage() {
       <View className="flex-1 bg-background dark:bg-background-dark">
         <SessionDetailTopBar
           onBack={handleBack}
-          onFinish={() => {}}
-          finishDisabled
-          onCancelSession={handleBack}
+          secondaryAction={{
+            label: "Close",
+            onPress: handleBack,
+          }}
         />
         <View className="flex-1 justify-center items-center px-4">
           <ActivityIndicator
@@ -1026,9 +1031,10 @@ export default function SessionDetailPage() {
       <View className="flex-1 bg-background dark:bg-background-dark">
         <SessionDetailTopBar
           onBack={handleBack}
-          onFinish={() => {}}
-          finishDisabled
-          onCancelSession={handleBack}
+          secondaryAction={{
+            label: "Close",
+            onPress: handleBack,
+          }}
         />
         <View className="flex-1 justify-center items-center px-4">
           <AppText
@@ -1081,9 +1087,11 @@ export default function SessionDetailPage() {
     <View className="flex-1 bg-background dark:bg-background-dark">
       <SessionDetailTopBar
         onBack={handleBack}
-        onFinish={handleCompleteSession}
-        finishDisabled={finishDisabled}
-        onCancelSession={handleCancelSession}
+        secondaryAction={{
+          label: "Cancel session",
+          onPress: handleCancelSession,
+          destructive: true,
+        }}
       />
 
       <ScrollView
@@ -1091,7 +1099,8 @@ export default function SessionDetailPage() {
         contentContainerStyle={{
           paddingHorizontal: 24,
           paddingTop: 16,
-          paddingBottom: insets.bottom + 24,
+          paddingBottom:
+            STICKY_SESSION_FINISH_FOOTER_SCROLL_PADDING + insets.bottom,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -1130,6 +1139,36 @@ export default function SessionDetailPage() {
           onRemoveExercise={handleRemoveExercise}
         />
       </ScrollView>
+
+      <View
+        className="px-4"
+        style={{ paddingBottom: Math.max(insets.bottom, 8) }}
+      >
+        <TouchableOpacity
+          onPress={finishDisabled ? undefined : handleCompleteSession}
+          disabled={finishDisabled}
+          className={`w-full py-3 rounded-2xl flex-row items-center justify-center gap-2 ${
+            finishDisabled
+              ? "bg-surfaceAlt dark:bg-surfaceAlt-dark"
+              : "bg-primary dark:bg-primary-dark active:opacity-90"
+          }`}
+          accessibilityLabel="Finish session"
+          accessibilityState={{ disabled: finishDisabled }}
+        >
+          <Ionicons
+            name="checkmark"
+            size={20}
+            color={finishDisabled ? iconMuted : "#ffffff"}
+          />
+          <AppText
+            variant="body"
+            tone={finishDisabled ? "muted" : "inverse"}
+            className="font-bold uppercase tracking-wider text-xs"
+          >
+            Finish
+          </AppText>
+        </TouchableOpacity>
+      </View>
 
       <Modal
         visible={showAddExerciseModal}
