@@ -4,25 +4,26 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AppText from "./ui/AppText";
 
 type HeaderProps = {
-  title: string;
+  /** e.g. date range control on Stats */
   rightComponent?: React.ReactNode;
 };
 
-export default function Header({ title, rightComponent }: HeaderProps) {
+/** Minimal top bar: RIVE + optional trailing action. Page titles live in screen content. */
+export default function Header({ rightComponent }: HeaderProps) {
   const insets = useSafeAreaInsets();
 
   return (
     <View
-      className="bg-background dark:bg-chrome-dark px-4 border-b border-border dark:border-border-dark shadow-sm dark:shadow-lg"
-      style={{ paddingTop: insets.top, paddingBottom: 8 }}
+      className="border-b border-border bg-background px-4 dark:border-border-dark dark:bg-chrome-dark"
+      style={{ paddingTop: insets.top, paddingBottom: 10 }}
     >
-      <View className="flex-row items-center justify-between">
-        <View className="flex-1">
-          <AppText variant="subheader" tone="default">
-            {title}
-          </AppText>
-        </View>
-        {rightComponent && <View className="ml-4">{rightComponent}</View>}
+      <View className="min-h-[36px] flex-row items-center justify-between">
+        <AppText variant="subheader" tone="primary" className="font-extrabold">
+          RIVE
+        </AppText>
+        {rightComponent ? (
+          <View className="ml-3 flex-shrink-0">{rightComponent}</View>
+        ) : null}
       </View>
     </View>
   );

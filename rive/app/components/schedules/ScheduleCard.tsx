@@ -1,7 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { WorkoutSchedule, ScheduledWorkout } from "../../lib/scheduleUtils";
+import AppCard from "../ui/AppCard";
+import AppText from "../ui/AppText";
 
 type ScheduleCardProps = {
   scheduledWorkout: ScheduledWorkout;
@@ -95,83 +97,91 @@ export default function ScheduleCard({
   onEdit,
   onDelete,
 }: ScheduleCardProps) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const primaryIcon = isDark ? "#ff6fa1" : "#ff4b8c";
+
   const { schedule, workout_name, workout_description } = scheduledWorkout;
 
   return (
-    <View
-      className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4"
-      style={{
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-      }}
+    <AppCard
+      className={`border ${
+        schedule.is_active
+          ? "border-primary/15 dark:border-primary-dark/25"
+          : "border-border dark:border-border-dark"
+      }`}
     >
-      <View className="flex-row items-start justify-between mb-2">
-        <View className="flex-1">
-          <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
+      <View className="mb-2 flex-row items-start justify-between">
+        <View className="flex-1 pr-2">
+          <AppText variant="subheader" className="font-semibold">
             {workout_name}
-          </Text>
-          {workout_description && (
-            <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          </AppText>
+          {workout_description ? (
+            <AppText
+              variant="body"
+              tone="muted"
+              className="mt-1 normal-case"
+            >
               {workout_description}
-            </Text>
-          )}
+            </AppText>
+          ) : null}
         </View>
-        <View className="flex-row items-center gap-2">
+        <View className="flex-row items-center gap-1">
           <View
-            className={`px-2 py-1 rounded-full ${
-              schedule.is_active ? "bg-success/10" : "bg-gray-100 dark:bg-zinc-700"
+            className={`rounded-ds-tag px-2 py-1 ${
+              schedule.is_active
+                ? "bg-primary/10 dark:bg-primary-dark/15"
+                : "bg-surfaceAlt dark:bg-surfaceAlt-dark"
             }`}
           >
-            <Text
-              className={`text-xs font-medium ${
-                schedule.is_active ? "text-success" : "text-gray-500 dark:text-gray-400"
-              }`}
+            <AppText
+              variant="caption"
+              className="normal-case"
+              tone={schedule.is_active ? "primary" : "muted"}
             >
               {schedule.is_active ? "Active" : "Inactive"}
-            </Text>
+            </AppText>
           </View>
-          {onEdit && (
+          {onEdit ? (
             <TouchableOpacity
               onPress={() => onEdit(scheduledWorkout)}
               className="p-2"
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel="Edit schedule"
             >
-              <Ionicons name="pencil-outline" size={20} color="#ff4b8c" />
+              <Ionicons name="pencil-outline" size={20} color={primaryIcon} />
             </TouchableOpacity>
-          )}
-          {onDelete && (
+          ) : null}
+          {onDelete ? (
             <TouchableOpacity
               onPress={() => onDelete(schedule.id)}
               className="p-2"
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel="Delete schedule"
             >
               <Ionicons name="trash-outline" size={20} color="#ef4444" />
             </TouchableOpacity>
-          )}
+          ) : null}
         </View>
       </View>
 
       <View className="mt-3 gap-2">
         <View className="flex-row items-center gap-2">
           <Ionicons name="repeat-outline" size={16} color="#9ca3af" />
-          <Text className="text-sm text-gray-500 dark:text-gray-400">
+          <AppText variant="body" tone="muted" className="flex-1 normal-case">
             {formatRecurrence(schedule)}
-          </Text>
+          </AppText>
         </View>
 
         <View className="flex-row items-center gap-2">
           <Ionicons name="calendar-outline" size={16} color="#9ca3af" />
-          <Text className="text-sm text-gray-500 dark:text-gray-400">
+          <AppText variant="body" tone="muted" className="flex-1 normal-case">
             {formatDateRange(schedule)}
-          </Text>
+          </AppText>
         </View>
       </View>
-    </View>
+    </AppCard>
   );
 }

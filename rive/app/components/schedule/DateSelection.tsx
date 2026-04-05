@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Platform } from "react-native";
+import { View, TouchableOpacity, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import AppText from "../ui/AppText";
 
 type DateSelectionProps = {
   startDate: string;
@@ -15,8 +16,6 @@ type DateSelectionProps = {
   onEndDateChange: (event: any, selectedDate?: Date) => void;
 };
 
-// Helper function to parse YYYY-MM-DD date string as local date (not UTC)
-// This prevents timezone issues where dates can appear a day behind
 const parseLocalDate = (dateString: string): Date => {
   const [year, month, day] = dateString.split("-").map(Number);
   return new Date(year, month - 1, day);
@@ -34,18 +33,21 @@ export default function DateSelection({
   onEndDateChange,
 }: DateSelectionProps) {
   return (
-    <View className="mb-4">
+    <View className="mb-6">
       <View className="flex-row gap-3">
         <View className="flex-1">
-          <Text className="text-zinc-900 dark:text-white font-medium mb-2">Start Date</Text>
+          <AppText variant="caption" tone="muted" className="mb-2 normal-case">
+            Start date
+          </AppText>
           <TouchableOpacity
-            className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 flex-row items-center justify-between"
+            className="flex-row items-center justify-between rounded-ds-control border border-border bg-surfaceAlt px-4 py-3.5 dark:border-border-dark dark:bg-surfaceAlt-dark"
             onPress={onStartDatePress}
+            activeOpacity={0.85}
           >
-            <Text className="text-zinc-900 dark:text-white">
+            <AppText variant="body" tone="default" className="normal-case">
               {parseLocalDate(startDate).toLocaleDateString()}
-            </Text>
-            <Ionicons name="calendar-outline" size={20} color="#6b7280" />
+            </AppText>
+            <Ionicons name="calendar-outline" size={20} color="#9ca3af" />
           </TouchableOpacity>
           {showStartDatePicker && Platform.OS === "ios" && (
             <View key="start-date-picker">
@@ -69,19 +71,24 @@ export default function DateSelection({
           )}
         </View>
         <View className="flex-1">
-          <Text className="text-zinc-900 dark:text-white font-medium mb-2">
-            End Date (Optional)
-          </Text>
+          <AppText variant="caption" tone="muted" className="mb-2 normal-case">
+            End date (optional)
+          </AppText>
           <TouchableOpacity
-            className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 flex-row items-center justify-between"
+            className="flex-row items-center justify-between rounded-ds-control border border-border bg-surfaceAlt px-4 py-3.5 dark:border-border-dark dark:bg-surfaceAlt-dark"
             onPress={onEndDatePress}
+            activeOpacity={0.85}
           >
-            <Text className="text-zinc-900 dark:text-white">
+            <AppText
+              variant="body"
+              tone={endDate ? "default" : "muted"}
+              className="normal-case"
+            >
               {endDate
                 ? parseLocalDate(endDate).toLocaleDateString()
                 : "No end date"}
-            </Text>
-            <Ionicons name="calendar-outline" size={20} color="#6b7280" />
+            </AppText>
+            <Ionicons name="calendar-outline" size={20} color="#9ca3af" />
           </TouchableOpacity>
           {showEndDatePicker && Platform.OS === "ios" && (
             <View key="end-date-picker">
@@ -103,11 +110,11 @@ export default function DateSelection({
               minimumDate={parseLocalDate(startDate)}
             />
           )}
-          {recurrenceType !== "once" && !endDate && (
-            <Text className="text-xs text-zinc-900 dark:text-white/60 mt-1">
+          {recurrenceType !== "once" && !endDate ? (
+            <AppText variant="caption" tone="muted" className="mt-2 normal-case">
               Will default to end of {new Date().getFullYear()}
-            </Text>
-          )}
+            </AppText>
+          ) : null}
         </View>
       </View>
     </View>

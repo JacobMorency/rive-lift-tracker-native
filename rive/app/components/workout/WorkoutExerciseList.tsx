@@ -1,8 +1,10 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { WorkoutDetails } from "./types";
 import ExerciseListItem from "./ExerciseListItem";
+import AppText from "../ui/AppText";
+import AppCard from "../ui/AppCard";
 
 type WorkoutExerciseListProps = {
   workoutDetails: WorkoutDetails;
@@ -17,37 +19,27 @@ export default function WorkoutExerciseList({
 }: WorkoutExerciseListProps) {
   return (
     <View>
-      <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-xl font-bold text-zinc-900 dark:text-white">
-          Exercises
-        </Text>
-        <View className="bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10 px-3 py-1 rounded-full">
-          <Text className="text-sm font-medium text-primary">
-            {workoutDetails.exercises.length} total
-          </Text>
-        </View>
-      </View>
-
       {workoutDetails.exercises.length === 0 ? (
-        <View className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-8 items-center">
-          <View className="w-20 h-20 bg-gray-100 dark:bg-zinc-700 rounded-full items-center justify-center mb-4">
+        <AppCard
+          radius="large"
+          className="items-center border border-border py-10 dark:border-border-dark"
+          surface="alt"
+        >
+          <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-surface dark:bg-surface-dark">
             <Ionicons name="barbell-outline" size={40} color="#9ca3af" />
           </View>
-          <Text className="text-xl font-bold text-zinc-900 dark:text-white mb-2">
-            No Exercises Yet
-          </Text>
-          <Text className="text-gray-500 dark:text-gray-400 text-center mb-6 max-w-xs">
-            This workout template is empty. Add some exercises to get started!
-          </Text>
-          <View className="flex-row items-center gap-2">
-            <Ionicons name="arrow-down" size={16} color="#ff4b8c" />
-            <Text className="text-sm font-medium text-primary">
-              Tap &quot;Add Exercises&quot; below
-            </Text>
-          </View>
-        </View>
+          <AppText variant="subheader" tone="default" className="mb-2 text-center">
+            No exercises yet
+          </AppText>
+          <AppText variant="body" tone="muted" className="mb-6 max-w-xs text-center normal-case">
+            Add exercises to build this template.
+          </AppText>
+          <AppText variant="caption" tone="primary" className="text-center normal-case font-semibold">
+            Tap Add exercises to get started.
+          </AppText>
+        </AppCard>
       ) : (
-        <View className="gap-3">
+        <View className="gap-5">
           {workoutDetails.exercises.map((exercise, index) => (
             <ExerciseListItem
               key={exercise.id}

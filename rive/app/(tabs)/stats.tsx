@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity, Text, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "../context/authcontext";
 import { DateRange } from "../lib/statsUtils";
 import Header from "../components/header";
 import DateRangePicker from "../components/daterangepicker";
@@ -11,7 +10,6 @@ import PRsTab from "../components/stats/prstab";
 type TabType = "overview" | "prs";
 
 export default function StatsPage() {
-  const { userData } = useAuth();
   const [dateRange, setDateRange] = useState<DateRange>({ type: "all" });
   const [selectedTab, setSelectedTab] = useState<TabType>("overview");
   const insets = useSafeAreaInsets();
@@ -35,12 +33,6 @@ export default function StatsPage() {
   return (
     <View className="flex-1 bg-white dark:bg-zinc-900">
       <Header
-        title="Stats"
-        subtitle={
-          userData
-            ? `Your fitness progress, ${userData.first_name} 📊`
-            : undefined
-        }
         rightComponent={
           <DateRangePicker
             selectedRange={dateRange}

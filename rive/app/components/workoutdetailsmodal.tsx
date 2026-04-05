@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
-  Text,
-  TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   Modal,
   Alert,
+  useColorScheme,
+  TouchableOpacity,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,6 +22,12 @@ import ExerciseSelector from "./ExerciseSelector";
 import { Exercise, WorkoutDetails } from "./workout/types";
 import WorkoutHeader from "./workout/WorkoutHeader";
 import WorkoutExerciseList from "./workout/WorkoutExerciseList";
+import AppText from "./ui/AppText";
+import AppCard from "./ui/AppCard";
+import AppButton from "./ui/AppButton";
+import StickyBottomPrimaryButton, {
+  STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,
+} from "./ui/StickyBottomPrimaryButton";
 
 type WorkoutDetailsModalProps = {
   isOpen: boolean;
@@ -43,6 +52,13 @@ const WorkoutDetailsModal = ({
   const [isEditingName, setIsEditingName] = useState(false);
   const [editingName, setEditingName] = useState("");
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
+  const handleDone = () => {
+    onWorkoutUpdated?.();
+    onClose();
+  };
 
   const fetchWorkoutDetails = useCallback(async () => {
     if (!workoutId) return;
@@ -379,89 +395,147 @@ const WorkoutDetailsModal = ({
       animationType="slide"
       presentationStyle="fullScreen"
     >
-      <View className="flex-1 bg-white dark:bg-zinc-900">
+      <View className="flex-1 bg-background dark:bg-background-dark">
         <WorkoutHeader
-          workoutDetails={workoutDetails}
-          loading={loading}
-          isEditingName={isEditingName}
-          editingName={editingName}
-          setEditingName={setEditingName}
-          onEditName={handleEditName}
-          onSaveName={handleSaveName}
-          onCancelEdit={handleCancelEdit}
           onDeleteWorkout={handleDeleteWorkout}
           onClose={onClose}
         />
 
-        {/* Content */}
-        <ScrollView
-          className="flex-1 p-4"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        <KeyboardAvoidingView
+          className="flex-1"
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={0}
         >
-          {loading ? (
-            <View className="flex-1 justify-center items-center py-12">
-              <ActivityIndicator size="large" color="#ff4b8c" />
-              <Text className="text-gray-500 dark:text-gray-400 mt-3 text-center">
-                Loading workout details...
-              </Text>
-            </View>
-          ) : workoutDetails ? (
-            <View className="gap-6">
-              {/* Workout Description */}
-              {workoutDetails.description && (
-                <View className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4">
-                  <View className="flex-row items-center gap-2 mb-2">
-                    <Ionicons name="document-text" size={16} color="#ff4b8c" />
-                    <Text className="text-sm font-semibold text-zinc-900 dark:text-white">
-                      Description
-                    </Text>
-                  </View>
-                  <Text className="text-gray-500 dark:text-gray-400 text-sm">
-                    {workoutDetails.description}
-                  </Text>
-                </View>
-              )}
-
-              {/* Exercises Section */}
-              <WorkoutExerciseList
-                workoutDetails={workoutDetails}
-                onRemoveExercise={handleRemoveExercise}
-                onNotesUpdate={handleNotesUpdate}
-              />
-            </View>
-          ) : (
-            <View className="flex-1 justify-center items-center py-8">
-              <Text className="text-gray-500 dark:text-gray-400">
-                Failed to load workout details.
-              </Text>
-            </View>
-          )}
-        </ScrollView>
-
-        {/* Enhanced Footer Actions */}
-        {!loading && workoutDetails && (
-          <View
-            className="px-4 pt-4 border-t border-gray-200 dark:border-zinc-700"
-            style={{ paddingBottom: insets.bottom + 16 }}
+          <ScrollView
+            className="flex-1 px-4 pt-4"
+            contentContainerStyle={{
+              paddingBottom:
+                !loading && workoutDetails
+                  ? STICKY_BOTTOM_PRIMARY_SCROLL_PADDING + insets.bottom
+                  : insets.bottom + 24,
+            }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            <TouchableOpacity
-              className="bg-[#ff4b8c] dark:bg-[#ff6fa1] py-4 px-6 rounded-xl flex-row items-center justify-center"
-              onPress={handleAddExercise}
-              style={{
-                shadowColor: "#ff4b8c",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 8,
-              }}
-            >
-              <Ionicons name="add-circle" size={20} color="#ffffff" />
-              <Text className="text-white font-bold ml-2 text-lg">
-                Add Exercises
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
+            {loading ? (
+              <View className="items-center justify-center py-12">
+                <ActivityIndicator
+                  size="large"
+                  color={isDark ? "#ff6fa1" : "#ff4b8c"}
+                />
+                <AppText
+                  variant="body"
+                  tone="muted"
+                  className="mt-3 text-center normal-case"
+                >
+                  Loading workout details...
+                </AppText>
+              </View>
+            ) : workoutDetails ? (
+              <View className="gap-6">
+                <View className="mb-2">
+                  {isEditingName ? (
+                    <View className="w-full flex-row items-center gap-2">
+                      <TextInput
+                        className="min-w-0 flex-1 rounded-ds-control border border-border bg-surfaceAlt px-3 py-2 text-ds-subheader text-text dark:border-border-dark dark:bg-surfaceAlt-dark dark:text-text-dark"
+                        value={editingName}
+                        onChangeText={setEditingName}
+                        autoFocus
+                        selectTextOnFocus
+                        onSubmitEditing={handleSaveName}
+                        returnKeyType="done"
+                      />
+                      <TouchableOpacity
+                        onPress={handleSaveName}
+                        className="h-9 w-9 items-center justify-center rounded-full bg-success"
+                        accessibilityLabel="Save name"
+                      >
+                        <Ionicons name="checkmark" size={18} color="#ffffff" />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={handleCancelEdit}
+                        className="h-9 w-9 items-center justify-center rounded-full bg-error"
+                        accessibilityLabel="Cancel edit"
+                      >
+                        <Ionicons name="close" size={18} color="#ffffff" />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={handleEditName}
+                      activeOpacity={0.85}
+                    >
+                      <AppText variant="header" tone="default">
+                        {workoutDetails.name || "Workout"}
+                      </AppText>
+                    </TouchableOpacity>
+                  )}
+                  <AppText
+                    variant="caption"
+                    tone="muted"
+                    className="mt-1 normal-case"
+                    style={{ letterSpacing: 1 }}
+                  >
+                    {workoutDetails.exercises.length} exercise
+                    {workoutDetails.exercises.length !== 1 ? "s" : ""}
+                  </AppText>
+                </View>
+
+                {workoutDetails.description ? (
+                  <AppCard
+                    radius="large"
+                    className="border border-primary/10 dark:border-primary-dark/20"
+                  >
+                    <View className="mb-2 flex-row items-center gap-2">
+                      <Ionicons
+                        name="document-text-outline"
+                        size={18}
+                        color={isDark ? "#ff6fa1" : "#ff4b8c"}
+                      />
+                      <AppText variant="caption" tone="default" className="font-bold normal-case">
+                        Description
+                      </AppText>
+                    </View>
+                    <AppText variant="body" tone="muted" className="normal-case leading-6">
+                      {workoutDetails.description}
+                    </AppText>
+                  </AppCard>
+                ) : null}
+
+                <AppButton
+                  tone="primary"
+                  size="lg"
+                  fullWidth
+                  label="Add exercises"
+                  onPress={handleAddExercise}
+                  icon={<Ionicons name="add-circle-outline" size={22} color="#ffffff" />}
+                  className="shadow-lg shadow-primary/25 dark:shadow-primary-dark/20"
+                  accessibilityLabel="Add exercises to template"
+                />
+
+                <WorkoutExerciseList
+                  workoutDetails={workoutDetails}
+                  onRemoveExercise={handleRemoveExercise}
+                  onNotesUpdate={handleNotesUpdate}
+                />
+              </View>
+            ) : (
+              <View className="items-center justify-center py-8">
+                <AppText variant="body" tone="muted" className="text-center normal-case">
+                  Failed to load workout details.
+                </AppText>
+              </View>
+            )}
+          </ScrollView>
+
+          <StickyBottomPrimaryButton
+            visible={!loading && !!workoutDetails}
+            label="Done"
+            onPress={handleDone}
+            accessibilityLabel="Done editing template"
+            accessibilityHint="Closes this screen. Your changes are saved as you edit."
+          />
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

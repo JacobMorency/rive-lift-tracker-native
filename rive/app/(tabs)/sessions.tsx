@@ -230,7 +230,7 @@ export default function SessionsPage() {
   if (loading) {
     return (
       <View className="flex-1 bg-background dark:bg-background-dark">
-        <Header title="RIVE" />
+        <Header />
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator
             size="large"
@@ -246,7 +246,7 @@ export default function SessionsPage() {
 
   return (
     <View className="flex-1 bg-background dark:bg-background-dark">
-      <Header title="RIVE" />
+      <Header />
 
       <ScrollView
         className="flex-1 px-4"

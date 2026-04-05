@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
-  Text,
   ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
+  useColorScheme,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,13 +16,21 @@ import {
   deleteSchedule,
 } from "../lib/scheduleUtils";
 import ScheduleCard from "../components/schedules/ScheduleCard";
+import ScheduleScreenHeader from "../components/schedules/ScheduleScreenHeader";
 import ScheduleWorkoutModal from "../components/scheduleworkoutmodal";
-import Header from "../components/header";
+import AppText from "../components/ui/AppText";
+import StickyBottomPrimaryButton, {
+  STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,
+} from "../components/ui/StickyBottomPrimaryButton";
 
 export default function SchedulePage() {
   const { user } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const accentIconColor = isDark ? "#ff6fa1" : "#ff4b8c";
+
   const [schedules, setSchedules] = useState<ScheduledWorkout[]>([]);
   const [loading, setLoading] = useState(true);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -87,97 +94,87 @@ export default function SchedulePage() {
     setEditingSchedule(null);
   };
 
+  const openNewScheduleModal = () => {
+    setEditingSchedule(null);
+    setIsScheduleModalOpen(true);
+  };
+
   const activeSchedules = schedules.filter((s) => s.schedule.is_active);
   const inactiveSchedules = schedules.filter((s) => !s.schedule.is_active);
 
+  const overviewBlock = (
+    <View className="mb-6">
+      <AppText variant="header" className="mt-2 normal-case">
+        Overview
+      </AppText>
+      <AppText variant="caption" tone="muted" className="normal-case">
+        Manage Schedules
+      </AppText>
+    </View>
+  );
+
+  const scrollContentPadding = {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: STICKY_BOTTOM_PRIMARY_SCROLL_PADDING + insets.bottom,
+  } as const;
+
   return (
-    <View className="flex-1 bg-white dark:bg-zinc-900">
-      <View
-        className="bg-gray-50 dark:bg-zinc-800 px-4 border-b border-gray-200 dark:border-zinc-700"
-        style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
-      >
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center flex-1">
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="mr-3 p-2 -ml-2"
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons name="arrow-back" size={24} color="#ff4b8c" />
-            </TouchableOpacity>
-            <View className="flex-1">
-              <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
-                Manage Schedules
-              </Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            onPress={() => setIsScheduleModalOpen(true)}
-            className="p-2"
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="add-circle-outline" size={28} color="#ff4b8c" />
-          </TouchableOpacity>
-        </View>
-      </View>
+    <View className="flex-1 bg-background dark:bg-background-dark">
+      <ScheduleScreenHeader onBack={() => router.back()} title="Schedules" />
 
       {loading ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#ff4b8c" />
-          <Text className="text-gray-500 dark:text-gray-400 mt-2">
+        <View className="flex-1 justify-center items-center px-4">
+          <ActivityIndicator size="large" color={accentIconColor} />
+          <AppText
+            variant="body"
+            tone="muted"
+            className="mt-3 text-center normal-case"
+          >
             Loading schedules...
-          </Text>
+          </AppText>
         </View>
       ) : schedules.length === 0 ? (
         <ScrollView
           className="flex-1"
           contentContainerStyle={{
             flexGrow: 1,
-            justifyContent: "center",
-            padding: 16,
+            ...scrollContentPadding,
           }}
+          showsVerticalScrollIndicator={false}
         >
-          <View className="items-center py-8">
-            <Ionicons name="calendar-outline" size={64} color="#9ca3af" />
-            <Text className="text-xl font-semibold text-zinc-900 dark:text-white mt-4 text-center">
-              No Schedules Yet
-            </Text>
-            <Text className="text-sm text-gray-500 dark:text-gray-400 text-center mt-2 mb-6">
-              Create your first workout schedule to start planning your workouts
-              ahead of time.
-            </Text>
-            <TouchableOpacity
-              onPress={() => setIsScheduleModalOpen(true)}
-              className="px-6 py-3 bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-xl flex-row items-center gap-2"
-              style={{
-                shadowColor: "#ff4b8c",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 8,
-              }}
+          {overviewBlock}
+          <View className="flex-1 items-center justify-center py-8">
+            <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-surfaceAlt dark:bg-surfaceAlt-dark">
+              <Ionicons name="calendar-outline" size={40} color="#9ca3af" />
+            </View>
+            <AppText variant="subheader" className="mb-2 text-center">
+              No schedules yet
+            </AppText>
+            <AppText
+              variant="caption"
+              tone="muted"
+              className="max-w-xs text-center normal-case"
             >
-              <Ionicons name="add" size={20} color="#ffffff" />
-              <Text className="text-white font-semibold text-base">
-                Schedule Your First Workout
-              </Text>
-            </TouchableOpacity>
+              Create your first workout schedule to start planning your workouts
+              ahead of time. Use the button below to add one.
+            </AppText>
           </View>
         </ScrollView>
       ) : (
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{
-            padding: 16,
-            paddingBottom: insets.bottom + 16,
-          }}
+          contentContainerStyle={scrollContentPadding}
+          showsVerticalScrollIndicator={false}
         >
+          {overviewBlock}
+
           {activeSchedules.length > 0 && (
             <View className="mb-6">
-              <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">
-                Active Schedules ({activeSchedules.length})
-              </Text>
-              <View className="gap-3">
+              <AppText variant="caption" tone="muted" className="mb-4">
+                Active schedules ({activeSchedules.length})
+              </AppText>
+              <View className="gap-4">
                 {activeSchedules.map((scheduledWorkout) => (
                   <ScheduleCard
                     key={scheduledWorkout.schedule.id}
@@ -190,12 +187,16 @@ export default function SchedulePage() {
             </View>
           )}
 
+          {activeSchedules.length > 0 && inactiveSchedules.length > 0 ? (
+            <View className="h-px bg-border dark:bg-border-dark my-6" />
+          ) : null}
+
           {inactiveSchedules.length > 0 && (
             <View className="mb-6">
-              <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">
-                Inactive Schedules ({inactiveSchedules.length})
-              </Text>
-              <View className="gap-3">
+              <AppText variant="caption" tone="muted" className="mb-4">
+                Inactive schedules ({inactiveSchedules.length})
+              </AppText>
+              <View className="gap-4">
                 {inactiveSchedules.map((scheduledWorkout) => (
                   <ScheduleCard
                     key={scheduledWorkout.schedule.id}
@@ -210,7 +211,14 @@ export default function SchedulePage() {
         </ScrollView>
       )}
 
-      {/* Schedule Workout Modal */}
+      <StickyBottomPrimaryButton
+        label="Add schedule"
+        onPress={openNewScheduleModal}
+        accessibilityLabel="Add schedule"
+        visible={!loading && !isScheduleModalOpen}
+        iconName="add"
+      />
+
       <ScheduleWorkoutModal
         isOpen={isScheduleModalOpen}
         onClose={handleCloseModal}

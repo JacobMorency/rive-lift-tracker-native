@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import { RecurrenceType } from "../../lib/scheduleUtils";
+import AppText from "../ui/AppText";
 
 type RecurrenceOptionsProps = {
   recurrenceType: RecurrenceType;
@@ -12,39 +13,41 @@ type RecurrenceOptionsProps = {
 
 export default function RecurrenceOptions({
   recurrenceType,
-  selectedDays,
+  selectedDays: _selectedDays,
   selectedDates,
-  onDayToggle,
+  onDayToggle: _onDayToggle,
   onDateToggle,
 }: RecurrenceOptionsProps) {
   if (recurrenceType === "monthly_date") {
     return (
-      <View className="mb-4">
-        <Text className="text-zinc-900 dark:text-white font-medium mb-2">
-          Dates of Month
-        </Text>
+      <View className="mb-6">
+        <AppText variant="caption" tone="muted" className="mb-3 normal-case">
+          Dates of month
+        </AppText>
         <View className="flex-row flex-wrap gap-2">
-          {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => (
-            <TouchableOpacity
-              key={date}
-              className={`w-10 h-10 rounded-lg border items-center justify-center ${
-                selectedDates.includes(date)
-                  ? "bg-[#ff4b8c] dark:bg-[#ff6fa1] border-[#ff4b8c] dark:border-[#ff6fa1]"
-                  : "bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700"
-              }`}
-              onPress={() => onDateToggle(date)}
-            >
-              <Text
-                className={`text-sm font-medium ${
-                  selectedDates.includes(date)
-                    ? "text-white"
-                    : "text-zinc-900 dark:text-white"
+          {Array.from({ length: 31 }, (_, i) => i + 1).map((date) => {
+            const selected = selectedDates.includes(date);
+            return (
+              <TouchableOpacity
+                key={date}
+                className={`h-10 w-10 items-center justify-center rounded-ds-control border ${
+                  selected
+                    ? "border-primary/40 bg-primary dark:border-primary-dark/50 dark:bg-primary-dark"
+                    : "border-border bg-surfaceAlt dark:border-border-dark dark:bg-surfaceAlt-dark"
                 }`}
+                onPress={() => onDateToggle(date)}
+                activeOpacity={0.85}
               >
-                {date}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <AppText
+                  variant="body"
+                  tone={selected ? "inverse" : "default"}
+                  className="text-sm font-semibold"
+                >
+                  {date}
+                </AppText>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
     );
@@ -52,4 +55,3 @@ export default function RecurrenceOptions({
 
   return null;
 }
-

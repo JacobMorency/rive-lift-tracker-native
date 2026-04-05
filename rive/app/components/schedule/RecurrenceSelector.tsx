@@ -1,11 +1,12 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { RecurrenceType } from "../../lib/scheduleUtils";
 import {
   getRecurrenceOptions,
   getRecurrenceDisplayText,
 } from "./types";
+import AppText from "../ui/AppText";
 
 type RecurrenceSelectorProps = {
   recurrenceType: RecurrenceType;
@@ -23,48 +24,50 @@ export default function RecurrenceSelector({
   onSelectRecurrence,
 }: RecurrenceSelectorProps) {
   return (
-    <View className="mb-4">
-      <Text className="text-zinc-900 dark:text-white font-medium mb-2">Repeat</Text>
+    <View className="mb-6">
+      <AppText variant="caption" tone="muted" className="mb-2 normal-case">
+        Repeat
+      </AppText>
       <TouchableOpacity
-        className="bg-gray-50 dark:bg-zinc-800 rounded-lg p-3 flex-row items-center justify-between"
+        className="flex-row items-center justify-between rounded-ds-control border border-border bg-surfaceAlt px-4 py-3.5 dark:border-border-dark dark:bg-surfaceAlt-dark"
         onPress={onToggleDropdown}
+        activeOpacity={0.85}
       >
-        <Text className="text-zinc-900 dark:text-white">
+        <AppText variant="body" tone="default" className="flex-1 normal-case">
           {getRecurrenceDisplayText(recurrenceType, startDate)}
-        </Text>
+        </AppText>
         <Ionicons
           name={showDropdown ? "chevron-up" : "chevron-down"}
           size={20}
-          color="#6b7280"
+          color="#9ca3af"
         />
       </TouchableOpacity>
 
-      {showDropdown && (
-        <View className="mt-2 bg-white dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-zinc-700">
-          {getRecurrenceOptions(startDate).map((option) => (
-            <TouchableOpacity
-              key={option.type}
-              className={`p-3 border-b border-gray-200 dark:border-zinc-700 last:border-b-0 ${
-                recurrenceType === option.type
-                  ? "bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10"
-                  : "bg-transparent"
-              }`}
-              onPress={() => onSelectRecurrence(option.type)}
-            >
-              <Text
-                className={`font-medium ${
-                  recurrenceType === option.type
-                    ? "text-[#ff4b8c] dark:text-[#ff6fa1]"
-                    : "text-zinc-900 dark:text-white"
+      {showDropdown ? (
+        <View className="mt-2 overflow-hidden rounded-ds-card border border-border bg-surface dark:border-border-dark dark:bg-surface-dark">
+          {getRecurrenceOptions(startDate).map((option) => {
+            const active = recurrenceType === option.type;
+            return (
+              <TouchableOpacity
+                key={option.type}
+                className={`border-b border-border px-4 py-3.5 dark:border-border-dark last:border-b-0 ${
+                  active ? "bg-primary/8 dark:bg-primary-dark/12" : ""
                 }`}
+                onPress={() => onSelectRecurrence(option.type)}
+                activeOpacity={0.85}
               >
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <AppText
+                  variant="body"
+                  tone={active ? "primary" : "default"}
+                  className="font-medium normal-case"
+                >
+                  {option.label}
+                </AppText>
+              </TouchableOpacity>
+            );
+          })}
         </View>
-      )}
+      ) : null}
     </View>
   );
 }
-

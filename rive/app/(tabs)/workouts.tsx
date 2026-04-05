@@ -150,7 +150,7 @@ export default function DashboardPage() {
 
   return (
     <View className="flex-1 bg-background dark:bg-background-dark">
-      <Header title="RIVE" />
+      <Header />
 
       <ScrollView
         className="flex-1 px-4"

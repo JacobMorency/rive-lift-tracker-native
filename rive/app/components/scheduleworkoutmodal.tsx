@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   Modal,
   ScrollView,
   Alert,
+  useColorScheme,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/authcontext";
 import { supabase } from "../lib/supabaseClient";
 import {
@@ -22,6 +23,10 @@ import DateSelection from "./schedule/DateSelection";
 import RecurrenceSelector from "./schedule/RecurrenceSelector";
 import RecurrenceOptions from "./schedule/RecurrenceOptions";
 import { WorkoutTemplate } from "./schedule/types";
+import AppText from "./ui/AppText";
+import StickyBottomPrimaryButton, {
+  STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,
+} from "./ui/StickyBottomPrimaryButton";
 
 type ScheduleWorkoutModalProps = {
   isOpen: boolean;
@@ -40,9 +45,11 @@ export default function ScheduleWorkoutModal({
 }: ScheduleWorkoutModalProps) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   const [workoutTemplates, setWorkoutTemplates] = useState<WorkoutTemplate[]>(
-    []
+    [],
   );
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string>("");
   const [startDate, setStartDate] = useState<string>(() => {
@@ -65,60 +72,7 @@ export default function ScheduleWorkoutModal({
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
-  useEffect(() => {
-    if (isOpen && user) {
-      fetchWorkoutTemplates();
-    }
-  }, [isOpen, user]);
-
-  // Populate form when editing
-  useEffect(() => {
-    if (isOpen && editingSchedule) {
-      const { schedule } = editingSchedule;
-      setSelectedWorkoutId(schedule.workout_id);
-      setStartDate(schedule.start_date);
-      setEndDate(schedule.end_date || "");
-      setRecurrenceType(schedule.recurrence_type);
-      setSelectedDays(
-        schedule.recurrence_type === "weekly" ? schedule.recurrence_days : []
-      );
-      setSelectedDates(
-        schedule.recurrence_type === "monthly_date" ? schedule.recurrence_days : []
-      );
-    } else if (isOpen && !editingSchedule) {
-      // Reset form when creating new schedule
-      resetForm();
-    }
-  }, [isOpen, editingSchedule]);
-
-  // Cleanup date pickers when modal is closed - do this synchronously
-  useEffect(() => {
-    if (!isOpen) {
-      // Close pickers immediately to prevent lifecycle issues
-      setShowStartDatePicker(false);
-      setShowEndDatePicker(false);
-    }
-  }, [isOpen]);
-
-  // Update startDate when selectedDate prop changes
-  useEffect(() => {
-    if (selectedDate) {
-      setStartDate(selectedDate);
-    }
-  }, [selectedDate]);
-
-  // Update selected day when start date changes for weekly recurrence
-  useEffect(() => {
-    if (recurrenceType === "weekly" && startDate) {
-      // Parse the date string as local time to avoid timezone issues
-      const [year, month, day] = startDate.split("-").map(Number);
-      const dateObj = new Date(year, month - 1, day);
-      const dayOfWeek = dateObj.getDay();
-      setSelectedDays([dayOfWeek]);
-    }
-  }, [startDate, recurrenceType]);
-
-  const fetchWorkoutTemplates = async () => {
+  const fetchWorkoutTemplates = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -137,45 +91,88 @@ export default function ScheduleWorkoutModal({
     } catch (error) {
       console.error("Error fetching workout templates:", error);
     }
-  };
+  }, [user]);
 
-  const handleStartDateChange = (event: any, selectedDate?: Date) => {
-    // Hide picker immediately to prevent lifecycle issues
+  useEffect(() => {
+    if (isOpen && user) {
+      fetchWorkoutTemplates();
+    }
+  }, [isOpen, user, fetchWorkoutTemplates]);
+
+  // Populate form when editing
+  useEffect(() => {
+    if (isOpen && editingSchedule) {
+      const { schedule } = editingSchedule;
+      setSelectedWorkoutId(schedule.workout_id);
+      setStartDate(schedule.start_date);
+      setEndDate(schedule.end_date || "");
+      setRecurrenceType(schedule.recurrence_type);
+      setSelectedDays(
+        schedule.recurrence_type === "weekly" ? schedule.recurrence_days : [],
+      );
+      setSelectedDates(
+        schedule.recurrence_type === "monthly_date"
+          ? schedule.recurrence_days
+          : [],
+      );
+    } else if (isOpen && !editingSchedule) {
+      resetForm();
+    }
+    // resetForm is intentionally omitted: only reset when opening create flow
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, editingSchedule]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setShowStartDatePicker(false);
+      setShowEndDatePicker(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      setStartDate(selectedDate);
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (recurrenceType === "weekly" && startDate) {
+      const [year, month, day] = startDate.split("-").map(Number);
+      const dateObj = new Date(year, month - 1, day);
+      const dayOfWeek = dateObj.getDay();
+      setSelectedDays([dayOfWeek]);
+    }
+  }, [startDate, recurrenceType]);
+
+  const handleStartDateChange = (event: any, selectedPickerDate?: Date) => {
     setShowStartDatePicker(false);
 
-    // Only update if user actually selected a date (not dismissed)
-    if (event.type === "set" && selectedDate) {
-      // Format date in local timezone to match calendar format
-      const year = selectedDate.getFullYear();
-      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
-      const day = String(selectedDate.getDate()).padStart(2, "0");
+    if (event.type === "set" && selectedPickerDate) {
+      const year = selectedPickerDate.getFullYear();
+      const month = String(selectedPickerDate.getMonth() + 1).padStart(2, "0");
+      const day = String(selectedPickerDate.getDate()).padStart(2, "0");
       const dateString = `${year}-${month}-${day}`;
       setStartDate(dateString);
 
-      // Update weekly recurrence day if it's set to weekly
       if (recurrenceType === "weekly") {
-        const dayOfWeek = selectedDate.getDay();
+        const dayOfWeek = selectedPickerDate.getDay();
         setSelectedDays([dayOfWeek]);
       }
 
-      // Update monthly date if it's set to monthly_date
       if (recurrenceType === "monthly_date") {
-        const dateOfMonth = selectedDate.getDate();
+        const dateOfMonth = selectedPickerDate.getDate();
         setSelectedDates([dateOfMonth]);
       }
     }
   };
 
-  const handleEndDateChange = (event: any, selectedDate?: Date) => {
-    // Hide picker immediately to prevent lifecycle issues
+  const handleEndDateChange = (event: any, selectedPickerDate?: Date) => {
     setShowEndDatePicker(false);
 
-    // Only update if user actually selected a date (not dismissed)
-    if (event.type === "set" && selectedDate) {
-      // Format date in local timezone to match calendar format
-      const year = selectedDate.getFullYear();
-      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
-      const day = String(selectedDate.getDate()).padStart(2, "0");
+    if (event.type === "set" && selectedPickerDate) {
+      const year = selectedPickerDate.getFullYear();
+      const month = String(selectedPickerDate.getMonth() + 1).padStart(2, "0");
+      const day = String(selectedPickerDate.getDate()).padStart(2, "0");
       const dateString = `${year}-${month}-${day}`;
       setEndDate(dateString);
     }
@@ -184,13 +181,10 @@ export default function ScheduleWorkoutModal({
   const handleRecurrenceTypeChange = (type: RecurrenceType) => {
     setRecurrenceType(type);
     setShowRecurrenceDropdown(false);
-    // Reset selections when changing type
     setSelectedDays([]);
     setSelectedDates([]);
 
-    // For weekly, automatically set the day based on start date
     if (type === "weekly" && startDate) {
-      // Parse the date string as local time to avoid timezone issues
       const [year, month, day] = startDate.split("-").map(Number);
       const dateObj = new Date(year, month - 1, day);
       const dayOfWeek = dateObj.getDay();
@@ -200,13 +194,13 @@ export default function ScheduleWorkoutModal({
 
   const handleDayToggle = (day: number) => {
     setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
     );
   };
 
   const handleDateToggle = (date: number) => {
     setSelectedDates((prev) =>
-      prev.includes(date) ? prev.filter((d) => d !== date) : [...prev, date]
+      prev.includes(date) ? prev.filter((d) => d !== date) : [...prev, date],
     );
   };
 
@@ -224,7 +218,7 @@ export default function ScheduleWorkoutModal({
     if (recurrenceType === "weekly" && selectedDays.length === 0) {
       Alert.alert(
         "Error",
-        "Please select a start date to determine the day of the week"
+        "Please select a start date to determine the day of the week",
       );
       return false;
     }
@@ -243,17 +237,15 @@ export default function ScheduleWorkoutModal({
     setLoading(true);
 
     try {
-      // If no end date is specified for recurring schedules, default to end of current year
       let finalEndDate = endDate;
       if (!finalEndDate && recurrenceType !== "once") {
         const currentYear = new Date().getFullYear();
         finalEndDate = `${currentYear}-12-31`;
       }
 
-      const scheduleData: Partial<Omit<
-        WorkoutSchedule,
-        "id" | "created_at" | "updated_at"
-      >> = {
+      const scheduleData: Partial<
+        Omit<WorkoutSchedule, "id" | "created_at" | "updated_at">
+      > = {
         workout_id: selectedWorkoutId,
         recurrence_type: recurrenceType,
         recurrence_days:
@@ -265,7 +257,6 @@ export default function ScheduleWorkoutModal({
 
       let result;
       if (editingSchedule) {
-        // Update existing schedule
         result = await updateSchedule(editingSchedule.schedule.id, scheduleData);
         if (result) {
           Alert.alert("Success", "Schedule updated successfully!");
@@ -276,25 +267,30 @@ export default function ScheduleWorkoutModal({
           Alert.alert("Error", "Failed to update schedule");
         }
       } else {
-        // Create new schedule
         const newScheduleData = {
           ...scheduleData,
           user_id: user.id,
         } as Omit<WorkoutSchedule, "id" | "created_at" | "updated_at">;
-        
+
         result = await createSchedule(newScheduleData);
-      if (result) {
-        Alert.alert("Success", "Workout scheduled successfully!");
-        onScheduleCreated?.();
-        onClose();
-        resetForm();
-      } else {
-        Alert.alert("Error", "Failed to create schedule");
+        if (result) {
+          Alert.alert("Success", "Workout scheduled successfully!");
+          onScheduleCreated?.();
+          onClose();
+          resetForm();
+        } else {
+          Alert.alert("Error", "Failed to create schedule");
         }
       }
     } catch (error) {
-      console.error(`Error ${editingSchedule ? "updating" : "creating"} schedule:`, error);
-      Alert.alert("Error", `Failed to ${editingSchedule ? "update" : "create"} schedule`);
+      console.error(
+        `Error ${editingSchedule ? "updating" : "creating"} schedule:`,
+        error,
+      );
+      Alert.alert(
+        "Error",
+        `Failed to ${editingSchedule ? "update" : "create"} schedule`,
+      );
     } finally {
       setLoading(false);
     }
@@ -302,7 +298,6 @@ export default function ScheduleWorkoutModal({
 
   const resetForm = () => {
     setSelectedWorkoutId("");
-    // Use selectedDate if provided, otherwise use today's date in local timezone
     if (selectedDate) {
       setStartDate(selectedDate);
     } else {
@@ -326,24 +321,58 @@ export default function ScheduleWorkoutModal({
     onClose();
   };
 
+  const stickyLabel = editingSchedule ? "Save schedule" : "Schedule workout";
+  const stickyA11y = editingSchedule
+    ? "Save schedule changes"
+    : "Schedule workout";
 
   return (
-    <Modal visible={isOpen} animationType="slide" presentationStyle="pageSheet">
-      <View className="flex-1 bg-white dark:bg-zinc-900" style={{ paddingTop: insets.top }}>
-        {/* Header */}
-        <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-700">
-          <TouchableOpacity onPress={handleClose}>
-            <Text className="text-[#ff4b8c] dark:text-[#ff6fa1] font-medium">Cancel</Text>
-          </TouchableOpacity>
-          <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
-            {editingSchedule ? "Edit Schedule" : "Schedule Workout"}
-          </Text>
-          <TouchableOpacity onPress={handleSave} disabled={loading}>
-            <Text className="text-[#ff4b8c] dark:text-[#ff6fa1] font-medium">Save</Text>
-          </TouchableOpacity>
+    <Modal
+      visible={isOpen}
+      animationType="slide"
+      presentationStyle="fullScreen"
+    >
+      <View className="flex-1 bg-background dark:bg-background-dark">
+        <View
+          className="border-b border-border bg-chrome px-4 dark:border-border-dark dark:bg-chrome-dark"
+          style={{ paddingTop: insets.top, paddingBottom: 8 }}
+        >
+          <View className="flex-row items-center justify-between gap-2">
+            <View className="min-w-0 flex-1 flex-row items-center gap-3">
+              <TouchableOpacity
+                onPress={handleClose}
+                accessibilityLabel="Close"
+                className="h-10 w-10 items-center justify-center rounded-full active:opacity-80"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name="close"
+                  size={24}
+                  color={isDark ? "#f5f5f5" : "#111113"}
+                />
+              </TouchableOpacity>
+              <AppText
+                variant="subheader"
+                tone="default"
+                className="flex-1 font-bold tracking-tight"
+                numberOfLines={1}
+              >
+                {editingSchedule ? "Edit Schedule" : "Schedule Workout"}
+              </AppText>
+            </View>
+            <View className="h-10 w-10 shrink-0" />
+          </View>
         </View>
 
-        <ScrollView className="flex-1 p-4">
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingTop: 16,
+            paddingBottom: STICKY_BOTTOM_PRIMARY_SCROLL_PADDING + insets.bottom,
+          }}
+          showsVerticalScrollIndicator={false}
+        >
           <WorkoutSelector
             templates={workoutTemplates}
             selectedWorkoutId={selectedWorkoutId}
@@ -380,6 +409,14 @@ export default function ScheduleWorkoutModal({
             onDateToggle={handleDateToggle}
           />
         </ScrollView>
+
+        <StickyBottomPrimaryButton
+          label={stickyLabel}
+          onPress={handleSave}
+          disabled={loading}
+          accessibilityLabel={stickyA11y}
+          visible={isOpen}
+        />
       </View>
     </Modal>
   );

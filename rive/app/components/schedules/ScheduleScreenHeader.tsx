@@ -4,16 +4,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import AppText from "../ui/AppText";
 
-type WorkoutHeaderProps = {
-  onDeleteWorkout: () => void;
-  onClose: () => void;
+type ScheduleScreenHeaderProps = {
+  onBack: () => void;
+  title?: string;
 };
 
-/** Matches [`SessionDetailTopBar`](session/SessionDetailTopBar.tsx) layout and styling. */
-export default function WorkoutHeader({
-  onDeleteWorkout,
-  onClose,
-}: WorkoutHeaderProps) {
+/** Stack chrome for the schedule screen; layout aligned with [`WorkoutHeader`](../workout/WorkoutHeader.tsx). */
+export default function ScheduleScreenHeader({
+  onBack,
+  title = "Schedules",
+}: ScheduleScreenHeaderProps) {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -26,7 +26,7 @@ export default function WorkoutHeader({
       <View className="flex-row items-center justify-between gap-2">
         <View className="min-w-0 flex-1 flex-row items-center gap-3">
           <TouchableOpacity
-            onPress={onClose}
+            onPress={onBack}
             accessibilityLabel="Go back"
             className="h-10 w-10 items-center justify-center rounded-full active:opacity-80"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -43,25 +43,11 @@ export default function WorkoutHeader({
             className="flex-1 font-bold tracking-tight"
             numberOfLines={1}
           >
-            Workout Template
+            {title}
           </AppText>
         </View>
 
-        <TouchableOpacity
-          onPress={onDeleteWorkout}
-          accessibilityLabel="Delete workout"
-          className="shrink-0 py-2 pl-2 active:opacity-80"
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <AppText
-            variant="body"
-            tone="default"
-            className="max-w-[140px] text-sm font-semibold normal-case text-red-500 dark:text-red-400"
-            numberOfLines={2}
-          >
-            Delete
-          </AppText>
-        </TouchableOpacity>
+        <View className="h-10 w-10 shrink-0" />
       </View>
     </View>
   );
