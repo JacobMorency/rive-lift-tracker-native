@@ -11,9 +11,6 @@ import {
   ScrollView,
   Alert,
   useColorScheme,
-  Platform,
-  ActionSheetIOS,
-  findNodeHandle,
   type LayoutChangeEvent,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,7 +18,6 @@ import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ExerciseSet as StatsExerciseSet } from "../lib/statsUtils";
 import { ExerciseSet } from "./exercisetracker/types";
-import ComparisonBento from "./exercisetracker/ComparisonBento";
 import SetInputForm from "./exercisetracker/SetInputForm";
 import CompletedSetsList from "./exercisetracker/CompletedSetsList";
 import ExerciseNotes from "./exercisetracker/ExerciseNotes";
@@ -92,8 +88,6 @@ const ExerciseTracker = ({
   const [showAllSets, setShowAllSets] = useState<boolean>(false);
   const [editingSetIndex, setEditingSetIndex] = useState<number | null>(null);
   const [editingSet, setEditingSet] = useState<ExerciseSet | null>(null);
-  const [showPartials, setShowPartials] = useState<boolean>(false);
-
   const [padContext, setPadContext] = useState<PadContext>({ type: "active" });
   const [padOpen, setPadOpen] = useState(false);
   const [padField, setPadField] = useState<PadField>("weight");
@@ -101,19 +95,15 @@ const ExerciseTracker = ({
 
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollContentRef = useRef<View>(null);
-  const editSectionRef = useRef<View>(null);
   const [activeSetSectionLayout, setActiveSetSectionLayout] = useState({
     y: 0,
     height: 0,
   });
 
-  const handleActiveSetSectionLayout = useCallback(
-    (e: LayoutChangeEvent) => {
-      const { y, height } = e.nativeEvent.layout;
-      setActiveSetSectionLayout({ y, height });
-    },
-    [],
-  );
+  const handleActiveSetSectionLayout = useCallback((e: LayoutChangeEvent) => {
+    const { y, height } = e.nativeEvent.layout;
+    setActiveSetSectionLayout({ y, height });
+  }, []);
 
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
@@ -157,48 +147,19 @@ const ExerciseTracker = ({
 
   useLayoutEffect(() => {
     if (!padOpen) return;
-
-    const scrollToY = (y: number) => {
-      scrollViewRef.current?.scrollTo({
-        y: Math.max(0, y - SCROLL_SECTION_TOP_INSET),
-        animated: true,
-      });
-    };
-
-    if (padContext.type === "active") {
-      scrollToY(activeSetSectionLayout.y);
-      return;
-    }
-
-    if (padContext.type === "edit") {
-      const editView = editSectionRef.current;
-      const contentView = scrollContentRef.current;
-      if (!editView || !contentView) return;
-
-      const contentNode = findNodeHandle(contentView);
-      if (contentNode == null) return;
-
-      editView.measureLayout(
-        contentNode,
-        (_x, top) => {
-          scrollToY(top);
-        },
-        () => {},
-      );
-    }
-  }, [
-    padOpen,
-    padContext.type,
-    activeSetSectionLayout.y,
-    padField,
-    editingSetIndex,
-  ]);
+    scrollViewRef.current?.scrollTo({
+      y: Math.max(0, activeSetSectionLayout.y - SCROLL_SECTION_TOP_INSET),
+      animated: true,
+    });
+  }, [padOpen, activeSetSectionLayout.y, padField, editingSetIndex]);
 
   const handlePadDone = useCallback(() => {
     if (padContext.type === "active") {
       setCurrentSet((s) => applyBufferToSet(s, padField, padBuffer));
     } else if (editingSet) {
-      setEditingSet((es) => (es ? applyBufferToSet(es, padField, padBuffer) : null));
+      setEditingSet((es) =>
+        es ? applyBufferToSet(es, padField, padBuffer) : null,
+      );
     }
     setPadOpen(false);
   }, [padContext.type, padField, padBuffer, editingSet]);
@@ -258,12 +219,13 @@ const ExerciseTracker = ({
     }
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const newSet = { ...merged };
+    const newSet: ExerciseSet = { ...merged, partialReps: null };
     setSets((prev) => [...prev, newSet]);
 
+    const nextNum = merged.set_number + 1;
     const copiedSet: ExerciseSet = {
       ...newSet,
-      set_number: merged.set_number + 1,
+      set_number: nextNum,
       partialReps: null,
     };
 
@@ -282,32 +244,13 @@ const ExerciseTracker = ({
     onComplete(sets);
   };
 
-  const handleCopyLastSet = () => {
-    if (sets.length === 0) return;
-    const lastSet = sets[sets.length - 1];
-    const next: ExerciseSet = {
-      reps: lastSet.reps,
-      weight: lastSet.weight,
-      partialReps: lastSet.partialReps,
-      set_number: sets.length + 1,
-      is_unilateral: lastSet.is_unilateral,
-      left_reps: lastSet.left_reps,
-      right_reps: lastSet.right_reps,
-    };
-    setCurrentSet(next);
-    setPadContext({ type: "active" });
-    setPadOpen(false);
-    setPadField("weight");
-    setPadBuffer(valueToBuffer("weight", next));
-  };
-
   const startEditingSet = (set: ExerciseSet, originalIndex: number) => {
     if (padContext.type === "active" && padOpen) {
       setCurrentSet((s) => applyBufferToSet(s, padField, padBuffer));
     }
     setPadOpen(false);
     setEditingSetIndex(originalIndex);
-    setEditingSet({ ...set });
+    setEditingSet({ ...set, partialReps: null });
     setPadContext({ type: "edit", index: originalIndex });
     setPadField("weight");
     setPadBuffer(valueToBuffer("weight", set));
@@ -332,7 +275,7 @@ const ExerciseTracker = ({
     }
 
     const newSets = [...sets];
-    newSets[editingSetIndex] = { ...merged };
+    newSets[editingSetIndex] = { ...merged, partialReps: null };
     setSets(newSets);
     setEditingSetIndex(null);
     setEditingSet(null);
@@ -369,50 +312,11 @@ const ExerciseTracker = ({
   const categoryLabel =
     exercise.category || exercise.primaryMuscleGroup || "Exercise";
 
-  const openMoreMenu = () => {
-    const opts = ["Cancel"];
-    const handlers: (() => void)[] = [() => {}];
-    if (sets.length > 0) {
-      opts.push("Copy last set");
-      handlers.push(() => handleCopyLastSet());
-    }
-    opts.push(showPartials ? "Hide partials" : "Show partials");
-    handlers.push(() => setShowPartials(!showPartials));
+  const isEditingCompleted =
+    editingSetIndex !== null && editingSet !== null;
 
-    if (Platform.OS === "ios") {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: opts,
-          cancelButtonIndex: 0,
-        },
-        (buttonIndex) => {
-          handlers[buttonIndex]?.();
-        },
-      );
-    } else {
-      const buttons: {
-        text: string;
-        onPress?: () => void;
-        style?: "cancel";
-      }[] = [];
-      if (sets.length > 0) {
-        buttons.push({ text: "Copy last set", onPress: () => handleCopyLastSet() });
-      }
-      buttons.push({
-        text: showPartials ? "Hide partials" : "Show partials",
-        onPress: () => setShowPartials(!showPartials),
-      });
-      buttons.push({ text: "Cancel", style: "cancel" });
-      Alert.alert("More", undefined, buttons);
-    }
-  };
-
-  const padActive = padContext.type === "active";
-
-  const upcomingGhostLabel =
-    lastSessionSets.length > sets.length
-      ? lastSessionLineForSet(lastSessionSets, sets.length + 1)
-      : null;
+  const padActive =
+    padContext.type === "active" || padContext.type === "edit";
 
   return (
     <View className="flex-1 bg-background dark:bg-background-dark">
@@ -428,17 +332,18 @@ const ExerciseTracker = ({
           >
             <Ionicons name="close" size={26} color={primaryIcon} />
           </TouchableOpacity>
-          <AppText variant="subheader" tone="default" className="font-bold">
-            Exercise
-          </AppText>
-          <View className="flex-row items-center gap-1">
-            <TouchableOpacity
-              onPress={openMoreMenu}
-              className="w-10 h-10 items-center justify-center"
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          <View className="flex-1 min-w-0 px-2 items-center justify-center">
+            <AppText
+              variant="subheader"
+              tone="default"
+              className="font-bold text-center"
+              numberOfLines={1}
+              ellipsizeMode="tail"
             >
-              <Ionicons name="ellipsis-vertical" size={22} color={primaryIcon} />
-            </TouchableOpacity>
+              {title}
+            </AppText>
+          </View>
+          <View className="flex-row items-center gap-1">
             <TouchableOpacity
               className={`w-10 h-10 items-center justify-center rounded-full ${
                 sets.length === 0
@@ -471,17 +376,20 @@ const ExerciseTracker = ({
         keyboardShouldPersistTaps="handled"
       >
         <View ref={scrollContentRef} collapsable={false}>
-          <AppText variant="caption" tone="primary" className="normal-case mb-1 font-bold tracking-wide">
+          <AppText
+            variant="caption"
+            tone="primary"
+            className="normal-case mb-1 font-bold tracking-wide"
+          >
             {categoryLabel}
           </AppText>
-          <AppText variant="header" tone="default" className="font-bold mb-4 normal-case">
+          <AppText
+            variant="header"
+            tone="default"
+            className="font-bold mb-4 normal-case"
+          >
             {title}
           </AppText>
-
-          <ComparisonBento
-            lastSessionSets={lastSessionSets}
-            completedSets={sets}
-          />
 
           <ExerciseNotes
             notes={exercise.notes}
@@ -491,67 +399,52 @@ const ExerciseTracker = ({
           />
 
           <View onLayout={handleActiveSetSectionLayout} collapsable={false}>
-            <SetInputForm
-              currentSet={currentSet}
-              setCurrentSet={setCurrentSet}
-              lastSessionLabel={lastSessionLineForSet(
-                lastSessionSets,
-                currentSet.set_number || 1,
-              )}
-              showPartials={showPartials}
-              setShowPartials={setShowPartials}
-              onAddSet={handleAddSet}
-              hasSets={sets.length > 0}
-              padActive={padActive}
-              padOpen={padOpen}
-              activePadField={padField}
-              padBuffer={padBuffer}
-              onFocusPadField={onFocusPadField}
-            />
+            {isEditingCompleted && editingSet ? (
+              <SetInputForm
+                key="edit-set"
+                variant="edit"
+                currentSet={editingSet}
+                setCurrentSet={
+                  setEditingSet as React.Dispatch<
+                    React.SetStateAction<ExerciseSet>
+                  >
+                }
+                lastSessionLabel={null}
+                onSaveEdit={saveEditedSet}
+                onCancelEdit={cancelEditingSet}
+                padActive={padActive}
+                padOpen={padOpen}
+                activePadField={padField}
+                padBuffer={padBuffer}
+                onFocusPadField={onFocusPadField}
+              />
+            ) : (
+              <SetInputForm
+                key="log-set"
+                variant="log"
+                currentSet={currentSet}
+                setCurrentSet={setCurrentSet}
+                lastSessionLabel={lastSessionLineForSet(
+                  lastSessionSets,
+                  currentSet.set_number || 1,
+                )}
+                onAddSet={handleAddSet}
+                padActive={padActive}
+                padOpen={padOpen}
+                activePadField={padField}
+                padBuffer={padBuffer}
+                onFocusPadField={onFocusPadField}
+              />
+            )}
           </View>
-
-          {lastSessionSets.length > sets.length ? (
-            <View className="mb-4 rounded-[1.5rem] border border-border dark:border-border-dark bg-surfaceAlt/50 dark:bg-surfaceAlt-dark/40 p-5 opacity-50">
-              <AppText variant="subheader" tone="muted" className="font-bold mb-1">
-                Set {sets.length + 1}
-              </AppText>
-              {upcomingGhostLabel ? (
-                <AppText variant="caption" tone="muted" className="normal-case mb-3">
-                  {upcomingGhostLabel}
-                </AppText>
-              ) : null}
-              <View className="flex-row gap-3">
-                <View className="flex-1 h-12 rounded-xl bg-surface dark:bg-surface-dark items-center justify-center">
-                  <AppText variant="caption" tone="muted">
-                    — lbs
-                  </AppText>
-                </View>
-                <View className="flex-1 h-12 rounded-xl bg-surface dark:bg-surface-dark items-center justify-center">
-                  <AppText variant="caption" tone="muted">
-                    — reps
-                  </AppText>
-                </View>
-              </View>
-            </View>
-          ) : null}
 
           <CompletedSetsList
             sets={sets}
             showAllSets={showAllSets}
             setShowAllSets={setShowAllSets}
             editingSetIndex={editingSetIndex}
-            editingSet={editingSet}
-            setEditingSet={setEditingSet}
-            onSaveEdit={saveEditedSet}
-            onCancelEdit={cancelEditingSet}
             onStartEdit={startEditingSet}
             onRemoveSet={removeSet}
-            padContext={padContext}
-            padOpen={padOpen}
-            padField={padField}
-            padBuffer={padBuffer}
-            onFocusEditField={onFocusPadField}
-            editSectionRef={editSectionRef}
           />
         </View>
       </ScrollView>

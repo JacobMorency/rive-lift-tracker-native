@@ -1,30 +1,17 @@
-import React, { type RefObject } from "react";
+import React from "react";
 import { View, TouchableOpacity, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ExerciseSet } from "./types";
 import SetCard from "./SetCard";
 import AppText from "../ui/AppText";
-import type { PadField } from "./exercisePadUtils";
-
-type PadContext = { type: "active" } | { type: "edit"; index: number };
 
 type CompletedSetsListProps = {
   sets: ExerciseSet[];
   showAllSets: boolean;
   setShowAllSets: (value: boolean) => void;
   editingSetIndex: number | null;
-  editingSet: ExerciseSet | null;
-  setEditingSet: (set: ExerciseSet | null) => void;
-  onSaveEdit: () => void;
-  onCancelEdit: () => void;
   onStartEdit: (set: ExerciseSet, index: number) => void;
   onRemoveSet: (index: number) => void;
-  padContext: PadContext;
-  padOpen: boolean;
-  padField: PadField;
-  padBuffer: string;
-  onFocusEditField: (field: PadField) => void;
-  editSectionRef?: RefObject<View | null>;
 };
 
 export default function CompletedSetsList({
@@ -32,23 +19,12 @@ export default function CompletedSetsList({
   showAllSets,
   setShowAllSets,
   editingSetIndex,
-  editingSet,
-  setEditingSet,
-  onSaveEdit,
-  onCancelEdit,
   onStartEdit,
   onRemoveSet,
-  padContext,
-  padOpen,
-  padField,
-  padBuffer,
-  onFocusEditField,
-  editSectionRef,
 }: CompletedSetsListProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const chevronColor = isDark ? "#a1a1aa" : "#6b7280";
-  const primaryIcon = isDark ? "#ff6fa1" : "#ff4b8c";
 
   const getDisplaySets = () => {
     if (!sets || sets.length === 0) return [];
@@ -61,66 +37,53 @@ export default function CompletedSetsList({
 
   if (sets.length === 0) return null;
 
+  const n = sets.length;
+
   return (
-    <View className="bg-surfaceAlt dark:bg-surfaceAlt-dark rounded-ds-card border border-border dark:border-border-dark p-5 mb-4">
-      <View className="flex-row items-center justify-between mb-4 gap-2">
-        <View className="flex-row items-center gap-2 flex-1 min-w-0">
-          <Ionicons name="checkmark-circle" size={20} color={primaryIcon} />
-          <AppText variant="subheader" tone="default" className="font-bold">
-            Completed sets
-          </AppText>
-        </View>
+    <View className="mb-4">
+      <View className="flex-row items-center justify-between px-1 mb-3 gap-2">
+        <AppText
+          variant="caption"
+          tone="muted"
+          className="text-[10px] font-black uppercase tracking-widest flex-1 min-w-0"
+        >
+          Completed history
+        </AppText>
         <View className="flex-row items-center gap-2 shrink-0">
-          <View className="bg-primary/10 dark:bg-primary-dark/10 px-3 py-1 rounded-full border border-primary/25 dark:border-primary-dark/25">
-            <AppText variant="body" tone="primary" className="text-sm font-bold">
-              {sets.length}
-            </AppText>
-          </View>
+          <AppText variant="caption" tone="primary" className="text-[10px] font-bold uppercase">
+            {n} {n === 1 ? "set" : "sets"} done
+          </AppText>
           {sets.length > 3 && (
             <TouchableOpacity
               onPress={() => setShowAllSets(!showAllSets)}
-              className="bg-surface dark:bg-surface-dark border border-border dark:border-border-dark px-3 py-1 rounded-full"
+              className="flex-row items-center gap-0.5"
             >
-              <View className="flex-row items-center gap-1">
-                <AppText variant="body" tone="default" className="text-sm font-medium">
-                  {showAllSets ? "Show less" : "Show all"}
-                </AppText>
-                <Ionicons
-                  name={showAllSets ? "chevron-up" : "chevron-down"}
-                  size={14}
-                  color={chevronColor}
-                />
-              </View>
+              <AppText variant="caption" tone="default" className="text-[10px] font-semibold">
+                {showAllSets ? "Less" : "All"}
+              </AppText>
+              <Ionicons
+                name={showAllSets ? "chevron-up" : "chevron-down"}
+                size={12}
+                color={chevronColor}
+              />
             </TouchableOpacity>
           )}
         </View>
       </View>
-      <View className="gap-3">
+      <View className="gap-2">
         {getDisplaySets().map((set, index) => {
           if (!set) return null;
 
           const originalIndex = sets.findIndex((s) => s === set);
-          const isEditing = editingSetIndex === originalIndex;
-          const isPadTarget =
-            padContext.type === "edit" && padContext.index === originalIndex;
 
           return (
             <SetCard
-              key={index}
+              key={`${originalIndex}-${set.set_number}`}
               set={set}
-              isEditing={isEditing}
-              editingSet={editingSet}
-              setEditingSet={setEditingSet}
-              onSave={onSaveEdit}
-              onCancel={onCancelEdit}
+              originalIndex={originalIndex}
+              editingSetIndex={editingSetIndex}
               onEdit={() => onStartEdit(set, originalIndex)}
               onDelete={() => onRemoveSet(originalIndex)}
-              isPadTarget={isPadTarget}
-              padOpen={padOpen}
-              padField={padField}
-              padBuffer={padBuffer}
-              onFocusPadField={onFocusEditField}
-              editSectionRef={isEditing ? editSectionRef : undefined}
             />
           );
         })}

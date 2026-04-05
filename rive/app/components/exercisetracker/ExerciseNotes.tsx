@@ -94,7 +94,11 @@ export default function ExerciseNotes({
             ) : null}
           </View>
         </View>
-        <Ionicons name="chevron-forward" size={20} color={chevronColor} />
+        <Ionicons
+          name={expanded ? "chevron-down" : "chevron-forward"}
+          size={20}
+          color={chevronColor}
+        />
       </TouchableOpacity>
 
       {expanded ? (

@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  View,
-  TouchableOpacity,
-  TextInput,
-  useColorScheme,
-} from "react-native";
+import { View, TouchableOpacity, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ExerciseSet } from "./types";
 import AppText from "../ui/AppText";
@@ -15,10 +10,11 @@ export type SetInputFormProps = {
   currentSet: ExerciseSet;
   setCurrentSet: React.Dispatch<React.SetStateAction<ExerciseSet>>;
   lastSessionLabel: string | null;
-  showPartials: boolean;
-  setShowPartials: (v: boolean) => void;
-  onAddSet: () => void;
-  hasSets: boolean;
+  /** Default: log new/current set. `edit` uses main card for completed-set editing. */
+  variant?: "log" | "edit";
+  onAddSet?: () => void;
+  onSaveEdit?: () => void;
+  onCancelEdit?: () => void;
   padActive: boolean;
   padOpen: boolean;
   activePadField: PadField;
@@ -26,16 +22,14 @@ export type SetInputFormProps = {
   onFocusPadField: (field: PadField) => void;
 };
 
-const quickReps = [5, 8, 10, 12, 15];
-
 export default function SetInputForm({
   currentSet,
   setCurrentSet,
   lastSessionLabel,
-  showPartials,
-  setShowPartials,
+  variant = "log",
   onAddSet,
-  hasSets,
+  onSaveEdit,
+  onCancelEdit,
   padActive,
   padOpen,
   activePadField,
@@ -56,25 +50,6 @@ export default function SetInputForm({
       currentSet.reps !== 0 &&
       currentSet.weight !== null &&
       currentSet.weight >= 0;
-
-  const handleQuickRep = (reps: number) => {
-    if (currentSet.is_unilateral) {
-      setCurrentSet({
-        ...currentSet,
-        left_reps: reps,
-        right_reps: reps,
-      });
-    } else {
-      setCurrentSet({ ...currentSet, reps });
-    }
-  };
-
-  const isQuickRepSelected = (reps: number) => {
-    if (currentSet.is_unilateral) {
-      return currentSet.left_reps === reps && currentSet.right_reps === reps;
-    }
-    return currentSet.reps === reps;
-  };
 
   const padEditing = padActive && padOpen;
 
@@ -118,8 +93,16 @@ export default function SetInputForm({
   const weightCellFocused = padEditing && activePadField === "weight";
   const repsCellFocused = padEditing && activePadField === "reps";
 
+  const isEditVariant = variant === "edit";
+
   return (
-    <View className="bg-surface dark:bg-surface-dark rounded-[1.5rem] border border-border dark:border-border-dark p-5 mb-4">
+    <View
+      className={`bg-surface dark:bg-surface-dark rounded-[1.5rem] border p-5 mb-4 ${
+        isEditVariant
+          ? "border-primary/25 dark:border-primary-dark/25 ring-2 ring-primary/15 dark:ring-primary-dark/15"
+          : "border-border dark:border-border-dark"
+      }`}
+    >
       <View className="flex-row items-start justify-between mb-4">
         <View className="flex-1 min-w-0 pr-2">
           <AppText
@@ -129,7 +112,17 @@ export default function SetInputForm({
           >
             Set {currentSet.set_number}
           </AppText>
-          {lastSessionLabel ? (
+          {isEditVariant ? (
+            <View className="mt-2 self-start bg-surfaceAlt dark:bg-surfaceAlt-dark px-2 py-0.5 rounded-full border border-border dark:border-border-dark">
+              <AppText
+                variant="caption"
+                tone="muted"
+                className="text-[10px] font-black uppercase"
+              >
+                Editing
+              </AppText>
+            </View>
+          ) : lastSessionLabel ? (
             <View className="mt-2 self-start bg-surfaceAlt dark:bg-surfaceAlt-dark px-2 py-1 rounded-full border border-border dark:border-border-dark">
               <AppText variant="caption" tone="muted" className="font-bold">
                 {lastSessionLabel}
@@ -137,7 +130,29 @@ export default function SetInputForm({
             </View>
           ) : null}
         </View>
-        {isSetComplete ? (
+        {isEditVariant ? (
+          <View className="flex-row items-center gap-2 shrink-0">
+            <TouchableOpacity
+              onPress={onSaveEdit}
+              disabled={!isSetComplete}
+              className={`w-9 h-9 items-center justify-center rounded-full ${
+                isSetComplete
+                  ? "bg-primary dark:bg-primary-dark"
+                  : "bg-surfaceAlt dark:bg-surfaceAlt-dark"
+              }`}
+              accessibilityLabel="Save set"
+            >
+              <Ionicons name="checkmark" size={18} color="#ffffff" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={onCancelEdit}
+              className="w-9 h-9 items-center justify-center rounded-full bg-surfaceAlt dark:bg-surfaceAlt-dark"
+              accessibilityLabel="Cancel editing"
+            >
+              <Ionicons name="close" size={18} color={mutedIcon} />
+            </TouchableOpacity>
+          </View>
+        ) : isSetComplete ? (
           <Ionicons name="checkmark-circle" size={22} color={primary} />
         ) : null}
       </View>
@@ -309,128 +324,55 @@ export default function SetInputForm({
         </View>
       )}
 
-      <View className="flex-row flex-wrap gap-2 mt-4 mb-2">
-        {quickReps.map((reps) => (
-          <TouchableOpacity
-            key={reps}
-            onPress={() => handleQuickRep(reps)}
-            disabled={!padActive}
-            className={`px-4 py-2 rounded-full ${
-              isQuickRepSelected(reps)
-                ? "bg-primary dark:bg-primary-dark"
-                : "bg-surfaceAlt dark:bg-surfaceAlt-dark"
-            } ${!padActive ? "opacity-40" : ""}`}
-          >
+      <View className="mt-4 pt-4 border-t border-border dark:border-border-dark gap-1">
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() =>
+            setCurrentSet({
+              ...currentSet,
+              is_unilateral: !currentSet.is_unilateral,
+            })
+          }
+          className="flex-row items-center justify-between py-2"
+        >
+          <View className="flex-row items-center gap-2 flex-1 min-w-0 pr-2">
+            <Ionicons name="body-outline" size={20} color={mutedIcon} />
             <AppText
               variant="body"
-              tone={isQuickRepSelected(reps) ? "inverse" : "default"}
-              className="text-xs font-semibold"
+              tone="default"
+              className="text-xs font-bold uppercase tracking-wider shrink"
             >
-              {reps}
+              Unilateral set
             </AppText>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {showPartials && padActive ? (
-        <View className="mt-2 mb-2">
-          <AppText variant="caption" tone="muted" className="normal-case mb-1">
-            Partials
-          </AppText>
-          <View className="flex-row items-center rounded-ds-control border border-border dark:border-border-dark bg-surfaceAlt dark:bg-surfaceAlt-dark">
-            <TouchableOpacity
-              className="px-3 py-2"
-              onPress={() => {
-                const newValue = (currentSet.partialReps || 0) - 1;
-                if (newValue >= 0) {
-                  setCurrentSet({ ...currentSet, partialReps: newValue });
-                }
-              }}
-            >
-              <Ionicons name="remove" size={18} color={mutedIcon} />
-            </TouchableOpacity>
-            <TextInput
-              className="flex-1 text-center py-2 text-lg font-bold text-text dark:text-text-dark"
-              value={
-                currentSet.partialReps !== null
-                  ? currentSet.partialReps.toString()
-                  : ""
-              }
-              onChangeText={(value) => {
-                if (value === "" || value === "-") {
-                  setCurrentSet({ ...currentSet, partialReps: null });
-                } else {
-                  const parsed = parseInt(value, 10);
-                  if (!Number.isNaN(parsed)) {
-                    setCurrentSet({ ...currentSet, partialReps: parsed });
-                  }
-                }
-              }}
-              placeholder="0"
-              placeholderTextColor={mutedIcon}
-              keyboardType="number-pad"
-              returnKeyType="done"
-            />
-            <TouchableOpacity
-              className="px-3 py-2"
-              onPress={() =>
-                setCurrentSet({
-                  ...currentSet,
-                  partialReps: (currentSet.partialReps || 0) + 1,
-                })
-              }
-            >
-              <Ionicons name="add" size={18} color={mutedIcon} />
-            </TouchableOpacity>
           </View>
-        </View>
-      ) : null}
-
-      <TouchableOpacity
-        activeOpacity={0.85}
-        onPress={() =>
-          setCurrentSet({
-            ...currentSet,
-            is_unilateral: !currentSet.is_unilateral,
-          })
-        }
-        className="flex-row items-center justify-between mt-4 pt-4 border-t border-border dark:border-border-dark"
-      >
-        <View className="flex-row items-center gap-2 flex-1 min-w-0 pr-2">
-          <Ionicons name="body-outline" size={20} color={mutedIcon} />
-          <AppText
-            variant="body"
-            tone="default"
-            className="text-xs font-bold uppercase tracking-wider shrink"
-          >
-            Unilateral set
-          </AppText>
-        </View>
-        <Ionicons
-          name={currentSet.is_unilateral ? "checkbox" : "square-outline"}
-          size={24}
-          color={currentSet.is_unilateral ? primary : mutedIcon}
-        />
-      </TouchableOpacity>
-
-      <View className="mt-5">
-        <TouchableOpacity
-          onPress={onAddSet}
-          disabled={!isSetComplete || !padActive}
-          className={`w-full py-4 rounded-2xl flex-row items-center justify-center gap-2 border border-border dark:border-border-dark bg-surfaceAlt dark:bg-surfaceAlt-dark ${
-            isSetComplete && padActive ? "active:opacity-90" : "opacity-45"
-          }`}
-        >
-          <Ionicons name="add" size={22} color={primary} />
-          <AppText
-            variant="body"
-            tone="primary"
-            className="font-bold uppercase tracking-wider text-xs"
-          >
-            Add set
-          </AppText>
+          <Ionicons
+            name={currentSet.is_unilateral ? "checkbox" : "square-outline"}
+            size={24}
+            color={currentSet.is_unilateral ? primary : mutedIcon}
+          />
         </TouchableOpacity>
       </View>
+
+      {!isEditVariant && onAddSet ? (
+        <View className="mt-5">
+          <TouchableOpacity
+            onPress={onAddSet}
+            disabled={!isSetComplete || !padActive}
+            className={`w-full py-4 rounded-2xl flex-row items-center justify-center gap-2 border border-border dark:border-border-dark bg-surfaceAlt dark:bg-surfaceAlt-dark ${
+              isSetComplete && padActive ? "active:opacity-90" : "opacity-45"
+            }`}
+          >
+            <Ionicons name="add" size={22} color={primary} />
+            <AppText
+              variant="body"
+              tone="primary"
+              className="font-bold uppercase tracking-wider text-xs"
+            >
+              Add set
+            </AppText>
+          </TouchableOpacity>
+        </View>
+      ) : null}
     </View>
   );
 }
