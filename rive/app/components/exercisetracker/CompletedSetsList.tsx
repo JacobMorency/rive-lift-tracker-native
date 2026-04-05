@@ -50,7 +50,11 @@ export default function CompletedSetsList({
           Completed history
         </AppText>
         <View className="flex-row items-center gap-2 shrink-0">
-          <AppText variant="caption" tone="primary" className="text-[10px] font-bold uppercase">
+          <AppText
+            variant="caption"
+            tone="primary"
+            className="text-[10px] font-bold uppercase"
+          >
             {n} {n === 1 ? "set" : "sets"} done
           </AppText>
           {sets.length > 3 && (
@@ -58,7 +62,11 @@ export default function CompletedSetsList({
               onPress={() => setShowAllSets(!showAllSets)}
               className="flex-row items-center gap-0.5"
             >
-              <AppText variant="caption" tone="default" className="text-[10px] font-semibold">
+              <AppText
+                variant="caption"
+                tone="default"
+                className="text-[10px] font-semibold"
+              >
                 {showAllSets ? "Less" : "All"}
               </AppText>
               <Ionicons

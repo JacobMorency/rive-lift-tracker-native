@@ -12,7 +12,10 @@ type SetCardProps = {
   onDelete: () => void;
 };
 
-function formatLineWeightReps(weight: number | null | undefined, reps: number | null | undefined) {
+function formatLineWeightReps(
+  weight: number | null | undefined,
+  reps: number | null | undefined,
+) {
   const w = weight != null ? `${weight}` : "—";
   const r = reps != null ? `${reps}` : "—";
   return `${w} lbs × ${r}`;
@@ -65,24 +68,44 @@ export default function SetCard({
           {set.is_unilateral ? (
             <>
               <View className="flex-row items-center gap-2 flex-wrap">
-                <AppText variant="caption" tone="muted" className="text-[9px] font-bold uppercase">
+                <AppText
+                  variant="caption"
+                  tone="muted"
+                  className="text-[9px] font-bold uppercase"
+                >
                   L:
                 </AppText>
-                <AppText variant="body" tone="default" className="text-sm font-bold">
+                <AppText
+                  variant="body"
+                  tone="default"
+                  className="text-sm font-bold"
+                >
                   {formatLineWeightReps(set.weight, set.left_reps)}
                 </AppText>
               </View>
               <View className="flex-row items-center gap-2 flex-wrap">
-                <AppText variant="caption" tone="muted" className="text-[9px] font-bold uppercase">
+                <AppText
+                  variant="caption"
+                  tone="muted"
+                  className="text-[9px] font-bold uppercase"
+                >
                   R:
                 </AppText>
-                <AppText variant="body" tone="default" className="text-sm font-bold">
+                <AppText
+                  variant="body"
+                  tone="default"
+                  className="text-sm font-bold"
+                >
                   {formatLineWeightReps(set.weight, set.right_reps)}
                 </AppText>
               </View>
             </>
           ) : (
-            <AppText variant="body" tone="default" className="text-sm font-bold">
+            <AppText
+              variant="body"
+              tone="default"
+              className="text-sm font-bold"
+            >
               {formatLineWeightReps(set.weight, set.reps)}
             </AppText>
           )}
@@ -90,7 +113,11 @@ export default function SetCard({
       </TouchableOpacity>
       <View className="flex-row items-center gap-1 shrink-0">
         <Ionicons name="checkmark-circle" size={22} color={primary} />
-        <TouchableOpacity onPress={onDelete} className="p-2" accessibilityLabel="Delete set">
+        <TouchableOpacity
+          onPress={onDelete}
+          className="p-2"
+          accessibilityLabel="Delete set"
+        >
           <Ionicons name="trash-outline" size={18} color="#ef4444" />
         </TouchableOpacity>
       </View>
