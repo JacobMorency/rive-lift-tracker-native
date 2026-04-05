@@ -1,29 +1,30 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  ActivityIndicator,
+  useColorScheme,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useAuth } from "../context/authcontext";
+import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
-import SelectWorkoutModal from "../components/selectworkoutmodal";
-import SessionList from "../components/sessions/SessionList";
+import SelectWorkoutModal from "../components/modals/SelectWorkoutModal";
 import SessionFilters, {
   DateRangeFilter,
   StatusFilter,
   SortOrder,
 } from "../components/sessions/SessionFilters";
-import UpcomingWorkouts from "../components/sessions/UpcomingWorkouts";
 import NextScheduledWorkout from "../components/sessions/NextScheduledWorkout";
-import Header from "../components/header";
-import SectionHeader from "../components/ui/SectionHeader";
+import SessionCard from "../components/sessions/SessionCard";
+import SessionEmptyState from "../components/sessions/SessionEmptyState";
+import Header from "../components/Header";
+import AppText from "../components/ui/AppText";
+import AppButton from "../components/ui/AppButton";
+import { Session } from "../components/sessions/types";
 
-type Session = {
-  id: string;
-  name: string;
-  started_at: string;
-  ended_at: string | null;
-  completed: boolean;
-};
+const ADD_SESSION_FAB_BOTTOM = 16;
 
 type RawSession = {
   id: string;
@@ -39,22 +40,21 @@ export default function SessionsPage() {
   const [isSelectWorkoutModalOpen, setIsSelectWorkoutModalOpen] =
     useState(false);
 
-  // Filter state
   const [selectedWorkout, setSelectedWorkout] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<DateRangeFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
 
-  const { user, userData } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   const fetchSessions = useCallback(async (): Promise<void> => {
     if (!user) return;
 
     setLoading(true);
     try {
-      // First query: Get sessions
       const { data: rawSessionsData, error: sessionsError } = await supabase
         .from("workout_sessions")
         .select("id, started_at, ended_at, completed, workout_id")
@@ -71,16 +71,14 @@ export default function SessionsPage() {
         return;
       }
 
-      // Get unique workout IDs (filter out null values)
       const workoutIds = [
         ...new Set(
           rawSessionsData
             .map((session) => session.workout_id)
-            .filter((id): id is string => id !== null)
+            .filter((id): id is string => id !== null),
         ),
       ];
 
-      // Only query workouts if we have valid IDs
       let workoutsData = null;
       if (workoutIds.length > 0) {
         const { data, error: workoutsError } = await supabase
@@ -95,13 +93,11 @@ export default function SessionsPage() {
         workoutsData = data;
       }
 
-      // Create a map of workout IDs to names
       const workoutMap = new Map<string, string>();
       workoutsData?.forEach((workout) => {
         workoutMap.set(workout.id, workout.name);
       });
 
-      // Transform the data
       const transformedSessions = rawSessionsData.map(
         (session: RawSession) => ({
           id: session.id,
@@ -109,7 +105,7 @@ export default function SessionsPage() {
           started_at: session.started_at,
           ended_at: session.ended_at,
           completed: session.completed || false,
-        })
+        }),
       );
 
       setSessions(transformedSessions);
@@ -134,7 +130,6 @@ export default function SessionsPage() {
     if (!user) return;
 
     try {
-      // Create a new session
       const { data, error } = await supabase
         .from("workout_sessions")
         .insert([
@@ -153,7 +148,6 @@ export default function SessionsPage() {
         return;
       }
 
-      // Navigate to the session detail page
       router.push(`/session/${data.id}`);
     } catch (error) {
       console.error("Error creating session:", error);
@@ -164,12 +158,10 @@ export default function SessionsPage() {
     router.push(`/session/${sessionId}`);
   };
 
-  // Extract unique workout names from sessions
   const availableWorkouts = Array.from(
-    new Set(sessions.map((session) => session.name))
+    new Set(sessions.map((session) => session.name)),
   ).sort();
 
-  // Filter logic
   const getDateRangeBounds = (range: DateRangeFilter) => {
     const today = new Date();
     today.setHours(23, 59, 59, 999);
@@ -199,12 +191,10 @@ export default function SessionsPage() {
   const filteredSessions = useMemo(() => {
     let filtered = [...sessions];
 
-    // Filter by workout
     if (selectedWorkout !== null) {
       filtered = filtered.filter((session) => session.name === selectedWorkout);
     }
 
-    // Filter by date range
     if (dateRange !== "all") {
       const bounds = getDateRangeBounds(dateRange);
       if (bounds) {
@@ -215,14 +205,12 @@ export default function SessionsPage() {
       }
     }
 
-    // Filter by status
     if (statusFilter === "completed") {
       filtered = filtered.filter((session) => session.completed === true);
     } else if (statusFilter === "in_progress") {
       filtered = filtered.filter((session) => session.completed === false);
     }
 
-    // Sort
     filtered.sort((a, b) => {
       const dateA = new Date(a.started_at).getTime();
       const dateB = new Date(b.started_at).getTime();
@@ -241,16 +229,14 @@ export default function SessionsPage() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-white dark:bg-zinc-900">
-        <Header
-          title="Sessions"
-          subtitle={userData ? "Track your workout sessions" : undefined}
-        />
-
-        {/* Loading */}
+      <View className="flex-1 bg-background dark:bg-background-dark">
+        <Header />
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#ff4b8c" />
-          <Text className="text-gray-500 dark:text-gray-400 mt-2">
+          <ActivityIndicator
+            size="large"
+            color={isDark ? "#ff6fa1" : "#ff4b8c"}
+          />
+          <Text className="text-textMuted dark:text-textMuted-dark mt-2">
             Loading sessions...
           </Text>
         </View>
@@ -259,97 +245,86 @@ export default function SessionsPage() {
   }
 
   return (
-    <View className="flex-1 bg-white dark:bg-zinc-900">
-      <Header
-        title="Sessions"
-        subtitle={userData ? "Track your workout sessions" : undefined}
-      />
+    <View className="flex-1 bg-background dark:bg-background-dark">
+      <Header />
 
-      {/* Sessions List with FlatList */}
-      <SessionList
-        sessions={filteredSessions}
-        onSessionSelect={handleSessionSelect}
-        ListHeaderComponent={() => (
-          <>
-            {/* Next Scheduled Workout */}
-            <View className="px-4 pt-6">
-              <NextScheduledWorkout />
-            </View>
-
-            {/* Section Divider */}
-            <View className="h-px bg-gray-200 dark:bg-zinc-700 my-6 mx-4" />
-
-            {/* Sessions Section */}
-            <View className="px-4">
-              <SectionHeader
-                icon="barbell-outline"
-                title="Sessions"
-                badge={
-                  filteredSessions.length > 0
-                    ? filteredSessions.length
-                    : undefined
-                }
-                action={{
-                  label: "View Schedule",
-                  onPress: () => router.push("/schedule"),
-                }}
-              />
-
-              {/* Upcoming Workouts */}
-              {/* Feature flag: Set to true to show upcoming workouts */}
-              {false && <UpcomingWorkouts />}
-
-              {/* Session Filters */}
-              <SessionFilters
-                availableWorkouts={availableWorkouts}
-                selectedWorkout={selectedWorkout}
-                dateRange={dateRange}
-                statusFilter={statusFilter}
-                sortOrder={sortOrder}
-                onWorkoutChange={setSelectedWorkout}
-                onDateRangeChange={setDateRange}
-                onStatusChange={setStatusFilter}
-                onSortOrderChange={setSortOrder}
-                onClearAll={handleClearAllFilters}
-              />
-            </View>
-          </>
-        )}
+      <ScrollView
+        className="flex-1 px-4"
         contentContainerStyle={{
-          paddingBottom: insets.bottom + 100,
+          paddingTop: 24,
+          paddingBottom: ADD_SESSION_FAB_BOTTOM,
         }}
-      />
-
-      {/* Fixed Start New Session Button */}
-      <View
-        className="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900"
-        style={{
-          paddingBottom: insets.bottom,
-          paddingTop: 12,
-          paddingHorizontal: 16,
-          borderTopWidth: 1,
-          borderTopColor: "rgba(0,0,0,0.1)",
-        }}
+        showsVerticalScrollIndicator={false}
       >
-        <TouchableOpacity
-          className="w-full py-4 rounded-xl bg-[#ff4b8c] dark:bg-[#ff6fa1] flex-row items-center justify-center"
+        <View className="mb-6">
+          <AppText variant="header">Sessions</AppText>
+          <AppText variant="caption" tone="muted" className="normal-case">
+            Track your workout sessions
+          </AppText>
+        </View>
+
+        <NextScheduledWorkout />
+
+        <View className="h-px bg-border dark:bg-border-dark mb-6" />
+
+        <View className="flex-row items-center justify-between gap-2 mb-4">
+          <AppText variant="caption" tone="muted">
+            Past activities
+          </AppText>
+          <View className="flex-row items-center gap-2 flex-1 justify-end">
+            <SessionFilters
+              availableWorkouts={availableWorkouts}
+              selectedWorkout={selectedWorkout}
+              dateRange={dateRange}
+              statusFilter={statusFilter}
+              sortOrder={sortOrder}
+              onWorkoutChange={setSelectedWorkout}
+              onDateRangeChange={setDateRange}
+              onStatusChange={setStatusFilter}
+              onSortOrderChange={setSortOrder}
+              onClearAll={handleClearAllFilters}
+              triggerVariant="compact"
+            />
+          </View>
+        </View>
+
+        {filteredSessions.length === 0 ? (
+          <SessionEmptyState />
+        ) : (
+          <View className="gap-4 pb-2">
+            {filteredSessions.map((session) => (
+              <SessionCard
+                key={session.id}
+                session={session}
+                onPress={() => handleSessionSelect(session.id)}
+              />
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
+      <View
+        className="absolute right-5 z-50"
+        style={{ bottom: ADD_SESSION_FAB_BOTTOM }}
+        pointerEvents="box-none"
+      >
+        <AppButton
+          tone="primary"
+          size="icon"
           onPress={handleNewSession}
+          accessibilityLabel="Start new session"
+          icon={<Ionicons name="add" size={28} color="#ffffff" />}
+          className="shadow-md shadow-primary/40"
           style={{
-            shadowColor: "#ff4b8c",
+            shadowColor: isDark ? "#ff6fa1" : "#ff4b8c",
             shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
+            shadowOpacity: 0.35,
             shadowRadius: 8,
-            elevation: 8,
+            elevation: 10,
           }}
-        >
-          <Ionicons name="fitness" size={24} color="#ffffff" />
-          <Text className="text-white text-center font-bold ml-3 text-lg">
-            Start New Session
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
 
-      {/* Select Workout Modal */}
       <SelectWorkoutModal
         isOpen={isSelectWorkoutModalOpen}
         onClose={() => setIsSelectWorkoutModalOpen(false)}

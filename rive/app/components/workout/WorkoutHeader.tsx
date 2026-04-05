@@ -1,112 +1,68 @@
 import React from "react";
-import { View, Text, TouchableOpacity, TextInput } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, TouchableOpacity, useColorScheme } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { WorkoutDetails } from "./types";
+import { Ionicons } from "@expo/vector-icons";
+import AppText from "../ui/AppText";
 
 type WorkoutHeaderProps = {
-  workoutDetails: WorkoutDetails | null;
-  loading: boolean;
-  isEditingName: boolean;
-  editingName: string;
-  setEditingName: (name: string) => void;
-  onEditName: () => void;
-  onSaveName: () => void;
-  onCancelEdit: () => void;
   onDeleteWorkout: () => void;
   onClose: () => void;
 };
 
+/** Matches [`SessionDetailTopBar`](session/SessionDetailTopBar.tsx) layout and styling. */
 export default function WorkoutHeader({
-  workoutDetails,
-  loading,
-  isEditingName,
-  editingName,
-  setEditingName,
-  onEditName,
-  onSaveName,
-  onCancelEdit,
   onDeleteWorkout,
   onClose,
 }: WorkoutHeaderProps) {
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
 
   return (
     <View
-      className="bg-gray-50 dark:bg-zinc-800 px-4 py-4 border-b border-gray-200 dark:border-zinc-700"
-      style={{ paddingTop: insets.top + 16 }}
+      className="border-b border-border bg-chrome px-4 dark:border-border-dark dark:bg-chrome-dark"
+      style={{ paddingTop: insets.top, paddingBottom: 8 }}
     >
-      <View className="flex-row items-center justify-between mb-3">
-        <TouchableOpacity
-          onPress={onClose}
-          className="w-10 h-10 items-center justify-center rounded-full bg-gray-100 dark:bg-zinc-700"
-        >
-          <Ionicons name="close" size={20} color="#6b7280" />
-        </TouchableOpacity>
-
-        <View className="flex-1 items-center">
-          {isEditingName ? (
-            <View className="flex-row items-center gap-2">
-              <TextInput
-                className="text-xl font-bold text-zinc-900 dark:text-white bg-gray-100 dark:bg-zinc-700 px-3 py-1 rounded-lg"
-                value={editingName}
-                onChangeText={setEditingName}
-                autoFocus
-                selectTextOnFocus
-                onSubmitEditing={onSaveName}
-                returnKeyType="done"
-              />
-              <TouchableOpacity
-                onPress={onSaveName}
-                className="w-6 h-6 bg-success rounded-full items-center justify-center"
-              >
-                <Ionicons name="checkmark" size={14} color="#ffffff" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={onCancelEdit}
-                className="w-6 h-6 bg-error rounded-full items-center justify-center"
-              >
-                <Ionicons name="close" size={14} color="#ffffff" />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <TouchableOpacity onPress={onEditName}>
-              <Text className="text-xl font-bold text-zinc-900 dark:text-white">
-                {loading
-                  ? "Loading..."
-                  : `${workoutDetails?.name || "Workout"}`}
-              </Text>
-            </TouchableOpacity>
-          )}
-          {workoutDetails && (
-            <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {workoutDetails.exercises.length} exercise
-              {workoutDetails.exercises.length !== 1 ? "s" : ""}
-            </Text>
-          )}
-        </View>
-
-        <View className="flex-row items-center gap-2">
+      <View className="flex-row items-center justify-between gap-2">
+        <View className="min-w-0 flex-1 flex-row items-center gap-3">
           <TouchableOpacity
-            onPress={onDeleteWorkout}
-            className="w-10 h-10 items-center justify-center rounded-full bg-error/20"
+            onPress={onClose}
+            accessibilityLabel="Go back"
+            className="h-10 w-10 items-center justify-center rounded-full active:opacity-80"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Ionicons name="trash-outline" size={20} color="#ef4444" />
+            <Ionicons
+              name="arrow-back"
+              size={22}
+              color={isDark ? "#f5f5f5" : "#111113"}
+            />
           </TouchableOpacity>
+          <AppText
+            variant="subheader"
+            tone="default"
+            className="flex-1 font-bold tracking-tight"
+            numberOfLines={1}
+          >
+            Workout Template
+          </AppText>
         </View>
-      </View>
 
-      {/* Workout Info */}
-      {workoutDetails && workoutDetails.description && (
-        <View className="bg-gray-100 dark:bg-zinc-700 rounded-lg p-3">
-          <View className="flex-row items-center gap-2">
-            <Ionicons name="document-text" size={14} color="#9ca3af" />
-            <Text className="text-xs text-gray-500 dark:text-gray-400">
-              Has description
-            </Text>
-          </View>
-        </View>
-      )}
+        <TouchableOpacity
+          onPress={onDeleteWorkout}
+          accessibilityLabel="Delete workout"
+          className="shrink-0 py-2 pl-2 active:opacity-80"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <AppText
+            variant="body"
+            tone="default"
+            className="max-w-[140px] text-sm font-semibold normal-case text-red-500 dark:text-red-400"
+            numberOfLines={2}
+          >
+            Delete
+          </AppText>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

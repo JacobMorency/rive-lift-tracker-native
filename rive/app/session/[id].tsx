@@ -1,22 +1,29 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
-  TouchableOpacity,
   ScrollView,
   ActivityIndicator,
   Alert,
   Modal,
+  useColorScheme,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "../context/authcontext";
+import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 import { getLastSessionData } from "../lib/statsUtils";
-import ExerciseTracker from "../components/exercisetracker";
-import ExerciseSelector from "../components/exerciseselector";
+import ExerciseTracker from "../components/exercisetracker/ExerciseTracker";
+import ExerciseSelector from "../components/ExerciseSelector";
 import { Exercise as ExerciseSelectorExercise } from "../components/exercise/types";
+import SessionDetailTopBar from "../components/session/SessionDetailTopBar";
+import SessionOverviewSection from "../components/session/SessionOverviewSection";
+import SessionExerciseList from "../components/session/SessionExerciseList";
+import AppText from "../components/ui/AppText";
+import AppButton from "../components/ui/AppButton";
+import StickyBottomPrimaryButton, {
+  STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,
+} from "../components/ui/StickyBottomPrimaryButton";
 
 import { MuscleGroup } from "../lib/muscleGroupUtils";
 
@@ -24,12 +31,12 @@ type Exercise = {
   id: number;
   name: string;
   muscleGroups?: MuscleGroup[];
-  primaryMuscleGroup?: string; // Replaces category
-  wasInOriginalTemplate: boolean; // New field to track if exercise was in original session
-  addedToTemplateAfter?: string; // When it was added to template
-  notes?: string | null; // Notes for this exercise in the workout template
-  workoutExerciseId?: string; // ID from workout_exercises table for updating notes
-  sessionExerciseId?: string; // ID from session_exercises table for deletion tracking
+  primaryMuscleGroup?: string;
+  wasInOriginalTemplate: boolean;
+  addedToTemplateAfter?: string;
+  notes?: string | null;
+  workoutExerciseId?: string;
+  sessionExerciseId?: string;
 };
 
 type SessionData = {
@@ -41,18 +48,11 @@ type SessionData = {
   completed: boolean;
 };
 
-type RawWorkoutExercise = {
-  id?: string; // workout_exercises table ID
-  exercise_id: number;
-  order_index: number;
-  notes?: string | null;
-};
-
 type RawExercise = {
   id: number;
   name: string;
   muscleGroups?: MuscleGroup[];
-  primaryMuscleGroup?: string; // Replaces category
+  primaryMuscleGroup?: string;
 };
 
 type ExerciseProgress = {
@@ -82,14 +82,15 @@ export default function SessionDetailPage() {
     number | null
   >(null);
   const [exerciseProgress, setExerciseProgress] = useState<ExerciseProgress[]>(
-    []
+    [],
   );
-  const [showCancelModal, setShowCancelModal] = useState(false);
   const [showAddExerciseModal, setShowAddExerciseModal] = useState(false);
   const [lastSessionSets, setLastSessionSets] = useState<any[]>([]);
   const { user } = useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const { id } = useLocalSearchParams<{ id: string }>();
 
   useEffect(() => {
@@ -100,7 +101,6 @@ export default function SessionDetailPage() {
 
   const fetchSessionData = async () => {
     try {
-      // First query: Fetch session data
       const { data: sessionData, error: sessionError } = await supabase
         .from("workout_sessions")
         .select("id, started_at, workout_id, completed")
@@ -113,7 +113,6 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Second query: Fetch workout name
       const { data: workoutData, error: workoutError } = await supabase
         .from("workouts")
         .select("name")
@@ -125,7 +124,6 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Third query: Fetch session exercises (session-specific exercises)
       const { data: sessionExercisesData, error: sessionExercisesError } =
         await supabase
           .from("session_exercises")
@@ -136,12 +134,11 @@ export default function SessionDetailPage() {
       if (sessionExercisesError) {
         console.error(
           "Error fetching session exercises:",
-          sessionExercisesError.message
+          sessionExercisesError.message,
         );
         return;
       }
 
-      // Fourth query: Fetch workout exercises (current template) for notes lookup
       const { data: workoutExercisesData, error: workoutExercisesError } =
         await supabase
           .from("workout_exercises")
@@ -151,12 +148,11 @@ export default function SessionDetailPage() {
       if (workoutExercisesError) {
         console.error(
           "Error fetching workout exercises:",
-          workoutExercisesError.message
+          workoutExercisesError.message,
         );
         return;
       }
 
-      // Create a map of workout exercise IDs to notes
       const workoutExerciseMap = new Map<
         number,
         { id: string; notes: string | null }
@@ -168,9 +164,7 @@ export default function SessionDetailPage() {
         });
       });
 
-      // If no session exercises, check template
       if (!sessionExercisesData || sessionExercisesData.length === 0) {
-        // If template has exercises, use those
         if (workoutExercisesData && workoutExercisesData.length > 0) {
           const exerciseIds = workoutExercisesData.map((we) => we.exercise_id);
           const { data: exercisesData, error: exercisesError } = await supabase
@@ -183,7 +177,6 @@ export default function SessionDetailPage() {
             return;
           }
 
-          // Fetch muscle groups for all exercises
           const { getExercisesWithMuscleGroups } = await import(
             "../lib/muscleGroupUtils"
           );
@@ -222,7 +215,7 @@ export default function SessionDetailPage() {
             })
             .filter(
               (exercise): exercise is NonNullable<typeof exercise> =>
-                exercise !== null
+                exercise !== null,
             )
             .sort((a, b) => {
               const aIndex =
@@ -252,12 +245,11 @@ export default function SessionDetailPage() {
           const loadedProgress = await loadExistingExerciseData(
             exercises,
             initialProgress,
-            finalSessionData
+            finalSessionData,
           );
           setExerciseProgress(loadedProgress);
           return;
         } else {
-          // No exercises at all
           setSessionData({
             id: sessionData.id,
             started_at: sessionData.started_at,
@@ -270,7 +262,6 @@ export default function SessionDetailPage() {
         }
       }
 
-      // Create a map of session exercise IDs for quick lookup
       const sessionExerciseMap = new Map<
         number,
         { id: string; order_index: number }
@@ -282,7 +273,6 @@ export default function SessionDetailPage() {
         });
       });
 
-      // Get all unique exercise IDs (from both session and template)
       const sessionExerciseIds =
         sessionExercisesData?.map((se) => se.exercise_id) || [];
       const templateExerciseIds =
@@ -303,7 +293,6 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Fifth query: Fetch exercise details for all exercises
       const { data: exercisesData, error: exercisesError } = await supabase
         .from("exercise_library")
         .select("id, name")
@@ -314,13 +303,11 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Fetch muscle groups for all exercises
       const { getExercisesWithMuscleGroups } = await import(
         "../lib/muscleGroupUtils"
       );
       const muscleGroupMap = await getExercisesWithMuscleGroups(allExerciseIds);
 
-      // Create a map of exercise IDs to exercise details
       const exerciseMap = new Map<number, RawExercise>();
       exercisesData?.forEach((exercise) => {
         const muscleGroups = muscleGroupMap.get(exercise.id) || [];
@@ -334,21 +321,15 @@ export default function SessionDetailPage() {
         });
       });
 
-      // Merge session and template exercises
-      // Always start with ALL template exercises (to preserve exercises that haven't been started yet)
-      // Then add any session-specific exercises (user-added exercises not in template)
-      // Use session_exercises entries to track progress and custom ordering
       const exerciseMapCombined = new Map<number, Exercise>();
 
-      // First, add all template exercises (these are the base exercises)
       workoutExercisesData?.forEach((we) => {
         const exercise = exerciseMap.get(we.exercise_id);
         const workoutExercise = workoutExerciseMap.get(we.exercise_id);
 
         if (exercise) {
-          // Check if this exercise has a session_exercises entry
           const sessionExercise = sessionExercisesData?.find(
-            (se) => se.exercise_id === we.exercise_id
+            (se) => se.exercise_id === we.exercise_id,
           );
 
           exerciseMapCombined.set(we.exercise_id, {
@@ -359,15 +340,13 @@ export default function SessionDetailPage() {
             wasInOriginalTemplate: true,
             notes: workoutExercise?.notes || null,
             workoutExerciseId: workoutExercise?.id,
-            sessionExerciseId: sessionExercise?.id, // Use session ID if it exists
+            sessionExerciseId: sessionExercise?.id,
           });
         }
       });
 
-      // Then, add any session exercises that aren't in the template (user-added exercises)
       if (sessionExercisesData && sessionExercisesData.length > 0) {
         sessionExercisesData.forEach((se) => {
-          // Only add if it's not already in the map (i.e., not in template)
           if (!exerciseMapCombined.has(se.exercise_id)) {
             const exercise = exerciseMap.get(se.exercise_id);
             const workoutExercise = workoutExerciseMap.get(se.exercise_id);
@@ -388,16 +367,11 @@ export default function SessionDetailPage() {
         });
       }
 
-      // Convert map to array and sort
-      // Use session order_index if available (for exercises that have been started)
-      // Otherwise use template order_index (for exercises not started yet)
-      // This preserves the original template order while respecting any custom ordering
       const exercises = Array.from(exerciseMapCombined.values()).sort(
         (a, b) => {
           const aSession = sessionExerciseMap.get(a.id);
           const bSession = sessionExerciseMap.get(b.id);
 
-          // Get order_index for each exercise (prefer session, fallback to template)
           const aOrderIndex = aSession
             ? aSession.order_index
             : (workoutExercisesData?.find((we) => we.exercise_id === a.id)
@@ -408,10 +382,9 @@ export default function SessionDetailPage() {
                 ?.order_index ?? 9999);
 
           return aOrderIndex - bOrderIndex;
-        }
+        },
       );
 
-      // Initialize exercise progress
       const initialProgress = exercises.map((exercise) => ({
         exerciseId: exercise.id,
         exerciseName: exercise.name,
@@ -419,7 +392,6 @@ export default function SessionDetailPage() {
         completed: false,
       }));
 
-      // Set session data first
       const finalSessionData = {
         id: sessionData.id,
         started_at: sessionData.started_at,
@@ -430,11 +402,10 @@ export default function SessionDetailPage() {
       };
       setSessionData(finalSessionData);
 
-      // Load existing exercise data from database
       const loadedProgress = await loadExistingExerciseData(
         exercises,
         initialProgress,
-        finalSessionData
+        finalSessionData,
       );
       setExerciseProgress(loadedProgress);
     } catch (error) {
@@ -447,14 +418,13 @@ export default function SessionDetailPage() {
   const loadExistingExerciseData = async (
     exercises: Exercise[],
     initialProgress: ExerciseProgress[],
-    sessionDataToUse: SessionData
+    sessionDataToUse: SessionData,
   ) => {
     if (!sessionDataToUse) {
       return initialProgress;
     }
 
     try {
-      // Get all session exercises for this session with their sets
       const { data: sessionExercises, error: sessionExercisesError } =
         await supabase
           .from("session_exercises")
@@ -473,7 +443,7 @@ export default function SessionDetailPage() {
             right_reps,
             created_at
           )
-        `
+        `,
           )
           .eq("session_id", sessionDataToUse.id)
           .order("order_index");
@@ -481,26 +451,24 @@ export default function SessionDetailPage() {
       if (sessionExercisesError) {
         console.error(
           "Error loading session exercises:",
-          sessionExercisesError
+          sessionExercisesError,
         );
         return initialProgress;
       }
 
-      // Update exercise progress with loaded data
       const updatedProgress = [...initialProgress];
 
       sessionExercises?.forEach((sessionExercise) => {
         const exerciseIndex = exercises.findIndex(
-          (ex) => ex.id === sessionExercise.exercise_id
+          (ex) => ex.id === sessionExercise.exercise_id,
         );
 
         if (exerciseIndex !== -1) {
-          // Sort sets by created_at to maintain order
           const sortedSets =
             sessionExercise.exercise_sets?.sort(
               (a: RawExerciseSet, b: RawExerciseSet) =>
                 new Date(a.created_at).getTime() -
-                new Date(b.created_at).getTime()
+                new Date(b.created_at).getTime(),
             ) || [];
 
           const sets = sortedSets.map((set: RawExerciseSet, index: number) => ({
@@ -532,13 +500,12 @@ export default function SessionDetailPage() {
   const handleExerciseClick = async (exerciseIndex: number) => {
     setCurrentExerciseIndex(exerciseIndex);
 
-    // Fetch last session data for this exercise
     if (user && sessionData) {
       const exercise = sessionData.exercises[exerciseIndex];
       const lastSets = await getLastSessionData(
         user.id,
         sessionData.workout_id,
-        exercise.id
+        exercise.id,
       );
       setLastSessionSets(lastSets);
     }
@@ -549,7 +516,6 @@ export default function SessionDetailPage() {
 
     const updatedProgress = [...exerciseProgress];
 
-    // Compute volume trend vs last session for this exercise
     const computeVolume = (inputSets: any[]) => {
       return inputSets.reduce((total, set) => {
         const reps = set.is_unilateral
@@ -571,7 +537,6 @@ export default function SessionDetailPage() {
       else if (change < 0) volumeTrend = "down";
       else volumeTrend = "neutral";
     } else if (currentVolume > 0) {
-      // No last data; keep neutral to avoid misleading signal
       volumeTrend = "neutral";
       volumePercentage = 0;
     }
@@ -586,7 +551,6 @@ export default function SessionDetailPage() {
     setExerciseProgress(updatedProgress);
     setCurrentExerciseIndex(null);
 
-    // Save exercise data to database
     await saveExerciseData(currentExerciseIndex, sets);
   };
 
@@ -596,7 +560,6 @@ export default function SessionDetailPage() {
     const exercise = sessionData.exercises[exerciseIndex];
 
     try {
-      // First, check if session_exercise record exists
       const { data: existingSessionExercises, error: checkError } =
         await supabase
           .from("session_exercises")
@@ -612,7 +575,6 @@ export default function SessionDetailPage() {
       let sessionExerciseData;
 
       if (existingSessionExercises && existingSessionExercises.length > 0) {
-        // Update existing record
         const { data: updatedData, error: updateError } = await supabase
           .from("session_exercises")
           .update({ order_index: exerciseIndex })
@@ -626,7 +588,6 @@ export default function SessionDetailPage() {
         }
         sessionExerciseData = updatedData;
       } else {
-        // Insert new record
         const { data: insertedData, error: insertError } = await supabase
           .from("session_exercises")
           .insert({
@@ -644,17 +605,15 @@ export default function SessionDetailPage() {
         sessionExerciseData = insertedData;
       }
 
-      // Delete existing sets for this exercise
       await supabase
         .from("exercise_sets")
         .delete()
         .eq("session_exercise_id", sessionExerciseData.id);
 
-      // Insert new sets with proper order
       if (sets.length > 0) {
         const setsToInsert = sets.map((set) => ({
           session_exercise_id: sessionExerciseData.id,
-          reps: set.is_unilateral ? set.left_reps || 0 : set.reps, // Use left_reps for unilateral, regular reps otherwise
+          reps: set.is_unilateral ? set.left_reps || 0 : set.reps,
           weight: set.weight,
           partial_reps: set.partialReps || 0,
           is_unilateral: set.is_unilateral || false,
@@ -693,7 +652,6 @@ export default function SessionDetailPage() {
     }
 
     try {
-      // Update notes in workout_exercises table
       const { error: updateError } = await supabase
         .from("workout_exercises")
         .update({ notes: notes.trim() || null })
@@ -705,7 +663,6 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Update local state to reflect the change
       const updatedExercises = [...sessionData.exercises];
       updatedExercises[currentExerciseIndex] = {
         ...updatedExercises[currentExerciseIndex],
@@ -723,13 +680,12 @@ export default function SessionDetailPage() {
   };
 
   const handleAddExercise = async (
-    selectedExercises: ExerciseSelectorExercise[]
+    selectedExercises: ExerciseSelectorExercise[],
   ) => {
     if (!sessionData || !user || selectedExercises.length === 0) return;
 
     setShowAddExerciseModal(false);
 
-    // Show alert asking if user wants to save to template
     Alert.alert(
       "Save to Workout Template?",
       "Do you want to add these exercises to the workout template as well, or just this session?",
@@ -750,13 +706,13 @@ export default function SessionDetailPage() {
             await addExercisesToSession(selectedExercises, true);
           },
         },
-      ]
+      ],
     );
   };
 
   const addExercisesToSession = async (
     selectedExercises: ExerciseSelectorExercise[],
-    saveToTemplate: boolean
+    saveToTemplate: boolean,
   ) => {
     if (!sessionData || !user) return;
 
@@ -764,13 +720,11 @@ export default function SessionDetailPage() {
       const currentExerciseCount = sessionData.exercises.length;
       const startOrderIndex = currentExerciseCount;
 
-      // First, add to template if requested
       if (saveToTemplate) {
         for (let i = 0; i < selectedExercises.length; i++) {
           const exercise = selectedExercises[i];
           const orderIndex = startOrderIndex + i;
 
-          // Check if exercise already exists in template
           const { data: existing } = await supabase
             .from("workout_exercises")
             .select("id")
@@ -788,13 +742,12 @@ export default function SessionDetailPage() {
         }
       }
 
-      // Add to session_exercises
       const sessionExercisesToInsert = selectedExercises.map(
         (exercise, index) => ({
           session_id: sessionData.id,
           exercise_id: exercise.id,
           order_index: startOrderIndex + index,
-        })
+        }),
       );
 
       const { error: insertError } = await supabase
@@ -807,7 +760,6 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Refresh session data
       await fetchSessionData();
     } catch (error) {
       console.error("Error adding exercises:", error);
@@ -827,7 +779,6 @@ export default function SessionDetailPage() {
     const progress = exerciseProgress[exerciseIndex];
     const setCount = progress?.sets.length || 0;
 
-    // Show confirmation if exercise has sets
     if (setCount > 0) {
       Alert.alert(
         "Remove Exercise?",
@@ -841,7 +792,7 @@ export default function SessionDetailPage() {
               await removeExerciseFromSession(exerciseIndex, exercise);
             },
           },
-        ]
+        ],
       );
     } else {
       await removeExerciseFromSession(exerciseIndex, exercise);
@@ -850,16 +801,13 @@ export default function SessionDetailPage() {
 
   const removeExerciseFromSession = async (
     exerciseIndex: number,
-    exercise: Exercise
+    exercise: Exercise,
   ) => {
     if (!sessionData) return;
 
-    // If exercise doesn't have sessionExerciseId, it means it's only in template
-    // Create a session_exercise entry first, then delete it (to ensure consistency)
     let sessionExerciseId = exercise.sessionExerciseId;
 
     if (!sessionExerciseId) {
-      // Check if it already exists
       const { data: existing } = await supabase
         .from("session_exercises")
         .select("id")
@@ -870,7 +818,6 @@ export default function SessionDetailPage() {
       if (existing) {
         sessionExerciseId = existing.id;
       } else {
-        // Create it first with current order_index
         const { data: inserted, error: insertError } = await supabase
           .from("session_exercises")
           .insert({
@@ -892,7 +839,6 @@ export default function SessionDetailPage() {
     }
 
     try {
-      // Delete sets first (if any)
       const { data: sessionExerciseData } = await supabase
         .from("session_exercises")
         .select("id")
@@ -906,7 +852,6 @@ export default function SessionDetailPage() {
           .eq("session_exercise_id", sessionExerciseData.id);
       }
 
-      // Delete from session_exercises
       const { error: deleteError } = await supabase
         .from("session_exercises")
         .delete()
@@ -918,32 +863,27 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // After deletion, ensure remaining template exercises have session_exercises entries
-      // This prevents them from reappearing when we fetch again
       const remainingExercises = sessionData.exercises.filter(
-        (_, index) => index !== exerciseIndex
+        (_, index) => index !== exerciseIndex,
       );
 
-      // Get current session_exercises count to see if we need to create entries
       const { data: remainingSessionExercises } = await supabase
         .from("session_exercises")
         .select("exercise_id")
         .eq("session_id", sessionData.id);
 
       const remainingSessionExerciseIds = new Set(
-        remainingSessionExercises?.map((se) => se.exercise_id) || []
+        remainingSessionExercises?.map((se) => se.exercise_id) || [],
       );
 
-      // Create session_exercises entries for remaining template exercises that don't have them
       const exercisesToAdd = remainingExercises
         .filter(
           (ex) =>
-            !ex.sessionExerciseId && !remainingSessionExerciseIds.has(ex.id)
+            !ex.sessionExerciseId && !remainingSessionExerciseIds.has(ex.id),
         )
         .map((ex, idx) => {
-          // Find the index in the original list (before removal)
           const originalIndex = sessionData.exercises.findIndex(
-            (e) => e.id === ex.id
+            (e) => e.id === ex.id,
           );
           const adjustedIndex =
             originalIndex < exerciseIndex ? originalIndex : originalIndex - 1;
@@ -958,10 +898,9 @@ export default function SessionDetailPage() {
         await supabase.from("session_exercises").insert(exercisesToAdd);
       }
 
-      // Update local state
       const updatedExercises = remainingExercises;
       const updatedProgress = exerciseProgress.filter(
-        (_, index) => index !== exerciseIndex
+        (_, index) => index !== exerciseIndex,
       );
 
       setSessionData({
@@ -970,18 +909,15 @@ export default function SessionDetailPage() {
       });
       setExerciseProgress(updatedProgress);
 
-      // If currently tracking this exercise, go back to list
       if (currentExerciseIndex === exerciseIndex) {
         setCurrentExerciseIndex(null);
       } else if (
         currentExerciseIndex !== null &&
         currentExerciseIndex > exerciseIndex
       ) {
-        // Adjust current exercise index if we removed an exercise before it
         setCurrentExerciseIndex(currentExerciseIndex - 1);
       }
 
-      // Refresh to get updated sessionExerciseId values
       await fetchSessionData();
     } catch (error) {
       console.error("Error removing exercise:", error);
@@ -1008,7 +944,7 @@ export default function SessionDetailPage() {
           style: "destructive",
           onPress: handleConfirmCancel,
         },
-      ]
+      ],
     );
   };
 
@@ -1016,7 +952,6 @@ export default function SessionDetailPage() {
     if (!sessionData || !user) return;
 
     try {
-      // Delete the session from the database
       const { error: deleteError } = await supabase
         .from("workout_sessions")
         .delete()
@@ -1027,7 +962,6 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Navigate back to sessions list
       router.push("/(tabs)/sessions");
     } catch (error) {
       console.error("Error deleting session:", error);
@@ -1038,7 +972,6 @@ export default function SessionDetailPage() {
     if (!sessionData || !user) return;
 
     try {
-      // Update the session to mark it as completed
       const { error: updateError } = await supabase
         .from("workout_sessions")
         .update({
@@ -1052,7 +985,6 @@ export default function SessionDetailPage() {
         return;
       }
 
-      // Navigate back to sessions list
       router.push("/(tabs)/sessions");
     } catch (error) {
       console.error("Error completing session:", error);
@@ -1068,23 +1000,26 @@ export default function SessionDetailPage() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-white dark:bg-zinc-900">
-        {/* Header */}
-        <View
-          className="bg-gray-50 dark:bg-zinc-800 px-4 border-b border-gray-200 dark:border-zinc-700"
-          style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
-        >
-          <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
-            Session
-          </Text>
-        </View>
-
-        {/* Loading */}
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#ff4b8c" />
-          <Text className="text-gray-500 dark:text-gray-400 mt-2">
+      <View className="flex-1 bg-background dark:bg-background-dark">
+        <SessionDetailTopBar
+          onBack={handleBack}
+          secondaryAction={{
+            label: "Close",
+            onPress: handleBack,
+          }}
+        />
+        <View className="flex-1 justify-center items-center px-4">
+          <ActivityIndicator
+            size="large"
+            color={isDark ? "#ff6fa1" : "#ff4b8c"}
+          />
+          <AppText
+            variant="body"
+            tone="muted"
+            className="normal-case mt-3 text-center"
+          >
             Loading session...
-          </Text>
+          </AppText>
         </View>
       </View>
     );
@@ -1092,35 +1027,48 @@ export default function SessionDetailPage() {
 
   if (!sessionData) {
     return (
-      <View className="flex-1 bg-white dark:bg-zinc-900">
-        {/* Header */}
-        <View
-          className="bg-gray-50 dark:bg-zinc-800 px-4 border-b border-gray-200 dark:border-zinc-700"
-          style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
-        >
-          <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
-            Session Not Found
-          </Text>
-        </View>
-
-        {/* Content */}
+      <View className="flex-1 bg-background dark:bg-background-dark">
+        <SessionDetailTopBar
+          onBack={handleBack}
+          secondaryAction={{
+            label: "Close",
+            onPress: handleBack,
+          }}
+        />
         <View className="flex-1 justify-center items-center px-4">
-          <Text className="text-gray-500 dark:text-gray-400 text-center">
-            Session not found or you don&apos;t have access to it.
-          </Text>
+          <AppText
+            variant="subheader"
+            tone="default"
+            className="text-center mb-2 normal-case font-bold"
+          >
+            Session not found
+          </AppText>
+          <AppText
+            variant="body"
+            tone="muted"
+            className="text-center normal-case max-w-sm"
+          >
+            This session does not exist or you do not have access to it.
+          </AppText>
         </View>
       </View>
     );
   }
 
-  // If we're tracking an exercise, show the exercise tracker
   if (currentExerciseIndex !== null) {
     const exercise = sessionData.exercises[currentExerciseIndex];
     const progress = exerciseProgress[currentExerciseIndex];
 
     return (
       <ExerciseTracker
-        exercise={exercise}
+        exercise={{
+          id: exercise.id,
+          name: exercise.name,
+          category: exercise.primaryMuscleGroup || "Exercise",
+          notes: exercise.notes,
+          workoutExerciseId: exercise.workoutExerciseId,
+          primaryMuscleGroup: exercise.primaryMuscleGroup,
+        }}
         onComplete={handleExerciseComplete}
         onBack={handleBackToExercises}
         initialSets={progress.sets}
@@ -1130,251 +1078,74 @@ export default function SessionDetailPage() {
     );
   }
 
-  // Show exercise list
+  const completedCount = exerciseProgress.filter((ex) => ex.completed).length;
+  const totalExercises = sessionData.exercises.length;
+  const finishDisabled = exerciseProgress.every((ex) => !ex.completed);
+
   return (
-    <View className="flex-1 bg-white dark:bg-zinc-900">
-      {/* Header */}
-      <View
-        className="bg-gray-50 dark:bg-zinc-800 px-4 border-b border-gray-200 dark:border-zinc-700"
-        style={{ paddingTop: insets.top + 16, paddingBottom: 16 }}
-      >
-        <View className="flex-row items-center justify-between">
-          <View className="flex-1">
-            <Text className="text-2xl font-bold text-zinc-900 dark:text-white">
-              {sessionData.workout_name}
-            </Text>
-            <Text className="text-gray-500 dark:text-gray-400 mt-1">
-              Started {new Date(sessionData.started_at).toLocaleDateString()}
-            </Text>
-          </View>
-          <View className="flex-row gap-2">
-            <TouchableOpacity
-              className={`w-8 h-8 rounded-full items-center justify-center ${
-                exerciseProgress.every((ex) => !ex.completed)
-                  ? "bg-gray-100 dark:bg-zinc-700"
-                  : "bg-success"
-              }`}
-              onPress={handleCompleteSession}
-              disabled={exerciseProgress.every((ex) => !ex.completed)}
-            >
-              <Ionicons
-                name="checkmark"
-                size={16}
-                color={
-                  exerciseProgress.every((ex) => !ex.completed)
-                    ? "#9ca3af"
-                    : "#002d40"
-                }
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="w-8 h-8 bg-error rounded-full items-center justify-center"
-              onPress={handleCancelSession}
-            >
-              <Ionicons name="trash-outline" size={16} color="#ffffff" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+    <View className="flex-1 bg-background dark:bg-background-dark">
+      <SessionDetailTopBar
+        onBack={handleBack}
+        secondaryAction={{
+          label: "Cancel session",
+          onPress: handleCancelSession,
+          destructive: true,
+        }}
+      />
 
-      {/* Content */}
       <ScrollView
-        className="flex-1 p-4"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        className="flex-1"
+        contentContainerStyle={{
+          paddingHorizontal: 24,
+          paddingTop: 16,
+          paddingBottom:
+            STICKY_BOTTOM_PRIMARY_SCROLL_PADDING + insets.bottom,
+        }}
+        showsVerticalScrollIndicator={false}
       >
-        {/* Back Button */}
-        <View className="mb-4">
-          <TouchableOpacity
-            className="flex-row items-center"
-            onPress={handleBack}
-          >
-            <Ionicons name="arrow-back" size={20} color="#ff4b8c" />
-            <Text className="text-primary ml-2 font-medium">
-              Back to Sessions
-            </Text>
-          </TouchableOpacity>
+        <SessionOverviewSection
+          workoutName={sessionData.workout_name}
+          startedAt={sessionData.started_at}
+          completedCount={completedCount}
+          totalExercises={totalExercises}
+        />
+
+        <View className="my-4">
+          <AppButton
+            tone="primary"
+            size="lg"
+            fullWidth
+            label="Add Exercise"
+            onPress={() => setShowAddExerciseModal(true)}
+            icon={<Ionicons name="add" size={22} color="#ffffff" />}
+            className="shadow-lg shadow-primary/25 dark:shadow-primary-dark/20"
+          />
         </View>
 
-        {/* Progress Indicator */}
-        <View className="mb-6">
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
-              Progress
-            </Text>
-            <Text className="text-sm text-gray-500 dark:text-gray-400">
-              {exerciseProgress.filter((ex) => ex.completed).length} of{" "}
-              {sessionData.exercises.length} completed
-            </Text>
-          </View>
-          <View className="bg-gray-100 dark:bg-zinc-700 rounded-full h-2">
-            <View
-              className="bg-primary rounded-full h-2"
-              style={{
-                width: `${sessionData.exercises.length > 0 ? (exerciseProgress.filter((ex) => ex.completed).length / sessionData.exercises.length) * 100 : 0}%`,
-              }}
-            />
-          </View>
-          {exerciseProgress.filter((ex) => ex.completed).length ===
-            sessionData.exercises.length &&
-            sessionData.exercises.length > 0 && (
-              <Text className="text-success text-sm font-medium mt-2 text-center">
-                🎉 All exercises completed! Ready to finish your session.
-              </Text>
-            )}
-        </View>
-
-        <View className="mb-4">
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
-              Exercises ({sessionData.exercises.length})
-            </Text>
-            <TouchableOpacity
-              onPress={() => setShowAddExerciseModal(true)}
-              className="flex-row items-center px-3 py-1.5 bg-primary rounded-lg"
-            >
-              <Ionicons name="add" size={18} color="#ffffff" />
-              <Text className="text-white font-medium ml-1">Add Exercise</Text>
-            </TouchableOpacity>
-          </View>
-          <Text className="text-gray-500 dark:text-gray-400 text-sm">
-            Tap an exercise to start tracking your sets
-          </Text>
-        </View>
-
-        {sessionData.exercises.length === 0 ? (
-          <View className="flex-1 justify-center items-center py-8">
-            <View className="w-16 h-16 bg-gray-100 dark:bg-zinc-700 rounded-full items-center justify-center mb-4">
-              <Ionicons name="barbell-outline" size={32} color="#ff4b8c" />
-            </View>
-            <Text className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
-              No Exercises
-            </Text>
-            <Text className="text-gray-500 dark:text-gray-400 text-center">
-              This workout template has no exercises
-            </Text>
-          </View>
-        ) : (
-          <View>
-            {sessionData.exercises.map((exercise, index) => {
-              const progress = exerciseProgress[index];
-              const isCompleted = progress?.completed;
-              const setCount = progress?.sets.length || 0;
-              const hasStarted = setCount > 0;
-
-              // Get exercise icon (muscle group agnostic)
-              const getExerciseIcon = (): "barbell-outline" => {
-                // Use dumbbell icon for all exercises
-                return "barbell-outline";
-              };
-
-              // Status is now indicated by icon background color and progress bar
-
-              return (
-                <View key={exercise.id}>
-                  <TouchableOpacity
-                    className={`rounded-xl p-4 ${
-                      isCompleted
-                        ? "bg-success/10 border border-success/20"
-                        : hasStarted
-                          ? "bg-warning/10 border border-warning/20"
-                          : "bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700"
-                    }`}
-                    onPress={() => handleExerciseClick(index)}
-                    style={{
-                      shadowColor: "#000",
-                      shadowOffset: {
-                        width: 0,
-                        height: 2,
-                      },
-                      shadowOpacity: 0.1,
-                      shadowRadius: 3,
-                      elevation: 3,
-                    }}
-                  >
-                    <View className="flex-row items-center">
-                      {/* Exercise Icon */}
-                      <View
-                        className={`w-12 h-12 rounded-full items-center justify-center mr-4 ${
-                          isCompleted
-                            ? "bg-success"
-                            : hasStarted
-                              ? "bg-warning"
-                              : "bg-gray-100 dark:bg-zinc-700"
-                        }`}
-                      >
-                        <Ionicons
-                          name={getExerciseIcon()}
-                          size={24}
-                          color={
-                            isCompleted
-                              ? "#ffffff"
-                              : hasStarted
-                                ? "#ffffff"
-                                : "#6b7280"
-                          }
-                        />
-                      </View>
-
-                      {/* Exercise Info */}
-                      <View className="flex-1">
-                        <View className="mb-1">
-                          <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
-                            {formatExerciseName(exercise.name)}
-                          </Text>
-                        </View>
-
-                        <View className="flex-row items-center justify-between">
-                          <Text className="text-sm text-gray-500 dark:text-gray-400">
-                            {exercise.primaryMuscleGroup || "Exercise"}
-                          </Text>
-                          {setCount > 0 && (
-                            <View className="flex-row items-center">
-                              <Ionicons
-                                name="list-outline"
-                                size={14}
-                                color="#6b7280"
-                              />
-                              <Text className="text-sm text-gray-500 dark:text-gray-400 ml-1">
-                                {setCount} set{setCount !== 1 ? "s" : ""}
-                              </Text>
-                            </View>
-                          )}
-                        </View>
-                      </View>
-
-                      {/* Delete Button */}
-                      <TouchableOpacity
-                        onPress={() => handleRemoveExercise(index)}
-                        className="mr-2 p-2"
-                      >
-                        <Ionicons
-                          name="trash-outline"
-                          size={18}
-                          color="#ef4444"
-                        />
-                      </TouchableOpacity>
-
-                      {/* Chevron */}
-                      <View className="ml-2">
-                        <Ionicons
-                          name="chevron-forward"
-                          size={20}
-                          color="#6b7280"
-                        />
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                  {index < sessionData.exercises.length - 1 && (
-                    <View className="mb-4" />
-                  )}
-                </View>
-              );
-            })}
-          </View>
-        )}
+        <SessionExerciseList
+          exercises={sessionData.exercises.map((ex) => ({
+            id: ex.id,
+            name: ex.name,
+            primaryMuscleGroup: ex.primaryMuscleGroup,
+          }))}
+          progress={exerciseProgress.map((p) => ({
+            completed: p.completed,
+            setCount: p.sets.length,
+            hasStarted: p.sets.length > 0,
+          }))}
+          formatExerciseName={formatExerciseName}
+          onExercisePress={handleExerciseClick}
+          onRemoveExercise={handleRemoveExercise}
+        />
       </ScrollView>
 
-      {/* Add Exercise Modal */}
+      <StickyBottomPrimaryButton
+        label="Finish"
+        onPress={handleCompleteSession}
+        disabled={finishDisabled}
+        accessibilityLabel="Finish session"
+      />
+
       <Modal
         visible={showAddExerciseModal}
         animationType="slide"

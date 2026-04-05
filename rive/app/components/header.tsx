@@ -1,31 +1,29 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import AppText from "./ui/AppText";
 
 type HeaderProps = {
-  title: string;
-  subtitle?: string;
+  /** e.g. date range control on Stats */
   rightComponent?: React.ReactNode;
 };
 
-export default function Header({
-  title,
-  subtitle,
-  rightComponent,
-}: HeaderProps) {
+/** Minimal top bar: RIVE + optional trailing action. Page titles live in screen content. */
+export default function Header({ rightComponent }: HeaderProps) {
   const insets = useSafeAreaInsets();
 
   return (
     <View
-      className="bg-gray-50 dark:bg-zinc-800 px-4 border-b border-gray-200 dark:border-zinc-700"
-      style={{ paddingTop: insets.top + 16, paddingBottom: 20 }}
+      className="border-b border-border bg-background px-4 dark:border-border-dark dark:bg-chrome-dark"
+      style={{ paddingTop: insets.top, paddingBottom: 10 }}
     >
-      <View className="flex-row items-center justify-between">
-        <View className="flex-1">
-          <Text className="text-2xl font-bold text-zinc-900 dark:text-white">{title}</Text>
-          {subtitle && <Text className="text-gray-500 dark:text-gray-400 mt-1">{subtitle}</Text>}
-        </View>
-        {rightComponent && <View className="ml-4">{rightComponent}</View>}
+      <View className="min-h-[36px] flex-row items-center justify-between">
+        <AppText variant="subheader" tone="primary" className="font-extrabold">
+          RIVE
+        </AppText>
+        {rightComponent ? (
+          <View className="ml-3 flex-shrink-0">{rightComponent}</View>
+        ) : null}
       </View>
     </View>
   );

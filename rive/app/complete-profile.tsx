@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useAuth } from "./context/authcontext";
+import { useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabaseClient";
 
 export default function CompleteProfilePage() {
@@ -82,7 +82,7 @@ export default function CompleteProfilePage() {
 
   if (!user) {
     return (
-      <View className="flex-1 justify-center items-center bg-white dark:bg-zinc-900">
+      <View className="flex-1 justify-center items-center bg-background dark:bg-background-dark">
         <Text className="text-gray-500 dark:text-gray-400">Loading...</Text>
       </View>
     );
@@ -94,7 +94,7 @@ export default function CompleteProfilePage() {
       className="flex-1 justify-center items-center p-4 bg-gray-50 dark:bg-zinc-800"
     >
       <View className="w-full max-w-md">
-        <View className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-6 gap-6">
+        <View className="rounded-lg bg-surface p-6 shadow-lg dark:bg-surface-dark gap-6">
           <View className="text-center">
             <View className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-4">
               <Ionicons name="person" size={32} color="#ffffff" />

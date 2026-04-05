@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "react-native";
-import { useAuth } from "../context/authcontext";
+import { useAuth } from "../context/AuthContext";
 
 export default function TabLayout() {
   const { userData } = useAuth();
@@ -13,9 +13,7 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: isDark ? "#18181b" : "#ffffff", // zinc-900 : white
-          borderTopColor: isDark ? "#3f3f46" : "#e4e4e7", // zinc-700 : gray-200
-          borderTopWidth: 1,
+          backgroundColor: isDark ? "#000000" : "#ffffff",
           paddingBottom: 8,
           paddingTop: 8,
           height: 80,

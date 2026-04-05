@@ -1,6 +1,8 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AppCard from "../ui/AppCard";
+import AppText from "../ui/AppText";
 
 type WorkoutTemplate = {
   id: string;
@@ -12,81 +14,136 @@ type WorkoutTemplate = {
 
 type SelectWorkoutCardProps = {
   workout: WorkoutTemplate;
-  isScheduled?: boolean;
   onPress: () => void;
+  /** Default template tile; compact row for extra same-day scheduled items */
+  layoutVariant?: "template" | "compactScheduled";
 };
+
+const NEW_TEMPLATE_DAYS = 7;
+
+function formatRelativeCreated(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffDays <= 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function isNewTemplate(iso: string): boolean {
+  return Date.now() - new Date(iso).getTime() < NEW_TEMPLATE_DAYS * 86400000;
+}
 
 export default function SelectWorkoutCard({
   workout,
-  isScheduled = false,
   onPress,
+  layoutVariant = "template",
 }: SelectWorkoutCardProps) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+  const primaryIcon = isDark ? "#ff6fa1" : "#ff4b8c";
+  const isNew = isNewTemplate(workout.created_at);
+  const relativeDate = formatRelativeCreated(workout.created_at);
+
+  if (layoutVariant === "compactScheduled") {
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.85}
+        className="flex-row items-center gap-3 rounded-ds-card border border-primary/15 dark:border-primary-dark/25 bg-surface dark:bg-surface-dark px-4 py-3 mb-3"
+      >
+        <View className="w-10 h-10 rounded-ds-tag bg-primary/10 dark:bg-primary-dark/15 items-center justify-center">
+          <Ionicons name="calendar-outline" size={20} color={primaryIcon} />
+        </View>
+        <View className="flex-1 min-w-0">
+          <AppText variant="body" className="font-bold">
+            {workout.name}
+          </AppText>
+          <AppText
+            variant="caption"
+            tone="muted"
+            className="normal-case mt-0.5"
+          >
+            {workout.exercise_count}{" "}
+            {workout.exercise_count === 1 ? "exercise" : "exercises"} · Also
+            today
+          </AppText>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color="#a1a1aa" />
+      </TouchableOpacity>
+    );
+  }
+
   return (
-    <TouchableOpacity
-      className={`${
-        isScheduled
-          ? "bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10 border border-primary/20"
-          : "bg-gray-50 dark:bg-zinc-800"
-      } rounded-xl p-4 mb-3`}
-      onPress={onPress}
-      style={{
-        shadowColor: isScheduled ? "#ff4b8c" : "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: isScheduled ? 0.1 : 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-      }}
-    >
-      <View className="flex-row items-center gap-4">
-        <View className="w-12 h-12 bg-[#ff4b8c]/20 dark:bg-[#ff6fa1]/20 rounded-xl items-center justify-center">
-          <Ionicons
-            name={isScheduled ? "calendar" : "barbell-outline"}
-            size={24}
-            color="#ff4b8c"
-          />
-        </View>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.88}>
+      <AppCard
+        className="border border-border dark:border-border-dark mb-0"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 6,
+          elevation: 2,
+        }}
+      >
+        <View className="gap-4">
+          <View className="flex-row justify-between items-start">
+            <AppCard surface="alt" radius="tag" className="!p-3">
+              <Ionicons name="barbell-outline" size={22} color={primaryIcon} />
+            </AppCard>
+            {isNew ? (
+              <View className="rounded bg-primary/10 dark:bg-primary-dark/15 px-2 py-1">
+                <AppText
+                  variant="caption"
+                  tone="primary"
+                  className="text-[10px] font-bold normal-case tracking-widest"
+                >
+                  New
+                </AppText>
+              </View>
+            ) : (
+              <View className="rounded bg-surfaceAlt dark:bg-surfaceAlt-dark px-2 py-1">
+                <AppText
+                  variant="caption"
+                  tone="muted"
+                  className="text-[10px] font-bold normal-case tracking-widest"
+                >
+                  {relativeDate}
+                </AppText>
+              </View>
+            )}
+          </View>
 
-        <View className="flex-1">
-          <View className="flex-row items-center gap-2 mb-1">
-            <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
+          <View>
+            <AppText variant="body" className="font-bold tracking-tight">
               {workout.name}
-            </Text>
-            {isScheduled && (
-              <View className="bg-primary px-2 py-1 rounded-full">
-                <Text className="text-xs font-medium text-white">
-                  Scheduled Today
-                </Text>
-              </View>
-            )}
-          </View>
-          {workout.description && (
-            <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1" numberOfLines={2}>
-              {workout.description}
-            </Text>
-          )}
-          <View className="flex-row items-center gap-3 mt-2">
-            <View className="bg-gray-100 dark:bg-zinc-700 px-2 py-1 rounded-full">
-              <Text className="text-xs text-gray-500 dark:text-gray-400">
-                {workout.exercise_count} exercise
-                {workout.exercise_count !== 1 ? "s" : ""}
-              </Text>
-            </View>
-            {!isScheduled && (
+            </AppText>
+            <View className="flex-row flex-wrap items-center gap-x-3 gap-y-1 mt-2">
               <View className="flex-row items-center gap-1">
-                <Ionicons name="calendar" size={12} color="#9ca3af" />
-                <Text className="text-xs text-gray-500 dark:text-gray-400">
-                  {new Date(workout.created_at).toLocaleDateString()}
-                </Text>
+                <Ionicons
+                  name="list-outline"
+                  size={14}
+                  color={isDark ? "#a1a1aa" : "#6b7280"}
+                />
+                <AppText variant="caption" tone="muted" className="normal-case">
+                  {workout.exercise_count}{" "}
+                  {workout.exercise_count === 1 ? "exercise" : "exercises"}
+                </AppText>
               </View>
-            )}
+              <View className="h-1 w-1 rounded-full bg-border dark:bg-border-dark" />
+              <AppText variant="caption" tone="muted" className="normal-case">
+                Tap to start
+              </AppText>
+            </View>
           </View>
         </View>
-
-        <View className="w-8 h-8 bg-[#ff4b8c]/10 dark:bg-[#ff6fa1]/10 rounded-full items-center justify-center">
-          <Ionicons name="chevron-forward" size={16} color="#ff4b8c" />
-        </View>
-      </View>
+      </AppCard>
     </TouchableOpacity>
   );
 }
-

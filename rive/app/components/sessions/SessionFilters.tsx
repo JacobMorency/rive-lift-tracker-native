@@ -6,13 +6,19 @@ import {
   ScrollView,
   Modal,
   useColorScheme,
+  Pressable,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import AppText from "../ui/AppText";
 import FilterButton from "./FilterButton";
 
 export type DateRangeFilter = "all" | "week" | "month" | "year";
 export type StatusFilter = "all" | "completed" | "in_progress";
 export type SortOrder = "newest" | "oldest";
+
+const SCROLL_BOTTOM_FOR_STICKY_CTA = 140;
 
 type SessionFiltersProps = {
   availableWorkouts: string[];
@@ -25,6 +31,8 @@ type SessionFiltersProps = {
   onStatusChange: (status: StatusFilter) => void;
   onSortOrderChange: (order: SortOrder) => void;
   onClearAll: () => void;
+  /** Full-width row (default) or compact pill for toolbar rows */
+  triggerVariant?: "full" | "compact";
 };
 
 export default function SessionFilters({
@@ -37,15 +45,16 @@ export default function SessionFilters({
   onDateRangeChange,
   onStatusChange,
   onSortOrderChange,
-  onClearAll,
+  onClearAll: _onClearAll,
+  triggerVariant = "full",
 }: SessionFiltersProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+  const insets = useSafeAreaInsets();
   const [showFilterModal, setShowFilterModal] = useState(false);
 
-  // Local state for modal selections (not applied until "Apply" is clicked)
   const [localWorkout, setLocalWorkout] = useState<string | null>(
-    selectedWorkout
+    selectedWorkout,
   );
   const [localDateRange, setLocalDateRange] =
     useState<DateRangeFilter>(dateRange);
@@ -53,7 +62,6 @@ export default function SessionFilters({
     useState<StatusFilter>(statusFilter);
   const [localSortOrder, setLocalSortOrder] = useState<SortOrder>(sortOrder);
 
-  // Reset local state when modal opens or props change
   useEffect(() => {
     if (showFilterModal) {
       setLocalWorkout(selectedWorkout);
@@ -74,7 +82,7 @@ export default function SessionFilters({
     return count;
   };
 
-  const handleApply = () => {
+  const handleApplyFilters = () => {
     onWorkoutChange(localWorkout);
     onDateRangeChange(localDateRange);
     onStatusChange(localStatusFilter);
@@ -83,7 +91,6 @@ export default function SessionFilters({
   };
 
   const handleCancel = () => {
-    // Reset to original values
     setLocalWorkout(selectedWorkout);
     setLocalDateRange(dateRange);
     setLocalStatusFilter(statusFilter);
@@ -91,100 +98,170 @@ export default function SessionFilters({
     setShowFilterModal(false);
   };
 
-  const handleClearAll = () => {
+  const handleReset = () => {
     setLocalWorkout(null);
     setLocalDateRange("all");
     setLocalStatusFilter("all");
-    // Keep sort order when clearing filters
   };
+
+  const filterTrigger = (
+    <TouchableOpacity
+      className={
+        triggerVariant === "compact"
+          ? `flex-row items-center gap-2 rounded-full border px-3 py-1.5 bg-surfaceAlt dark:bg-surfaceAlt-dark ${
+              hasActiveFilters
+                ? "border-primary dark:border-primary-dark"
+                : "border-border dark:border-border-dark"
+            }`
+          : "flex-row items-center justify-between bg-gray-50 dark:bg-zinc-800 rounded-xl px-4 py-3"
+      }
+      onPress={() => setShowFilterModal(true)}
+      style={
+        triggerVariant === "compact"
+          ? undefined
+          : {
+              shadowColor: hasActiveFilters ? "#ff4b8c" : "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: hasActiveFilters ? 0.3 : 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+              borderWidth: hasActiveFilters ? 1 : 0,
+              borderColor: hasActiveFilters ? "#ff4b8c" : "transparent",
+            }
+      }
+      activeOpacity={0.85}
+    >
+      <View className="flex-row items-center gap-2">
+        <Ionicons
+          name="filter"
+          size={triggerVariant === "compact" ? 16 : 20}
+          color={hasActiveFilters ? "#ff4b8c" : isDark ? "#a1a1aa" : "#6b7280"}
+        />
+        {triggerVariant === "compact" ? (
+          <AppText
+            variant="caption"
+            tone="muted"
+            className="normal-case font-semibold"
+          >
+            Filters
+          </AppText>
+        ) : (
+          <Text className="text-base font-medium text-zinc-900 dark:text-white">
+            Filters
+          </Text>
+        )}
+        {hasActiveFilters && (
+          <View className="bg-primary dark:bg-primary-dark rounded-full px-2 py-0.5 min-w-[20px] items-center justify-center">
+            <Text className="text-xs font-bold text-white">
+              {getFilterCount()}
+            </Text>
+          </View>
+        )}
+      </View>
+      {triggerVariant === "full" ? (
+        <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+      ) : null}
+    </TouchableOpacity>
+  );
+
+  const footerFadeColors = isDark
+    ? (["rgba(15,15,16,0)", "#0f0f10"] as const)
+    : (["rgba(255,255,255,0)", "#ffffff"] as const);
+
+  const primaryIcon = isDark ? "#ff6fa1" : "#ff4b8c";
 
   return (
     <>
-      {/* Filter Icon Button */}
-      <View className="px-4 py-3">
-        <TouchableOpacity
-          className="flex-row items-center justify-between bg-gray-50 dark:bg-zinc-800 rounded-xl px-4 py-3"
-          onPress={() => setShowFilterModal(true)}
-          style={{
-            shadowColor: hasActiveFilters ? "#ff4b8c" : "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: hasActiveFilters ? 0.3 : 0.1,
-            shadowRadius: 4,
-            elevation: 3,
-            borderWidth: hasActiveFilters ? 1 : 0,
-            borderColor: hasActiveFilters ? "#ff4b8c" : "transparent",
-          }}
-        >
-          <View className="flex-row items-center gap-2">
-            <Ionicons
-              name="filter"
-              size={20}
-              color={hasActiveFilters ? "#ff4b8c" : "#6b7280"}
-            />
-            <Text className="text-base font-medium text-zinc-900 dark:text-white">
-              Filters
-            </Text>
-            {hasActiveFilters && (
-              <View className="bg-[#ff4b8c] dark:bg-[#ff6fa1] rounded-full px-2 py-0.5 min-w-[20px] items-center justify-center">
-                <Text className="text-xs font-bold text-white">
-                  {getFilterCount()}
-                </Text>
-              </View>
-            )}
-          </View>
-          <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
-        </TouchableOpacity>
-      </View>
+      {triggerVariant === "compact" ? (
+        filterTrigger
+      ) : (
+        <View className="px-4 py-3">{filterTrigger}</View>
+      )}
 
-      {/* Filter Modal */}
       <Modal
         visible={showFilterModal}
         transparent={true}
         animationType="slide"
-        onRequestClose={() => setShowFilterModal(false)}
+        onRequestClose={handleCancel}
       >
-        <View className="flex-1 bg-black/50 justify-end">
-          <View className="bg-gray-50 dark:bg-zinc-800 rounded-t-3xl max-h-[85%]">
-            {/* Header */}
-            <View className="px-4 py-4 border-b border-gray-200 dark:border-zinc-700 flex-row items-center justify-between">
-              <Text className="text-xl font-bold text-zinc-900 dark:text-white">
-                Filters
-              </Text>
-              <View className="flex-row items-center gap-3">
-                {(localWorkout !== null ||
-                  localDateRange !== "all" ||
-                  localStatusFilter !== "all") && (
+        <View className="flex-1 justify-end bg-black/60">
+          <Pressable
+            className="absolute inset-0"
+            onPress={handleCancel}
+            accessibilityLabel="Dismiss filters"
+          />
+          <View
+            className="h-[88%] w-full overflow-hidden rounded-t-3xl bg-background dark:bg-background-dark"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: -4 },
+              shadowOpacity: 0.25,
+              shadowRadius: 24,
+              elevation: 24,
+              zIndex: 1,
+            }}
+          >
+            <View className="flex-1">
+              {/* Top bar */}
+              <View className="flex-row items-center border-b border-border px-6 pb-3 pt-4 dark:border-border-dark">
+                <View className="flex-1 items-start">
                   <TouchableOpacity
-                    onPress={handleClearAll}
-                    className="flex-row items-center gap-1"
+                    onPress={handleCancel}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    accessibilityLabel="Close filters"
                   >
-                    <Ionicons name="close-circle" size={18} color="#ef4444" />
-                    <Text className="text-sm text-error font-medium">
-                      Clear All
-                    </Text>
+                    <Ionicons name="close" size={26} color={primaryIcon} />
                   </TouchableOpacity>
-                )}
-                <TouchableOpacity onPress={handleCancel}>
-                  <Ionicons name="close" size={24} color="#6b7280" />
-                </TouchableOpacity>
+                </View>
+                <View className="flex-1 items-center">
+                  <AppText
+                    variant="caption"
+                    className="font-bold tracking-tight"
+                  >
+                    Filters
+                  </AppText>
+                </View>
+                <View className="flex-1 items-end">
+                  <TouchableOpacity
+                    onPress={handleReset}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    accessibilityLabel="Reset filters"
+                  >
+                    <AppText
+                      variant="caption"
+                      tone="primary"
+                      className="font-bold normal-case"
+                    >
+                      Reset
+                    </AppText>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
 
-            <ScrollView
-              className="px-4 py-4"
-              showsVerticalScrollIndicator={false}
-            >
-              {/* Workout Filter */}
-              <View className="mb-6">
-                <Text className="text-base font-semibold text-zinc-900 dark:text-white mb-3">
-                  Workout
-                </Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View className="flex-row gap-2">
+              <ScrollView
+                className="flex-1"
+                contentContainerStyle={{
+                  paddingHorizontal: 24,
+                  paddingTop: 16,
+                  paddingBottom: SCROLL_BOTTOM_FOR_STICKY_CTA + insets.bottom,
+                }}
+                showsVerticalScrollIndicator={false}
+              >
+                <View className="mb-10">
+                  <AppText
+                    variant="caption"
+                    tone="muted"
+                    className="mb-4 font-bold"
+                    style={{ letterSpacing: 2 }}
+                  >
+                    Workout
+                  </AppText>
+                  <View className="flex-row flex-wrap gap-2">
                     <FilterButton
                       label="All Workouts"
                       isSelected={localWorkout === null}
                       onPress={() => setLocalWorkout(null)}
+                      variant="pill"
                     />
                     {availableWorkouts.map((workout) => (
                       <FilterButton
@@ -192,19 +269,22 @@ export default function SessionFilters({
                         label={workout}
                         isSelected={localWorkout === workout}
                         onPress={() => setLocalWorkout(workout)}
+                        variant="pill"
                       />
                     ))}
                   </View>
-                </ScrollView>
-              </View>
+                </View>
 
-              {/* Date Range Filter */}
-              <View className="mb-6">
-                <Text className="text-base font-semibold text-zinc-900 dark:text-white mb-3">
-                  Date Range
-                </Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View className="flex-row gap-2">
+                <View className="mb-10">
+                  <AppText
+                    variant="caption"
+                    tone="muted"
+                    className="mb-4 font-bold"
+                    style={{ letterSpacing: 2 }}
+                  >
+                    Date Range
+                  </AppText>
+                  <View className="flex-row flex-wrap gap-3">
                     {(
                       [
                         { key: "all", label: "All Time" },
@@ -213,104 +293,122 @@ export default function SessionFilters({
                         { key: "year", label: "This Year" },
                       ] as { key: DateRangeFilter; label: string }[]
                     ).map((range) => (
-                      <FilterButton
-                        key={range.key}
-                        label={range.label}
-                        isSelected={localDateRange === range.key}
-                        onPress={() => setLocalDateRange(range.key)}
-                      />
+                      <View key={range.key} style={{ width: "47%" }}>
+                        <FilterButton
+                          label={range.label}
+                          isSelected={localDateRange === range.key}
+                          onPress={() => setLocalDateRange(range.key)}
+                          flex
+                        />
+                      </View>
                     ))}
                   </View>
-                </ScrollView>
-              </View>
+                </View>
 
-              {/* Status Filter */}
-              <View className="mb-6">
-                <Text className="text-base font-semibold text-zinc-900 dark:text-white mb-3">
-                  Status
-                </Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View className="flex-row gap-2">
+                <View className="mb-10">
+                  <AppText
+                    variant="caption"
+                    tone="muted"
+                    className="mb-4 font-bold"
+                    style={{ letterSpacing: 2 }}
+                  >
+                    Status
+                  </AppText>
+                  <View className="flex-row flex-wrap gap-2">
                     {(
                       [
-                        { key: "all", label: "All", icon: "list-outline" },
-                        {
-                          key: "completed",
-                          label: "Completed",
-                          icon: "checkmark-circle-outline",
-                        },
-                        {
-                          key: "in_progress",
-                          label: "In Progress",
-                          icon: "time-outline",
-                        },
-                      ] as {
-                        key: StatusFilter;
-                        label: string;
-                        icon: string;
-                      }[]
+                        { key: "all", label: "All" },
+                        { key: "completed", label: "Completed" },
+                        { key: "in_progress", label: "In Progress" },
+                      ] as { key: StatusFilter; label: string }[]
                     ).map((status) => (
                       <FilterButton
                         key={status.key}
                         label={status.label}
                         isSelected={localStatusFilter === status.key}
                         onPress={() => setLocalStatusFilter(status.key)}
-                        icon={status.icon}
+                        variant="pill"
                       />
                     ))}
                   </View>
-                </ScrollView>
-              </View>
-
-              {/* Sort Order */}
-              <View className="mb-4">
-                <Text className="text-base font-semibold text-zinc-900 dark:text-white mb-3">
-                  Sort Order
-                </Text>
-                <View className="flex-row gap-2">
-                  <FilterButton
-                    label="Newest First"
-                    isSelected={localSortOrder === "newest"}
-                    onPress={() => setLocalSortOrder("newest")}
-                    icon="arrow-down"
-                    flex={true}
-                  />
-                  <FilterButton
-                    label="Oldest First"
-                    isSelected={localSortOrder === "oldest"}
-                    onPress={() => setLocalSortOrder("oldest")}
-                    icon="arrow-up"
-                    flex={true}
-                  />
                 </View>
-              </View>
-            </ScrollView>
 
-            {/* Apply Button Footer */}
-            <View
-              className="px-4 py-4 border-t border-gray-200 dark:border-zinc-700"
-              style={{
-                paddingBottom: 20,
-              }}
-            >
-              <TouchableOpacity
-                className={`w-full py-4 rounded-xl flex-row items-center justify-center ${
-                  isDark ? "bg-[#ff6fa1]" : "bg-[#ff4b8c]"
-                }`}
-                onPress={handleApply}
+                <View className="mb-6">
+                  <AppText
+                    variant="caption"
+                    tone="muted"
+                    className="mb-4 font-bold"
+                    style={{ letterSpacing: 2 }}
+                  >
+                    Sort Order
+                  </AppText>
+                  <View className="flex-row gap-3">
+                    <FilterButton
+                      label="Newest First"
+                      isSelected={localSortOrder === "newest"}
+                      onPress={() => setLocalSortOrder("newest")}
+                      icon="arrow-down"
+                      flex
+                      variant="sort"
+                    />
+                    <FilterButton
+                      label="Oldest First"
+                      isSelected={localSortOrder === "oldest"}
+                      onPress={() => setLocalSortOrder("oldest")}
+                      icon="arrow-up"
+                      flex
+                      variant="sort"
+                    />
+                  </View>
+                </View>
+              </ScrollView>
+
+              <LinearGradient
+                colors={[...footerFadeColors]}
+                locations={[0, 0.45]}
+                pointerEvents="box-none"
                 style={{
-                  shadowColor: isDark ? "#ff6fa1" : "#ff4b8c",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
-                  elevation: 8,
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  paddingTop: 40,
+                  paddingHorizontal: 24,
+                  paddingBottom: Math.max(insets.bottom, 20),
                 }}
               >
-                <Ionicons name="checkmark-circle" size={20} color="#ffffff" />
-                <Text className="text-white font-bold ml-2 text-lg">
-                  Apply Filters
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleApplyFilters}
+                  activeOpacity={0.92}
+                  accessibilityLabel="Apply filters"
+                >
+                  <LinearGradient
+                    colors={["#ff4b8c", "#ff6fa1"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={{
+                      borderRadius: 12,
+                      paddingVertical: 20,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      shadowColor: "#ff4b8c",
+                      shadowOffset: { width: 0, height: 10 },
+                      shadowOpacity: 0.35,
+                      shadowRadius: 18,
+                      elevation: 12,
+                    }}
+                  >
+                    <AppText
+                      tone="inverse"
+                      variant="body"
+                      className="font-black uppercase tracking-widest"
+                      style={{ fontSize: 13, letterSpacing: 2 }}
+                    >
+                      Apply Filters
+                    </AppText>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </LinearGradient>
             </View>
           </View>
         </View>

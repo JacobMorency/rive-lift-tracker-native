@@ -1,20 +1,39 @@
-import React, { useState } from "react";
-import { View, TouchableOpacity, Text, ScrollView } from "react-native";
+import React, { useState, useMemo } from "react";
+import { View, TouchableOpacity, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "../context/authcontext";
 import { DateRange } from "../lib/statsUtils";
-import Header from "../components/header";
-import DateRangePicker from "../components/daterangepicker";
-import OverviewTab from "../components/stats/overviewtab";
-import PRsTab from "../components/stats/prstab";
+import Header from "../components/Header";
+import DateRangePicker from "../components/DateRangePicker";
+import OverviewTab from "../components/stats/OverviewTab";
+import PRsTab from "../components/stats/PRsTab";
+import AppText from "../components/ui/AppText";
 
 type TabType = "overview" | "prs";
 
+function getDateRangeLabel(dateRange: DateRange): string {
+  switch (dateRange.type) {
+    case "week":
+      return "Last 7 days";
+    case "month":
+      return "Last 30 days";
+    case "year":
+      return "Last year";
+    case "custom":
+      return "Custom range";
+    default:
+      return "All time";
+  }
+}
+
 export default function StatsPage() {
-  const { userData } = useAuth();
   const [dateRange, setDateRange] = useState<DateRange>({ type: "all" });
   const [selectedTab, setSelectedTab] = useState<TabType>("overview");
   const insets = useSafeAreaInsets();
+
+  const rangeLabel = useMemo(
+    () => getDateRangeLabel(dateRange),
+    [dateRange],
+  );
 
   const tabs = [
     { id: "overview" as TabType, label: "Overview" },
@@ -33,14 +52,8 @@ export default function StatsPage() {
   };
 
   return (
-    <View className="flex-1 bg-white dark:bg-zinc-900">
+    <View className="flex-1 bg-background dark:bg-background-dark">
       <Header
-        title="Stats"
-        subtitle={
-          userData
-            ? `Your fitness progress, ${userData.first_name} 📊`
-            : undefined
-        }
         rightComponent={
           <DateRangePicker
             selectedRange={dateRange}
@@ -49,36 +62,58 @@ export default function StatsPage() {
         }
       />
 
-      {/* Tab Selector */}
-      <View className="flex-row justify-center mb-6 mt-3">
-        <View className="flex-row bg-gray-100 dark:bg-zinc-700 rounded-xl p-1">
-          {tabs.map((tab) => (
-            <TouchableOpacity
-              key={tab.id}
-              className={`px-4 py-2 rounded-lg ${
-                selectedTab === tab.id ? "bg-[#ff4b8c] dark:bg-[#ff6fa1]" : "bg-transparent"
-              }`}
-              onPress={() => setSelectedTab(tab.id)}
-            >
-              <Text
-                className={`text-sm font-medium ${
-                  selectedTab === tab.id
-                    ? "text-white"
-                    : "text-zinc-900 dark:text-white"
+      <View className="px-4 pt-3 pb-2">
+        <View className="flex-row rounded-2xl bg-surfaceAlt p-1 dark:bg-surfaceAlt-dark">
+          {tabs.map((tab) => {
+            const selected = selectedTab === tab.id;
+            return (
+              <TouchableOpacity
+                key={tab.id}
+                className={`flex-1 rounded-xl py-2.5 ${
+                  selected ? "bg-primary dark:bg-primary-dark" : ""
                 }`}
+                onPress={() => setSelectedTab(tab.id)}
+                activeOpacity={0.85}
               >
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <AppText
+                  variant="body"
+                  tone={selected ? "inverse" : "default"}
+                  className="text-center font-semibold normal-case"
+                >
+                  {tab.label}
+                </AppText>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
-      {/* Tab Content */}
       <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+        className="flex-1 px-4"
+        contentContainerStyle={{
+          paddingTop: 8,
+          paddingBottom: insets.bottom + 24,
+        }}
+        showsVerticalScrollIndicator={false}
       >
+        <View className="mb-6 flex-row items-end justify-between">
+          <View className="min-w-0 flex-1 pr-3">
+            <AppText variant="caption" tone="primary" className="mb-1 font-bold normal-case">
+              Insights
+            </AppText>
+            <AppText variant="header" tone="default">
+              {selectedTab === "overview" ? "Overview" : "Personal records"}
+            </AppText>
+          </View>
+          <AppText
+            variant="caption"
+            tone="muted"
+            className="shrink-0 normal-case"
+          >
+            {rangeLabel}
+          </AppText>
+        </View>
+
         {renderTabContent()}
       </ScrollView>
     </View>

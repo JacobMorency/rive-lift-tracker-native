@@ -40,19 +40,19 @@ export type CalendarMarker = {
  */
 export function checkRecurrenceMatch(
   schedule: WorkoutSchedule,
-  targetDate: Date
+  targetDate: Date,
 ): boolean {
   const startDate = new Date(schedule.start_date);
   const endDate = schedule.end_date ? new Date(schedule.end_date) : null;
   const target = new Date(
     targetDate.getFullYear(),
     targetDate.getMonth(),
-    targetDate.getDate()
+    targetDate.getDate(),
   );
   const start = new Date(
     startDate.getFullYear(),
     startDate.getMonth(),
-    startDate.getDate()
+    startDate.getDate(),
   );
 
   // Check if target date is before start date
@@ -63,7 +63,7 @@ export function checkRecurrenceMatch(
     const end = new Date(
       endDate.getFullYear(),
       endDate.getMonth(),
-      endDate.getDate()
+      endDate.getDate(),
     );
     if (target > end) return false;
   }
@@ -100,7 +100,7 @@ export function checkRecurrenceMatch(
  */
 export async function getScheduledWorkoutsForDate(
   userId: string,
-  date: Date
+  date: Date,
 ): Promise<ScheduledWorkout[]> {
   try {
     const { data: schedules, error } = await supabase
@@ -112,7 +112,7 @@ export async function getScheduledWorkoutsForDate(
           name,
           description
         )
-      `
+      `,
       )
       .eq("user_id", userId)
       .eq("is_active", true);
@@ -126,7 +126,7 @@ export async function getScheduledWorkoutsForDate(
 
     // Filter schedules that match the target date
     const matchingSchedules = schedules.filter((schedule) =>
-      checkRecurrenceMatch(schedule as WorkoutSchedule, date)
+      checkRecurrenceMatch(schedule as WorkoutSchedule, date),
     );
 
     return matchingSchedules.map((schedule) => ({
@@ -146,7 +146,7 @@ export async function getScheduledWorkoutsForDate(
 export async function getScheduledWorkoutsForMonth(
   userId: string,
   year: number,
-  month: number
+  month: number,
 ): Promise<CalendarMarker[]> {
   try {
     const { data: schedules, error } = await supabase
@@ -157,7 +157,7 @@ export async function getScheduledWorkoutsForMonth(
         workouts!inner(
           name
         )
-      `
+      `,
       )
       .eq("user_id", userId)
       .eq("is_active", true);
@@ -176,7 +176,7 @@ export async function getScheduledWorkoutsForMonth(
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month - 1, day);
       const matchingSchedules = schedules.filter((schedule) =>
-        checkRecurrenceMatch(schedule as WorkoutSchedule, date)
+        checkRecurrenceMatch(schedule as WorkoutSchedule, date),
       );
 
       if (matchingSchedules.length > 0) {
@@ -205,7 +205,7 @@ export async function getScheduledWorkoutsForMonth(
  * Create a new workout schedule
  */
 export async function createSchedule(
-  schedule: Omit<WorkoutSchedule, "id" | "created_at" | "updated_at">
+  schedule: Omit<WorkoutSchedule, "id" | "created_at" | "updated_at">,
 ): Promise<WorkoutSchedule | null> {
   try {
     const { data, error } = await supabase
@@ -231,7 +231,7 @@ export async function createSchedule(
  */
 export async function updateSchedule(
   scheduleId: string,
-  updates: Partial<Omit<WorkoutSchedule, "id" | "created_at" | "updated_at">>
+  updates: Partial<Omit<WorkoutSchedule, "id" | "created_at" | "updated_at">>,
 ): Promise<WorkoutSchedule | null> {
   try {
     const { data, error } = await supabase
@@ -282,7 +282,7 @@ export async function deleteSchedule(scheduleId: string): Promise<boolean> {
  * Get all schedules for a user (for management)
  */
 export async function getUserSchedules(
-  userId: string
+  userId: string,
 ): Promise<ScheduledWorkout[]> {
   try {
     const { data: schedules, error } = await supabase
@@ -294,7 +294,7 @@ export async function getUserSchedules(
           name,
           description
         )
-      `
+      `,
       )
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
@@ -321,7 +321,7 @@ export async function getUserSchedules(
  * Get today's scheduled workouts
  */
 export async function getTodaysScheduledWorkouts(
-  userId: string
+  userId: string,
 ): Promise<ScheduledWorkout[]> {
   const today = new Date();
   return getScheduledWorkoutsForDate(userId, today);
@@ -338,7 +338,7 @@ export type ScheduledWorkoutWithDate = ScheduledWorkout & {
 export async function getScheduledWorkoutsForDateRange(
   userId: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): Promise<ScheduledWorkoutWithDate[]> {
   try {
     const { data: schedules, error } = await supabase
@@ -350,7 +350,7 @@ export async function getScheduledWorkoutsForDateRange(
           name,
           description
         )
-      `
+      `,
       )
       .eq("user_id", userId)
       .eq("is_active", true);
@@ -365,19 +365,19 @@ export async function getScheduledWorkoutsForDateRange(
     const results: ScheduledWorkoutWithDate[] = [];
     const currentDate = new Date(startDate);
     currentDate.setHours(0, 0, 0, 0);
-    
+
     const end = new Date(endDate);
     end.setHours(23, 59, 59, 999);
 
     // Check each date in the range
     while (currentDate <= end) {
       const dateString = `${currentDate.getFullYear()}-${String(
-        currentDate.getMonth() + 1
+        currentDate.getMonth() + 1,
       ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
 
       // Filter schedules that match this date
       const matchingSchedules = schedules.filter((schedule) =>
-        checkRecurrenceMatch(schedule as WorkoutSchedule, currentDate)
+        checkRecurrenceMatch(schedule as WorkoutSchedule, currentDate),
       );
 
       // Add each matching schedule to results
