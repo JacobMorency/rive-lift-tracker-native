@@ -30,10 +30,7 @@ export default function StatsPage() {
   const [selectedTab, setSelectedTab] = useState<TabType>("overview");
   const insets = useSafeAreaInsets();
 
-  const rangeLabel = useMemo(
-    () => getDateRangeLabel(dateRange),
-    [dateRange],
-  );
+  const rangeLabel = useMemo(() => getDateRangeLabel(dateRange), [dateRange]);
 
   const tabs = [
     { id: "overview" as TabType, label: "Overview" },
@@ -98,7 +95,11 @@ export default function StatsPage() {
       >
         <View className="mb-6 flex-row items-end justify-between">
           <View className="min-w-0 flex-1 pr-3">
-            <AppText variant="caption" tone="primary" className="mb-1 font-bold normal-case">
+            <AppText
+              variant="caption"
+              tone="primary"
+              className="mb-1 font-bold normal-case"
+            >
               Insights
             </AppText>
             <AppText variant="header" tone="default">

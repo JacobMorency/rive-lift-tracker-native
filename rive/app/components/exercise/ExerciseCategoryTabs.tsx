@@ -1,6 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, TouchableOpacity, ScrollView } from "react-native";
 import AppText from "../ui/AppText";
 
 type ExerciseCategoryTabsProps = {
@@ -45,11 +44,15 @@ export default function ExerciseCategoryTabs({
             className={`px-6 rounded-full flex-row items-center ${
               selectedFilter === ""
                 ? "bg-primary dark:bg-primary-dark"
-                : "bg-background dark:bg-surfaceAlt-dark text-textMuted dark:text-textMuted-dark"
+                : "bg-background dark:bg-surfaceAlt-dark"
             }`}
             onPress={() => onFilterChange("")}
           >
-            <AppText variant="caption" className="font-bold">
+            <AppText
+              variant="caption"
+              tone={selectedFilter === "" ? "inverse" : "muted"}
+              className="font-bold"
+            >
               All
             </AppText>
           </TouchableOpacity>
@@ -60,13 +63,14 @@ export default function ExerciseCategoryTabs({
               className={`px-6 py-1 rounded-full ${
                 selectedFilter === filter
                   ? "bg-primary dark:bg-primary-dark"
-                  : "bg-surfaceAlt dark:bg-surfaceAlt-dark text-textMuted dark:text-textMuted-dark"
+                  : "bg-surfaceAlt dark:bg-surfaceAlt-dark"
               }`}
               onPress={() => onFilterChange(filter)}
             >
               <AppText
                 variant="caption"
-                className={`font-bold ${selectedFilter}`}
+                tone={selectedFilter === filter ? "inverse" : "muted"}
+                className="font-bold"
               >
                 {filter}
               </AppText>
