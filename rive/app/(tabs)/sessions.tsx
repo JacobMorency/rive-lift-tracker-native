@@ -8,9 +8,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useAuth } from "../context/authcontext";
+import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
-import SelectWorkoutModal from "../components/SelectWorkoutModal";
+import SelectWorkoutModal from "../components/modals/SelectWorkoutModal";
 import SessionFilters, {
   DateRangeFilter,
   StatusFilter,
@@ -19,7 +19,7 @@ import SessionFilters, {
 import NextScheduledWorkout from "../components/sessions/NextScheduledWorkout";
 import SessionCard from "../components/sessions/SessionCard";
 import SessionEmptyState from "../components/sessions/SessionEmptyState";
-import Header from "../components/header";
+import Header from "../components/Header";
 import AppText from "../components/ui/AppText";
 import AppButton from "../components/ui/AppButton";
 import { Session } from "../components/sessions/types";

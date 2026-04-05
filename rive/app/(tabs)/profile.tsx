@@ -3,9 +3,9 @@ import { View, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useAuth } from "../context/authcontext";
+import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
-import Header from "../components/header";
+import Header from "../components/Header";
 import AppText from "../components/ui/AppText";
 import AppCard from "../components/ui/AppCard";
 

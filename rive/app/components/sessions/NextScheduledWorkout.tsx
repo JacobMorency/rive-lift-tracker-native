@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { View, ActivityIndicator, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useAuth } from "../../context/authcontext";
+import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
 import {
   getScheduledWorkoutsForDateRange,

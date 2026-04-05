@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { View, ActivityIndicator, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../../context/authcontext";
+import { useAuth } from "../../context/AuthContext";
 import {
   DateRange,
   getUserStats,

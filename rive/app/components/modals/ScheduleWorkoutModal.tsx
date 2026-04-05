@@ -9,24 +9,24 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../context/authcontext";
-import { supabase } from "../lib/supabaseClient";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabaseClient";
 import {
   WorkoutSchedule,
   RecurrenceType,
   createSchedule,
   updateSchedule,
   ScheduledWorkout,
-} from "../lib/scheduleUtils";
-import WorkoutSelector from "./schedule/WorkoutSelector";
-import DateSelection from "./schedule/DateSelection";
-import RecurrenceSelector from "./schedule/RecurrenceSelector";
-import RecurrenceOptions from "./schedule/RecurrenceOptions";
-import { WorkoutTemplate } from "./schedule/types";
-import AppText from "./ui/AppText";
+} from "../../lib/scheduleUtils";
+import WorkoutSelector from "../schedule/WorkoutSelector";
+import DateSelection from "../schedule/DateSelection";
+import RecurrenceSelector from "../schedule/RecurrenceSelector";
+import RecurrenceOptions from "../schedule/RecurrenceOptions";
+import { WorkoutTemplate } from "../schedule/types";
+import AppText from "../ui/AppText";
 import StickyBottomPrimaryButton, {
   STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,
-} from "./ui/StickyBottomPrimaryButton";
+} from "../ui/StickyBottomPrimaryButton";
 
 type ScheduleWorkoutModalProps = {
   isOpen: boolean;

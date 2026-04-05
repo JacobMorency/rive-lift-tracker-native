@@ -9,15 +9,15 @@ import {
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../context/authcontext";
+import { useAuth } from "../context/AuthContext";
 import {
   getUserSchedules,
   ScheduledWorkout,
   deleteSchedule,
 } from "../lib/scheduleUtils";
-import ScheduleCard from "../components/schedules/ScheduleCard";
-import ScheduleScreenHeader from "../components/schedules/ScheduleScreenHeader";
-import ScheduleWorkoutModal from "../components/scheduleworkoutmodal";
+import ScheduleCard from "../components/schedule/ScheduleCard";
+import ScheduleScreenHeader from "../components/schedule/ScheduleScreenHeader";
+import ScheduleWorkoutModal from "../components/modals/ScheduleWorkoutModal";
 import AppText from "../components/ui/AppText";
 import StickyBottomPrimaryButton, {
   STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,

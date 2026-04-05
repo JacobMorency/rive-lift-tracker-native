@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   ActivityIndicator,
   useColorScheme,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { useAuth } from "../../context/authcontext";
+import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
-import AddWorkoutModal from "../addworkoutmodal";
-import WorkoutDetailsModal from "../workoutdetailsmodal";
-import Card from "../ui/Card";
+import AddWorkoutModal from "../modals/AddWorkoutModal";
+import WorkoutDetailsModal from "../modals/WorkoutDetailsModal";
 import AppText from "../ui/AppText";
 import AppCard from "../ui/AppCard";
 
@@ -284,31 +282,31 @@ export default function WorkoutVaultList({
 
         {/* Content */}
         {loading ? (
-          <Card>
+          <AppCard>
             <View className="flex-row items-center justify-center py-8">
               <ActivityIndicator
                 size="small"
                 color={isDark ? "#ff6fa1" : "#ff4b8c"}
               />
-              <Text className="text-gray-500 dark:text-gray-400 ml-2">
+              <AppText variant="body" tone="muted" className="ml-2 normal-case">
                 Loading templates...
-              </Text>
+              </AppText>
             </View>
-          </Card>
+          </AppCard>
         ) : (
           <>
             {workoutTemplates.length === 0 ? (
-              <Card>
+              <AppCard>
                 <View className="items-center py-12">
                   <Ionicons name="barbell-outline" size={48} color="#9ca3af" />
-                  <Text className="text-lg font-bold text-zinc-900 dark:text-white mt-4 mb-2">
-                    No Templates Yet
-                  </Text>
-                  <Text className="text-sm text-gray-500 dark:text-gray-400 text-center px-4">
+                  <AppText variant="subheader" tone="default" className="mt-4 mb-2 text-center">
+                    No templates yet
+                  </AppText>
+                  <AppText variant="body" tone="muted" className="px-4 text-center normal-case">
                     Create your first workout template to get started
-                  </Text>
+                  </AppText>
                 </View>
-              </Card>
+              </AppCard>
             ) : (
               <View className="gap-3">
                 {workoutTemplates.map((template) => (

@@ -9,15 +9,15 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../context/authcontext";
-import { supabase } from "../lib/supabaseClient";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabaseClient";
 import {
   getTodaysScheduledWorkouts,
   ScheduledWorkout,
-} from "../lib/scheduleUtils";
-import SelectWorkoutList from "./workout/SelectWorkoutList";
-import AppText from "./ui/AppText";
-import AppCard from "./ui/AppCard";
+} from "../../lib/scheduleUtils";
+import SelectWorkoutList from "../workout/SelectWorkoutList";
+import AppText from "../ui/AppText";
+import AppCard from "../ui/AppCard";
 
 type SelectWorkoutModalProps = {
   isOpen: boolean;

@@ -16,24 +16,24 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ExerciseSet as StatsExerciseSet } from "../lib/statsUtils";
-import { ExerciseSet } from "./exercisetracker/types";
-import SetInputForm from "./exercisetracker/SetInputForm";
-import CompletedSetsList from "./exercisetracker/CompletedSetsList";
-import ExerciseNotes from "./exercisetracker/ExerciseNotes";
-import ExerciseNumericPad from "./exercisetracker/ExerciseNumericPad";
-import AppText from "./ui/AppText";
+import { ExerciseSet as StatsExerciseSet } from "../../lib/statsUtils";
+import { ExerciseSet } from "./types";
+import SetInputForm from "./SetInputForm";
+import CompletedSetsList from "./CompletedSetsList";
+import ExerciseNotes from "./ExerciseNotes";
+import ExerciseNumericPad from "./ExerciseNumericPad";
+import AppText from "../ui/AppText";
 import StickyBottomPrimaryButton, {
   STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,
-} from "./ui/StickyBottomPrimaryButton";
-import type { PadField } from "./exercisetracker/exercisePadUtils";
+} from "../ui/StickyBottomPrimaryButton";
+import type { PadField } from "./exercisePadUtils";
 import {
   appendPadKey,
   applyBufferToSet,
   parseWeightBuffer,
   valueToBuffer,
   EXERCISE_PAD_EXTRA_PADDING,
-} from "./exercisetracker/exercisePadUtils";
+} from "./exercisePadUtils";
 
 type Exercise = {
   id: number;

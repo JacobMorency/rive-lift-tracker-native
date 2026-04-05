@@ -13,21 +13,21 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../../lib/supabaseClient";
 import {
   addExerciseToTemplate,
   removeExerciseFromTemplate,
-} from "../lib/templateUtils";
-import ExerciseSelector from "./ExerciseSelector";
-import { Exercise, WorkoutDetails } from "./workout/types";
-import WorkoutHeader from "./workout/WorkoutHeader";
-import WorkoutExerciseList from "./workout/WorkoutExerciseList";
-import AppText from "./ui/AppText";
-import AppCard from "./ui/AppCard";
-import AppButton from "./ui/AppButton";
+} from "../../lib/templateUtils";
+import ExerciseSelector from "../ExerciseSelector";
+import { Exercise, WorkoutDetails } from "../workout/types";
+import WorkoutHeader from "../workout/WorkoutHeader";
+import WorkoutExerciseList from "../workout/WorkoutExerciseList";
+import AppText from "../ui/AppText";
+import AppCard from "../ui/AppCard";
+import AppButton from "../ui/AppButton";
 import StickyBottomPrimaryButton, {
   STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,
-} from "./ui/StickyBottomPrimaryButton";
+} from "../ui/StickyBottomPrimaryButton";
 
 type WorkoutDetailsModalProps = {
   isOpen: boolean;
@@ -126,7 +126,7 @@ const WorkoutDetailsModal = ({
 
       // Fetch muscle groups for all exercises
       const { getExercisesWithMuscleGroups } = await import(
-        "../lib/muscleGroupUtils"
+        "../../lib/muscleGroupUtils"
       );
       const muscleGroupMap = await getExercisesWithMuscleGroups(exerciseIds);
 

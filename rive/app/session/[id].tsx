@@ -10,10 +10,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "../context/authcontext";
+import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 import { getLastSessionData } from "../lib/statsUtils";
-import ExerciseTracker from "../components/exercisetracker";
+import ExerciseTracker from "../components/exercisetracker/ExerciseTracker";
 import ExerciseSelector from "../components/ExerciseSelector";
 import { Exercise as ExerciseSelectorExercise } from "../components/exercise/types";
 import SessionDetailTopBar from "../components/session/SessionDetailTopBar";

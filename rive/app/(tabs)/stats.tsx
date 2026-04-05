@@ -2,10 +2,10 @@ import React, { useState, useMemo } from "react";
 import { View, TouchableOpacity, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DateRange } from "../lib/statsUtils";
-import Header from "../components/header";
-import DateRangePicker from "../components/daterangepicker";
-import OverviewTab from "../components/stats/overviewtab";
-import PRsTab from "../components/stats/prstab";
+import Header from "../components/Header";
+import DateRangePicker from "../components/DateRangePicker";
+import OverviewTab from "../components/stats/OverviewTab";
+import PRsTab from "../components/stats/PRsTab";
 import AppText from "../components/ui/AppText";
 
 type TabType = "overview" | "prs";

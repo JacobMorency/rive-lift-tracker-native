@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-import { useAuth } from "../context/authcontext";
+import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabaseClient";
-import SelectWorkoutModal from "../components/SelectWorkoutModal";
-import AddWorkoutModal from "../components/addworkoutmodal";
-import Header from "../components/header";
+import SelectWorkoutModal from "../components/modals/SelectWorkoutModal";
+import AddWorkoutModal from "../components/modals/AddWorkoutModal";
+import Header from "../components/Header";
 import {
   getTodaysScheduledWorkouts,
   getScheduledWorkoutsForDateRange,

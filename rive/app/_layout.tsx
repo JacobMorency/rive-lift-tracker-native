@@ -2,8 +2,8 @@ import { Stack } from "expo-router";
 import "react-native-url-polyfill/auto";
 import "../global.css";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { AuthProvider } from "./context/authcontext";
-import AuthGuard from "./components/authguard";
+import { AuthProvider } from "./context/AuthContext";
+import AuthGuard from "./components/AuthGuard";
 
 export default function RootLayout() {
   return (

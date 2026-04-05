@@ -7,7 +7,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../../context/authcontext";
+import { useAuth } from "../../context/AuthContext";
 import AppText from "../ui/AppText";
 import AppCard from "../ui/AppCard";
 import {
@@ -19,7 +19,7 @@ import {
   TrackedPR,
   ExerciseProgressData,
 } from "../../lib/statsUtils";
-import ExerciseSelectionModal from "./exerciseselectionmodal";
+import ExerciseSelectionModal from "./ExerciseSelectionModal";
 
 type PRsTabProps = {
   dateRange: DateRange;

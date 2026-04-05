@@ -8,10 +8,10 @@ import {
   Platform,
   TextInput,
 } from "react-native";
-import { useAuth } from "../context/authcontext";
-import { supabase } from "../lib/supabaseClient";
-import ExerciseSelector from "./ExerciseSelector";
-import CreateWorkoutForm from "./workout/CreateWorkoutForm";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabaseClient";
+import ExerciseSelector from "../ExerciseSelector";
+import CreateWorkoutForm from "../workout/CreateWorkoutForm";
 
 type AddWorkoutModalProps = {
   isOpen: boolean;

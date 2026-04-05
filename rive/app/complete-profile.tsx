@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useAuth } from "./context/authcontext";
+import { useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabaseClient";
 
 export default function CompleteProfilePage() {

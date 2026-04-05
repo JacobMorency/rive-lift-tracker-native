@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "react-native";
-import { useAuth } from "../context/authcontext";
+import { useAuth } from "../context/AuthContext";
 
 export default function TabLayout() {
   const { userData } = useAuth();

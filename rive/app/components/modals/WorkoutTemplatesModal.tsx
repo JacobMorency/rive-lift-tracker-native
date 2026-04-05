@@ -9,9 +9,9 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../context/authcontext";
-import { supabase } from "../lib/supabaseClient";
-import TemplateList from "./workout/TemplateList";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "../../lib/supabaseClient";
+import TemplateList from "../workout/TemplateList";
 
 type WorkoutTemplatesModalProps = {
   isOpen: boolean;

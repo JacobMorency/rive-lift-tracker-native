@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../../context/authcontext";
+import { useAuth } from "../../context/AuthContext";
 import { getMostUsedExercises } from "../../lib/statsUtils";
 import { MuscleGroup } from "../../lib/muscleGroupUtils";
 import ExerciseSearchBar from "../exercise/ExerciseSearchBar";

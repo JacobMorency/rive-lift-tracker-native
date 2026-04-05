@@ -2,14 +2,14 @@ import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useAuth } from "../../context/authcontext";
+import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabaseClient";
 import {
   getScheduledWorkoutsForDateRange,
   ScheduledWorkoutWithDate,
   deleteSchedule,
 } from "../../lib/scheduleUtils";
-import ScheduleWorkoutModal from "../scheduleworkoutmodal";
+import ScheduleWorkoutModal from "../modals/ScheduleWorkoutModal";
 
 export default function UpcomingWorkouts() {
   const { user } = useAuth();
