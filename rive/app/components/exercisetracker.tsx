@@ -23,6 +23,9 @@ import CompletedSetsList from "./exercisetracker/CompletedSetsList";
 import ExerciseNotes from "./exercisetracker/ExerciseNotes";
 import ExerciseNumericPad from "./exercisetracker/ExerciseNumericPad";
 import AppText from "./ui/AppText";
+import StickyBottomPrimaryButton, {
+  STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,
+} from "./ui/StickyBottomPrimaryButton";
 import type { PadField } from "./exercisetracker/exercisePadUtils";
 import {
   appendPadKey,
@@ -53,8 +56,6 @@ type ExerciseTrackerProps = {
 type PadContext = { type: "active" } | { type: "edit"; index: number };
 
 const SCROLL_SECTION_TOP_INSET = 8;
-/** Scroll bottom inset when sticky save bar is visible (footer chrome; safe area is on the footer only). */
-const STICKY_SAVE_FOOTER_SCROLL_PADDING = 68;
 
 function lastSessionLineForSet(
   lastSessionSets: StatsExerciseSet[],
@@ -72,21 +73,19 @@ function lastSessionLineForSet(
 function isSetCompleteForLog(set: ExerciseSet): boolean {
   return set.is_unilateral
     ? set.left_reps !== null &&
-      set.right_reps !== null &&
-      set.weight !== null &&
-      set.weight >= 0
+        set.right_reps !== null &&
+        set.weight !== null &&
+        set.weight >= 0
     : set.reps !== null &&
-      set.reps !== 0 &&
-      set.weight !== null &&
-      set.weight >= 0;
+        set.reps !== 0 &&
+        set.weight !== null &&
+        set.weight >= 0;
 }
 
 function hasPartialSetInput(set: ExerciseSet): boolean {
   if (set.is_unilateral) {
     return (
-      set.weight != null ||
-      set.left_reps != null ||
-      set.right_reps != null
+      set.weight != null || set.left_reps != null || set.right_reps != null
     );
   }
   return set.weight != null || set.reps != null;
@@ -133,7 +132,6 @@ const ExerciseTracker = ({
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const iconMuted = isDark ? "#a3a3a3" : "#737373";
   const primaryIcon = isDark ? "#ff6fa1" : "#ff4b8c";
 
   const setNumRef = useRef(currentSet.set_number);
@@ -435,7 +433,7 @@ const ExerciseTracker = ({
           paddingTop: 16,
           paddingBottom: padOpen
             ? EXERCISE_PAD_EXTRA_PADDING + insets.bottom + 8
-            : STICKY_SAVE_FOOTER_SCROLL_PADDING + insets.bottom,
+            : STICKY_BOTTOM_PRIMARY_SCROLL_PADDING + insets.bottom,
         }}
         keyboardShouldPersistTaps="handled"
       >
@@ -513,41 +511,18 @@ const ExerciseTracker = ({
         </View>
       </ScrollView>
 
-      {!padOpen ? (
-        <View
-          className="bg-background dark:bg-background-dark px-4 pt-4"
-          style={{ paddingBottom: Math.max(insets.bottom, 8) }}
-        >
-          <TouchableOpacity
-            onPress={handleComplete}
-            disabled={!canPressSave}
-            className={`w-full py-4 rounded-2xl flex-row items-center justify-center gap-2 ${
-              !canPressSave
-                ? "bg-surfaceAlt dark:bg-surfaceAlt-dark"
-                : "bg-primary dark:bg-primary-dark active:opacity-90"
-            }`}
-            accessibilityLabel="Save"
-            accessibilityHint={
-              isEditingCompleted
-                ? "Save or cancel editing the set first"
-                : undefined
-            }
-          >
-            <Ionicons
-              name="checkmark"
-              size={20}
-              color={!canPressSave ? iconMuted : "#ffffff"}
-            />
-            <AppText
-              variant="body"
-              tone={!canPressSave ? "muted" : "inverse"}
-              className="font-bold uppercase tracking-wider text-xs"
-            >
-              Save
-            </AppText>
-          </TouchableOpacity>
-        </View>
-      ) : null}
+      <StickyBottomPrimaryButton
+        visible={!padOpen}
+        label="Save"
+        onPress={handleComplete}
+        disabled={!canPressSave}
+        accessibilityLabel="Save"
+        accessibilityHint={
+          isEditingCompleted
+            ? "Save or cancel editing the set first"
+            : undefined
+        }
+      />
 
       {padOpen ? (
         <View className="absolute bottom-0 left-0 right-0">

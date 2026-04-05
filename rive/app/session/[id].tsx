@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
   Modal,
@@ -22,10 +21,11 @@ import SessionOverviewSection from "../components/session/SessionOverviewSection
 import SessionExerciseList from "../components/session/SessionExerciseList";
 import AppText from "../components/ui/AppText";
 import AppButton from "../components/ui/AppButton";
+import StickyBottomPrimaryButton, {
+  STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,
+} from "../components/ui/StickyBottomPrimaryButton";
 
 import { MuscleGroup } from "../lib/muscleGroupUtils";
-
-const STICKY_SESSION_FINISH_FOOTER_SCROLL_PADDING = 72;
 
 type Exercise = {
   id: number;
@@ -91,7 +91,6 @@ export default function SessionDetailPage() {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const iconMuted = isDark ? "#a3a3a3" : "#737373";
   const { id } = useLocalSearchParams<{ id: string }>();
 
   useEffect(() => {
@@ -1100,7 +1099,7 @@ export default function SessionDetailPage() {
           paddingHorizontal: 24,
           paddingTop: 16,
           paddingBottom:
-            STICKY_SESSION_FINISH_FOOTER_SCROLL_PADDING + insets.bottom,
+            STICKY_BOTTOM_PRIMARY_SCROLL_PADDING + insets.bottom,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -1140,35 +1139,12 @@ export default function SessionDetailPage() {
         />
       </ScrollView>
 
-      <View
-        className="px-4"
-        style={{ paddingBottom: Math.max(insets.bottom, 8) }}
-      >
-        <TouchableOpacity
-          onPress={finishDisabled ? undefined : handleCompleteSession}
-          disabled={finishDisabled}
-          className={`w-full py-3 rounded-2xl flex-row items-center justify-center gap-2 ${
-            finishDisabled
-              ? "bg-surfaceAlt dark:bg-surfaceAlt-dark"
-              : "bg-primary dark:bg-primary-dark active:opacity-90"
-          }`}
-          accessibilityLabel="Finish session"
-          accessibilityState={{ disabled: finishDisabled }}
-        >
-          <Ionicons
-            name="checkmark"
-            size={20}
-            color={finishDisabled ? iconMuted : "#ffffff"}
-          />
-          <AppText
-            variant="body"
-            tone={finishDisabled ? "muted" : "inverse"}
-            className="font-bold uppercase tracking-wider text-xs"
-          >
-            Finish
-          </AppText>
-        </TouchableOpacity>
-      </View>
+      <StickyBottomPrimaryButton
+        label="Finish"
+        onPress={handleCompleteSession}
+        disabled={finishDisabled}
+        accessibilityLabel="Finish session"
+      />
 
       <Modal
         visible={showAddExerciseModal}
