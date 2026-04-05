@@ -95,6 +95,19 @@ export default function SetInputForm({
 
   const isEditVariant = variant === "edit";
 
+  const hasPartialIncomplete =
+    !isEditVariant &&
+    !isSetComplete &&
+    (currentSet.is_unilateral
+      ? currentSet.weight != null ||
+        currentSet.left_reps != null ||
+        currentSet.right_reps != null
+      : currentSet.weight != null || currentSet.reps != null);
+
+  const incompleteWarningText = currentSet.is_unilateral
+    ? "Add weight and left/right reps to finish this set."
+    : "Add weight and reps to finish this set.";
+
   return (
     <View
       className={`bg-surface dark:bg-surface-dark rounded-[1.5rem] border p-5 mb-4 ${
@@ -323,6 +336,24 @@ export default function SetInputForm({
           </View>
         </View>
       )}
+
+      {hasPartialIncomplete ? (
+        <View className="flex-row items-start gap-2 mt-4">
+          <Ionicons
+            name="alert-circle-outline"
+            size={18}
+            color={mutedIcon}
+            style={{ marginTop: 1 }}
+          />
+          <AppText
+            variant="caption"
+            tone="muted"
+            className="flex-1 normal-case leading-snug text-[12px]"
+          >
+            {incompleteWarningText}
+          </AppText>
+        </View>
+      ) : null}
 
       <View className="mt-4 pt-4 border-t border-border dark:border-border-dark gap-1">
         <TouchableOpacity

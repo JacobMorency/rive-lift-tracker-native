@@ -53,6 +53,8 @@ type ExerciseTrackerProps = {
 type PadContext = { type: "active" } | { type: "edit"; index: number };
 
 const SCROLL_SECTION_TOP_INSET = 8;
+/** Scroll bottom inset when sticky save bar is visible (footer chrome; safe area is on the footer only). */
+const STICKY_SAVE_FOOTER_SCROLL_PADDING = 68;
 
 function lastSessionLineForSet(
   lastSessionSets: StatsExerciseSet[],
@@ -65,6 +67,29 @@ function lastSessionLineForSet(
     return `Last: L ${s.left_reps ?? "—"} · R ${s.right_reps ?? "—"} @ ${s.weight ?? "—"} lbs`;
   }
   return `Last: ${s.weight ?? "—"} lbs · ${s.reps ?? "—"} reps`;
+}
+
+function isSetCompleteForLog(set: ExerciseSet): boolean {
+  return set.is_unilateral
+    ? set.left_reps !== null &&
+      set.right_reps !== null &&
+      set.weight !== null &&
+      set.weight >= 0
+    : set.reps !== null &&
+      set.reps !== 0 &&
+      set.weight !== null &&
+      set.weight >= 0;
+}
+
+function hasPartialSetInput(set: ExerciseSet): boolean {
+  if (set.is_unilateral) {
+    return (
+      set.weight != null ||
+      set.left_reps != null ||
+      set.right_reps != null
+    );
+  }
+  return set.weight != null || set.reps != null;
 }
 
 const ExerciseTracker = ({
@@ -236,12 +261,60 @@ const ExerciseTracker = ({
   };
 
   const handleComplete = () => {
+    if (editingSetIndex !== null && editingSet !== null) {
+      return;
+    }
+
     const merged = padOpen
       ? applyBufferToSet(currentSet, padField, padBuffer)
       : currentSet;
     setCurrentSet(merged);
     setPadOpen(false);
-    onComplete(sets);
+
+    const finishWith = (finalSets: ExerciseSet[]) => {
+      onComplete(finalSets);
+    };
+
+    if (hasPartialSetInput(merged) && !isSetCompleteForLog(merged)) {
+      Alert.alert(
+        "Unfinished set",
+        "This set has values that aren't complete. They won't be saved unless you finish and tap Add set.",
+        [
+          { text: "Keep editing", style: "cancel" },
+          {
+            text: "Save anyway",
+            style: "destructive",
+            onPress: () => finishWith(sets),
+          },
+        ],
+      );
+      return;
+    }
+
+    if (isSetCompleteForLog(merged)) {
+      Alert.alert(
+        "Unlogged set",
+        "You have a completed set that wasn't added to your history. Include it when saving?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Save without it",
+            style: "destructive",
+            onPress: () => finishWith(sets),
+          },
+          {
+            text: "Include & save",
+            onPress: () => {
+              const newSet: ExerciseSet = { ...merged, partialReps: null };
+              finishWith([...sets, newSet]);
+            },
+          },
+        ],
+      );
+      return;
+    }
+
+    finishWith(sets);
   };
 
   const startEditingSet = (set: ExerciseSet, originalIndex: number) => {
@@ -312,11 +385,18 @@ const ExerciseTracker = ({
   const categoryLabel =
     exercise.category || exercise.primaryMuscleGroup || "Exercise";
 
-  const isEditingCompleted =
-    editingSetIndex !== null && editingSet !== null;
+  const isEditingCompleted = editingSetIndex !== null && editingSet !== null;
 
-  const padActive =
-    padContext.type === "active" || padContext.type === "edit";
+  const padActive = padContext.type === "active" || padContext.type === "edit";
+
+  const mergedForSaveCheck = padOpen
+    ? applyBufferToSet(currentSet, padField, padBuffer)
+    : currentSet;
+  const canPressSave =
+    !isEditingCompleted &&
+    (sets.length > 0 ||
+      hasPartialSetInput(mergedForSaveCheck) ||
+      isSetCompleteForLog(mergedForSaveCheck));
 
   return (
     <View className="flex-1 bg-background dark:bg-background-dark">
@@ -343,24 +423,7 @@ const ExerciseTracker = ({
               {title}
             </AppText>
           </View>
-          <View className="flex-row items-center gap-1">
-            <TouchableOpacity
-              className={`w-10 h-10 items-center justify-center rounded-full ${
-                sets.length === 0
-                  ? "bg-surfaceAlt dark:bg-surfaceAlt-dark"
-                  : "bg-primary dark:bg-primary-dark"
-              }`}
-              onPress={handleComplete}
-              disabled={sets.length === 0}
-              accessibilityLabel="Complete exercise"
-            >
-              <Ionicons
-                name="checkmark"
-                size={22}
-                color={sets.length === 0 ? iconMuted : "#ffffff"}
-              />
-            </TouchableOpacity>
-          </View>
+          <View className="w-10 h-10" />
         </View>
       </View>
 
@@ -370,8 +433,9 @@ const ExerciseTracker = ({
         contentContainerStyle={{
           paddingHorizontal: 24,
           paddingTop: 16,
-          paddingBottom:
-            (padOpen ? EXERCISE_PAD_EXTRA_PADDING : 0) + insets.bottom + 8,
+          paddingBottom: padOpen
+            ? EXERCISE_PAD_EXTRA_PADDING + insets.bottom + 8
+            : STICKY_SAVE_FOOTER_SCROLL_PADDING + insets.bottom,
         }}
         keyboardShouldPersistTaps="handled"
       >
@@ -448,6 +512,42 @@ const ExerciseTracker = ({
           />
         </View>
       </ScrollView>
+
+      {!padOpen ? (
+        <View
+          className="bg-background dark:bg-background-dark px-4 pt-4"
+          style={{ paddingBottom: Math.max(insets.bottom, 8) }}
+        >
+          <TouchableOpacity
+            onPress={handleComplete}
+            disabled={!canPressSave}
+            className={`w-full py-4 rounded-2xl flex-row items-center justify-center gap-2 ${
+              !canPressSave
+                ? "bg-surfaceAlt dark:bg-surfaceAlt-dark"
+                : "bg-primary dark:bg-primary-dark active:opacity-90"
+            }`}
+            accessibilityLabel="Save"
+            accessibilityHint={
+              isEditingCompleted
+                ? "Save or cancel editing the set first"
+                : undefined
+            }
+          >
+            <Ionicons
+              name="checkmark"
+              size={20}
+              color={!canPressSave ? iconMuted : "#ffffff"}
+            />
+            <AppText
+              variant="body"
+              tone={!canPressSave ? "muted" : "inverse"}
+              className="font-bold uppercase tracking-wider text-xs"
+            >
+              Save
+            </AppText>
+          </TouchableOpacity>
+        </View>
+      ) : null}
 
       {padOpen ? (
         <View className="absolute bottom-0 left-0 right-0">
