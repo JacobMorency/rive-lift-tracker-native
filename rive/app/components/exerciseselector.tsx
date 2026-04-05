@@ -10,6 +10,7 @@ import ExerciseList from "./exercise/ExerciseList";
 import AppText from "./ui/AppText";
 import AppCard from "./ui/AppCard";
 import AppButton from "./ui/AppButton";
+import { useChromeIconTint } from "./ui/chromeTheme";
 
 type ExerciseSelectorProps = {
   onExerciseSelect: (exercises: Exercise[]) => void;
@@ -40,6 +41,7 @@ const ExerciseSelector = ({
   );
   const [loading, setLoading] = useState(false);
   const insets = useSafeAreaInsets();
+  const chromeIconTint = useChromeIconTint();
 
   const fetchExercises = async (
     searchTerm: string,
@@ -182,7 +184,7 @@ const ExerciseSelector = ({
             onPress={onClose}
             className="w-10 h-10 items-center justify-center rounded-full"
           >
-            <Ionicons name="close" size={24} color="white" />
+            <Ionicons name="close" size={24} color={chromeIconTint} />
           </TouchableOpacity>
 
           <View>

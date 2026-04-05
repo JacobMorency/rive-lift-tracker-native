@@ -88,7 +88,7 @@ export default function DateRangePicker({
         onRequestClose={() => setIsModalOpen(false)}
       >
         <View className="flex-1 bg-black/50 justify-center items-center px-4">
-          <View className="bg-white dark:bg-zinc-900 rounded-xl p-6 w-full max-w-sm">
+          <View className="w-full max-w-sm rounded-xl bg-surface p-6 dark:bg-surface-dark">
             <View className="flex-row items-center justify-between mb-4">
               <Text className="text-lg font-semibold text-zinc-900 dark:text-white">
                 Select Time Period

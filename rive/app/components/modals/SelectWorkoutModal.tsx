@@ -18,6 +18,7 @@ import {
 import SelectWorkoutList from "../workout/SelectWorkoutList";
 import AppText from "../ui/AppText";
 import AppCard from "../ui/AppCard";
+import { useChromeIconTint } from "../ui/chromeTheme";
 
 type SelectWorkoutModalProps = {
   isOpen: boolean;
@@ -60,6 +61,7 @@ export default function SelectWorkoutModal({
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const spinnerColor = isDark ? "#ff6fa1" : "#ff4b8c";
+  const chromeIconTint = useChromeIconTint();
 
   const fetchWorkoutTemplates = useCallback(async (): Promise<void> => {
     if (!user) return;
@@ -139,7 +141,7 @@ export default function SelectWorkoutModal({
               accessibilityLabel="Close"
               className="w-10 h-10 items-center justify-center rounded-full"
             >
-              <Ionicons name="close" size={24} color="white" />
+              <Ionicons name="close" size={24} color={chromeIconTint} />
             </TouchableOpacity>
 
             <View className="flex-1 min-w-0">

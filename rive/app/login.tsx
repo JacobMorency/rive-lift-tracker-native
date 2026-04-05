@@ -98,7 +98,7 @@ export default function LoginPage() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 justify-center items-center p-4 bg-white dark:bg-zinc-900"
+      className="flex-1 justify-center items-center bg-background p-4 dark:bg-background-dark"
     >
       <View className="w-full max-w-md p-6 gap-4">
         <Text className="text-2xl font-bold text-center text-zinc-900 dark:text-white">

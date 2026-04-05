@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  TouchableOpacity,
-  Modal,
-  ScrollView,
-  Alert,
-  useColorScheme,
-} from "react-native";
+import { View, TouchableOpacity, Modal, ScrollView, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
@@ -27,6 +20,7 @@ import AppText from "../ui/AppText";
 import StickyBottomPrimaryButton, {
   STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,
 } from "../ui/StickyBottomPrimaryButton";
+import { useChromeIconTint } from "../ui/chromeTheme";
 
 type ScheduleWorkoutModalProps = {
   isOpen: boolean;
@@ -45,8 +39,7 @@ export default function ScheduleWorkoutModal({
 }: ScheduleWorkoutModalProps) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const chromeIconTint = useChromeIconTint();
 
   const [workoutTemplates, setWorkoutTemplates] = useState<WorkoutTemplate[]>(
     [],
@@ -345,11 +338,7 @@ export default function ScheduleWorkoutModal({
                 className="h-10 w-10 items-center justify-center rounded-full active:opacity-80"
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Ionicons
-                  name="close"
-                  size={24}
-                  color={isDark ? "#f5f5f5" : "#111113"}
-                />
+                <Ionicons name="close" size={24} color={chromeIconTint} />
               </TouchableOpacity>
               <AppText
                 variant="subheader"

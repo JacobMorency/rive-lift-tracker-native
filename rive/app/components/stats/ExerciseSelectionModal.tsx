@@ -18,6 +18,7 @@ import AppCard from "../ui/AppCard";
 import StickyBottomPrimaryButton, {
   STICKY_BOTTOM_PRIMARY_SCROLL_PADDING,
 } from "../ui/StickyBottomPrimaryButton";
+import { useChromeIconTint } from "../ui/chromeTheme";
 
 type Exercise = {
   id: number;
@@ -50,6 +51,7 @@ export default function ExerciseSelectionModal({
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
+  const chromeIconTint = useChromeIconTint();
   const primaryGlow = isDark ? "#ff6fa1" : "#ff4b8c";
   const mutedIcon = isDark ? "#a1a1aa" : "#6b7280";
 
@@ -134,11 +136,7 @@ export default function ExerciseSelectionModal({
               className="h-10 w-10 items-center justify-center rounded-full active:opacity-80"
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Ionicons
-                name="close"
-                size={24}
-                color={isDark ? "#f5f5f5" : "#111113"}
-              />
+              <Ionicons name="close" size={24} color={chromeIconTint} />
             </TouchableOpacity>
             <AppText
               variant="subheader"

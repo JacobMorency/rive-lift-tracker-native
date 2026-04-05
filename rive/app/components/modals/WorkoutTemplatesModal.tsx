@@ -206,7 +206,7 @@ const WorkoutTemplatesModal = ({
 
   return (
     <Modal visible={isOpen} animationType="slide" presentationStyle="pageSheet">
-      <View className="flex-1 bg-white dark:bg-zinc-900">
+      <View className="flex-1 bg-background dark:bg-background-dark">
         {/* Header */}
         <View className="flex-row items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-700">
           <TouchableOpacity

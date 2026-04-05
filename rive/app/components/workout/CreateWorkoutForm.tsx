@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AppText from "../ui/AppText";
+import { useChromeIconTint } from "../ui/chromeTheme";
 
 type CreateWorkoutFormProps = {
   workoutName: string;
@@ -32,6 +33,9 @@ export default function CreateWorkoutForm({
   onSubmit,
   workoutNameRef,
 }: CreateWorkoutFormProps) {
+  const chromeIconTint = useChromeIconTint();
+  const nextDisabled = loading || !workoutName.trim();
+
   return (
     <View className="flex-1">
       {/* Enhanced Header */}
@@ -41,19 +45,25 @@ export default function CreateWorkoutForm({
             onPress={onClose}
             className="w-10 h-10 items-center justify-center rounded-full"
           >
-            <Ionicons name="close" size={24} color="white" />
+            <Ionicons name="close" size={24} color={chromeIconTint} />
           </TouchableOpacity>
           <AppText variant="subheader">New Workout</AppText>
           <TouchableOpacity
             onPress={onSubmit}
-            disabled={loading || !workoutName.trim()}
+            disabled={nextDisabled}
             className={`items-center justify-center rounded-full ${
-              loading || !workoutName.trim()
+              nextDisabled
                 ? "bg-surfaceAlt dark:bg-surfaceAlt-dark"
                 : "bg-primary dark:bg-primary-dark"
             }`}
           >
-            <AppText className="px-8 py-2 text-sm font-bold">NEXT</AppText>
+            <AppText
+              variant="caption"
+              tone={nextDisabled ? "muted" : "inverse"}
+              className="px-8 py-2 font-bold normal-case"
+            >
+              NEXT
+            </AppText>
           </TouchableOpacity>
         </View>
       </View>
