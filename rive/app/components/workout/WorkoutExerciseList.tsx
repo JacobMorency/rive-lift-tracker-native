@@ -42,7 +42,7 @@ export default function WorkoutExerciseList({
         <View className="gap-5">
           {workoutDetails.exercises.map((exercise, index) => (
             <ExerciseListItem
-              key={exercise.id}
+              key={exercise.workoutExerciseId ?? `exercise-${exercise.id}-${index}`}
               exercise={exercise}
               index={index}
               onRemove={onRemoveExercise}

@@ -35,9 +35,6 @@ export default function ExerciseListItem({
   const [notesExpanded, setNotesExpanded] = useState(
     () => !!(exercise.notes || "").trim(),
   );
-  const [notesInputHeight, setNotesInputHeight] = useState(
-    NOTES_INPUT_MIN_HEIGHT,
-  );
   const lastSavedRef = useRef((exercise.notes || "").trim());
   const notesInputRef = useRef<TextInput>(null);
 
@@ -48,7 +45,6 @@ export default function ExerciseListItem({
       setNotesExpanded(true);
     } else {
       setNotesExpanded(false);
-      setNotesInputHeight(NOTES_INPUT_MIN_HEIGHT);
     }
   }, [exercise.notes, exercise.workoutExerciseId]);
 
@@ -61,7 +57,6 @@ export default function ExerciseListItem({
     }
     if (next === "") {
       setNotesExpanded(false);
-      setNotesInputHeight(NOTES_INPUT_MIN_HEIGHT);
     }
   }, [editedNotes, exercise.workoutExerciseId, onNotesUpdate]);
 
@@ -138,22 +133,11 @@ export default function ExerciseListItem({
             onChangeText={setEditedNotes}
             onBlur={handleNotesBlur}
             multiline
-            scrollEnabled={notesInputHeight >= NOTES_INPUT_MAX_HEIGHT - 4}
+            scrollEnabled
             textAlignVertical="top"
             style={{
               minHeight: NOTES_INPUT_MIN_HEIGHT,
               maxHeight: NOTES_INPUT_MAX_HEIGHT,
-              height: notesInputHeight,
-            }}
-            onContentSizeChange={(e) => {
-              const h = e.nativeEvent.contentSize.height;
-              const padded = Math.ceil(h + 24);
-              setNotesInputHeight(
-                Math.min(
-                  NOTES_INPUT_MAX_HEIGHT,
-                  Math.max(NOTES_INPUT_MIN_HEIGHT, padded),
-                ),
-              );
             }}
             accessibilityLabel={`Notes for ${formatExerciseName(exercise.name)}`}
           />

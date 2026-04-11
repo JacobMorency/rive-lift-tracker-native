@@ -38,6 +38,7 @@ module.exports = {
         success: "#22c55e",
         warning: "#facc15",
         error: "#ef4444",
+        "error-dark": "#f87171",
       },
       fontSize: {
         "ds-header": ["30px", { lineHeight: "36px", fontWeight: "800" }],

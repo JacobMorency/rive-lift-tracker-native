@@ -20,7 +20,6 @@ import {
 } from "../../lib/templateUtils";
 import ExerciseSelector from "../ExerciseSelector";
 import { Exercise, WorkoutDetails } from "../workout/types";
-import WorkoutHeader from "../workout/WorkoutHeader";
 import WorkoutExerciseList from "../workout/WorkoutExerciseList";
 import AppText from "../ui/AppText";
 import AppCard from "../ui/AppCard";
@@ -36,6 +35,43 @@ type WorkoutDetailsModalProps = {
   onWorkoutUpdated?: () => void;
   onWorkoutDeleted?: () => void;
 };
+
+/** Top bar for this modal only; back + screen title — name/actions live in the scroll content. */
+function WorkoutDetailsModalHeader({ onClose }: { onClose: () => void }) {
+  const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
+  return (
+    <View
+      className="border-b border-border bg-chrome px-4 dark:border-border-dark dark:bg-chrome-dark"
+      style={{ paddingTop: insets.top, paddingBottom: 8 }}
+    >
+      <View className="min-h-10 flex-row items-center gap-3">
+        <TouchableOpacity
+          onPress={onClose}
+          accessibilityLabel="Go back"
+          className="h-10 w-10 shrink-0 items-center justify-center rounded-full active:opacity-80"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons
+            name="arrow-back"
+            size={22}
+            color={isDark ? "#f5f5f5" : "#111113"}
+          />
+        </TouchableOpacity>
+        <AppText
+          variant="subheader"
+          tone="default"
+          className="min-w-0 flex-1 font-bold tracking-tight"
+          numberOfLines={1}
+        >
+          View Template
+        </AppText>
+      </View>
+    </View>
+  );
+}
 
 const WorkoutDetailsModal = ({
   isOpen,
@@ -396,10 +432,7 @@ const WorkoutDetailsModal = ({
       presentationStyle="fullScreen"
     >
       <View className="flex-1 bg-background dark:bg-background-dark">
-        <WorkoutHeader
-          onDeleteWorkout={handleDeleteWorkout}
-          onClose={onClose}
-        />
+        <WorkoutDetailsModalHeader onClose={onClose} />
 
         <KeyboardAvoidingView
           className="flex-1"
@@ -447,28 +480,69 @@ const WorkoutDetailsModal = ({
                       />
                       <TouchableOpacity
                         onPress={handleSaveName}
-                        className="h-9 w-9 items-center justify-center rounded-full bg-success"
+                        className="h-10 w-10 items-center justify-center rounded-full border border-border bg-surface active:opacity-80 dark:border-border-dark dark:bg-surface-dark"
                         accessibilityLabel="Save name"
+                        hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
                       >
-                        <Ionicons name="checkmark" size={18} color="#ffffff" />
+                        <Ionicons
+                          name="checkmark"
+                          size={22}
+                          color={isDark ? "#22c55e" : "#16a34a"}
+                        />
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={handleCancelEdit}
-                        className="h-9 w-9 items-center justify-center rounded-full bg-error"
+                        className="h-10 w-10 items-center justify-center rounded-full border border-border bg-surface active:opacity-80 dark:border-border-dark dark:bg-surface-dark"
                         accessibilityLabel="Cancel edit"
+                        hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
                       >
-                        <Ionicons name="close" size={18} color="#ffffff" />
+                        <Ionicons
+                          name="close"
+                          size={22}
+                          color={isDark ? "#a1a1aa" : "#6b7280"}
+                        />
                       </TouchableOpacity>
                     </View>
                   ) : (
-                    <TouchableOpacity
-                      onPress={handleEditName}
-                      activeOpacity={0.85}
-                    >
-                      <AppText variant="header" tone="default">
-                        {workoutDetails.name || "Workout"}
-                      </AppText>
-                    </TouchableOpacity>
+                    <View className="w-full flex-row items-start gap-3">
+                      <TouchableOpacity
+                        onPress={handleEditName}
+                        activeOpacity={0.85}
+                        className="min-w-0 flex-1"
+                        accessibilityRole="button"
+                        accessibilityLabel="Edit workout name"
+                      >
+                        <AppText variant="header" tone="default">
+                          {workoutDetails.name || "Workout"}
+                        </AppText>
+                      </TouchableOpacity>
+                      <View className="mt-0.5 flex-row items-center gap-1">
+                        <TouchableOpacity
+                          onPress={handleEditName}
+                          className="h-10 w-10 items-center justify-center rounded-full active:opacity-80"
+                          accessibilityLabel="Edit workout name"
+                          hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+                        >
+                          <Ionicons
+                            name="create-outline"
+                            size={24}
+                            color={isDark ? "#ff6fa1" : "#ff4b8c"}
+                          />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={handleDeleteWorkout}
+                          className="h-10 w-10 items-center justify-center rounded-full active:opacity-80"
+                          accessibilityLabel="Delete workout"
+                          hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+                        >
+                          <Ionicons
+                            name="trash-outline"
+                            size={24}
+                            color="#ef4444"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
                   )}
                   <AppText
                     variant="caption"
@@ -492,11 +566,19 @@ const WorkoutDetailsModal = ({
                         size={18}
                         color={isDark ? "#ff6fa1" : "#ff4b8c"}
                       />
-                      <AppText variant="caption" tone="default" className="font-bold normal-case">
+                      <AppText
+                        variant="caption"
+                        tone="default"
+                        className="font-bold normal-case"
+                      >
                         Description
                       </AppText>
                     </View>
-                    <AppText variant="body" tone="muted" className="normal-case leading-6">
+                    <AppText
+                      variant="body"
+                      tone="muted"
+                      className="normal-case leading-6"
+                    >
                       {workoutDetails.description}
                     </AppText>
                   </AppCard>
@@ -508,7 +590,13 @@ const WorkoutDetailsModal = ({
                   fullWidth
                   label="Add exercises"
                   onPress={handleAddExercise}
-                  icon={<Ionicons name="add-circle-outline" size={22} color="#ffffff" />}
+                  icon={
+                    <Ionicons
+                      name="add-circle-outline"
+                      size={22}
+                      color="#ffffff"
+                    />
+                  }
                   className="shadow-lg shadow-primary/25 dark:shadow-primary-dark/20"
                   accessibilityLabel="Add exercises to template"
                 />
@@ -521,7 +609,11 @@ const WorkoutDetailsModal = ({
               </View>
             ) : (
               <View className="items-center justify-center py-8">
-                <AppText variant="body" tone="muted" className="text-center normal-case">
+                <AppText
+                  variant="body"
+                  tone="muted"
+                  className="text-center normal-case"
+                >
                   Failed to load workout details.
                 </AppText>
               </View>

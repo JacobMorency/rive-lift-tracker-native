@@ -2,7 +2,7 @@ import React from "react";
 import { Text, TextProps } from "react-native";
 
 type AppTextVariant = "header" | "subheader" | "body" | "caption";
-type AppTextTone = "default" | "muted" | "inverse" | "primary";
+type AppTextTone = "default" | "muted" | "inverse" | "primary" | "error";
 
 type AppTextProps = TextProps & {
   variant?: AppTextVariant;
@@ -22,6 +22,7 @@ const toneClasses: Record<AppTextTone, string> = {
   muted: "text-textMuted dark:text-textMuted-dark",
   inverse: "text-white",
   primary: "text-primary dark:text-primary-dark",
+  error: "text-error dark:text-error-dark",
 };
 
 export default function AppText({

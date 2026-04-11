@@ -9,7 +9,7 @@ type ScheduleScreenHeaderProps = {
   title?: string;
 };
 
-/** Stack chrome for the schedule screen; layout aligned with [`WorkoutHeader`](../workout/WorkoutHeader.tsx). */
+/** Stack chrome for the schedule screen; layout aligned with [`SessionDetailTopBar`](../session/SessionDetailTopBar.tsx). */
 export default function ScheduleScreenHeader({
   onBack,
   title = "Schedules",
