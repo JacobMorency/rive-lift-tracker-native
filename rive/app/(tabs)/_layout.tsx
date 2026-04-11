@@ -12,6 +12,10 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        // Match chrome tokens (tailwind `chrome` / `chrome-dark`) for one continuous shell
+        sceneContainerStyle: {
+          backgroundColor: isDark ? "#000000" : "#ffffff",
+        },
         tabBarStyle: {
           backgroundColor: isDark ? "#000000" : "#ffffff",
           paddingBottom: 8,

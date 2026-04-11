@@ -49,7 +49,7 @@ export default function StatsPage() {
   };
 
   return (
-    <View className="flex-1 bg-background dark:bg-background-dark">
+    <View className="flex-1 bg-chrome dark:bg-chrome-dark">
       <Header
         rightComponent={
           <DateRangePicker
