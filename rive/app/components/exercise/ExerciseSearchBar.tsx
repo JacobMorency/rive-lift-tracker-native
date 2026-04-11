@@ -16,7 +16,7 @@ export default function ExerciseSearchBar({
 }: ExerciseSearchBarProps) {
   return (
     <View
-      className={`px-4 bg-background dark:bg-background-dark ${compact ? "pt-3 pb-1" : "pt-8"}`}
+      className={`px-4 bg-background dark:bg-background-dark ${compact ? "pt-3 pb-1" : "pt-8 pb-2"}`}
     >
       <View className="flex-row items-center bg-surfaceAlt dark:bg-surfaceAlt-dark rounded-full px-4 py-4">
         <Ionicons name="search" size={20} color="#9ca3af" />

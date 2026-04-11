@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  ScrollView,
+  useColorScheme,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../lib/supabaseClient";
@@ -9,8 +14,15 @@ import ExerciseCategoryTabs from "./exercise/ExerciseCategoryTabs";
 import ExerciseList from "./exercise/ExerciseList";
 import AppText from "./ui/AppText";
 import AppCard from "./ui/AppCard";
-import AppButton from "./ui/AppButton";
 import { useChromeIconTint } from "./ui/chromeTheme";
+import { STICKY_BOTTOM_PRIMARY_SCROLL_PADDING } from "./ui/StickyBottomPrimaryButton";
+
+/**
+ * Scroll padding so the list clears the floating selection bar.
+ * Includes extra room vs StickyBottomPrimaryButton plus space for the larger top gap above the card.
+ */
+const EXERCISE_SELECTOR_FLOAT_SCROLL_PADDING =
+  STICKY_BOTTOM_PRIMARY_SCROLL_PADDING + 52;
 
 type ExerciseSelectorProps = {
   onExerciseSelect: (exercises: Exercise[]) => void;
@@ -41,7 +53,10 @@ const ExerciseSelector = ({
   );
   const [loading, setLoading] = useState(false);
   const insets = useSafeAreaInsets();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const chromeIconTint = useChromeIconTint();
+  const primaryGlow = isDark ? "#ff6fa1" : "#ff4b8c";
 
   const fetchExercises = async (
     searchTerm: string,
@@ -196,46 +211,91 @@ const ExerciseSelector = ({
       </View>
 
       {/* Content */}
-      <ExerciseSearchBar
-        searchValue={searchValue}
-        onSearchChange={setSearchValue}
-      />
-
-      <ScrollView className="flex-1 p-4">
-        <ExerciseCategoryTabs
-          selectedFilter={selectedFilter}
-          onFilterChange={setSelectedFilter}
-          selectedCount={selectedExercises.length}
-          onClearAll={() => setSelectedExercises([])}
+      <View className="flex-1">
+        <ExerciseSearchBar
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
         />
 
-        <ExerciseList
-          exercises={filteredExercises}
-          selectedExercises={selectedExercises}
-          loading={loading}
-          selectedFilter={selectedFilter}
-          onToggleExercise={handleExerciseToggle}
-        />
-      </ScrollView>
-      <View className="px-4 py-1 mb-4 mt-2">
-        <AppCard className="flex-row justify-between" surface="alt">
-          <View>
-            <AppText variant="caption" tone="muted">
-              Selection
-            </AppText>
-            <AppText className="font-bold text-sm">
-              {selectedExercises.length}{" "}
-              {selectedExercises.length === 1 ? "exercise" : "exercises"}{" "}
-              selected
-            </AppText>
-          </View>
-          <TouchableOpacity
-            className="bg-primary dark:bg-primary-dark rounded-full flex items-center justify-center px-8"
-            onPress={handleConfirm}
+        <ScrollView
+          className="flex-1 px-6 pt-4"
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom:
+              EXERCISE_SELECTOR_FLOAT_SCROLL_PADDING + insets.bottom,
+          }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <ExerciseCategoryTabs
+            selectedFilter={selectedFilter}
+            onFilterChange={setSelectedFilter}
+            selectedCount={selectedExercises.length}
+            onClearAll={() => setSelectedExercises([])}
+          />
+
+          <ExerciseList
+            exercises={filteredExercises}
+            selectedExercises={selectedExercises}
+            loading={loading}
+            selectedFilter={selectedFilter}
+            onToggleExercise={handleExerciseToggle}
+          />
+        </ScrollView>
+
+        <View
+          pointerEvents="box-none"
+          className="absolute bottom-0 left-0 right-0 bg-transparent px-4 pt-8"
+          style={{ paddingBottom: Math.max(insets.bottom, 8) }}
+        >
+          <AppCard
+            className="flex-row items-center justify-between gap-3 !p-5"
+            surface="alt"
+            style={{
+              shadowColor: "#000000",
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: isDark ? 0.35 : 0.12,
+              shadowRadius: 16,
+              elevation: 12,
+            }}
           >
-            <AppText variant="caption">FINISH</AppText>
-          </TouchableOpacity>
-        </AppCard>
+            <View className="min-w-0 flex-1">
+              <AppText variant="caption" tone="muted">
+                Selection
+              </AppText>
+              <AppText
+                variant="body"
+                tone="default"
+                className="font-bold normal-case"
+              >
+                {selectedExercises.length}{" "}
+                {selectedExercises.length === 1 ? "exercise" : "exercises"}{" "}
+                selected
+              </AppText>
+            </View>
+            <TouchableOpacity
+              className="shrink-0 min-h-[48px] px-7 rounded-2xl flex-row items-center justify-center bg-primary dark:bg-primary-dark active:opacity-90"
+              onPress={handleConfirm}
+              style={{
+                shadowColor: primaryGlow,
+                shadowOffset: { width: 0, height: 10 },
+                shadowOpacity: 0.45,
+                shadowRadius: 20,
+                elevation: 14,
+              }}
+              accessibilityLabel={confirmText}
+              accessibilityRole="button"
+            >
+              <AppText
+                variant="body"
+                tone="inverse"
+                className="font-bold uppercase tracking-wider text-sm"
+              >
+                {confirmText}
+              </AppText>
+            </TouchableOpacity>
+          </AppCard>
+        </View>
       </View>
     </View>
   );
