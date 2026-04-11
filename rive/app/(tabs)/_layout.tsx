@@ -17,6 +17,9 @@ export default function TabLayout() {
           paddingBottom: 8,
           paddingTop: 8,
           height: 80,
+          borderTopWidth: 0,
+          elevation: 0,
+          shadowOpacity: 0,
         },
         tabBarActiveTintColor: isDark ? "#ff6fa1" : "#ff4b8c", // primary (dark mode lighter)
         tabBarInactiveTintColor: "#9ca3af", // muted (same in both modes)
